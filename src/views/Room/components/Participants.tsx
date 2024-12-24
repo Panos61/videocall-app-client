@@ -12,7 +12,7 @@ interface Props {
   onClose: () => void;
 }
 
-const Participants = ({ open, participants, mediaState, onClose }: Props) => {
+const Participants = ({ open, participants, onClose }: Props) => {
   return (
     <div
       className={`fixed right-0 top-0 h-[85%] w-[256px] mt-20 mr-16 rounded-12 border border-slate-800 bg-slate-950 shadow-lg transform ${

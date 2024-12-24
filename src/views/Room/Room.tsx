@@ -2,14 +2,15 @@
 import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
-import type { Participant, SignallingMessage } from '@/types';
-import { useMediaCtx } from '@/context';
+import type { Participant } from '@/types';
+import { useMediaCtx, useWebSocketCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { usePeerConnection, ICE_SERVERS } from '@/webrtc';
 
 import { VideoTile, Toolbar, Participants } from './components';
 
 export const Room = () => {
+  const { ws, connect, isConnected, sendMessage } = useWebSocketCtx();
   const { mediaState, setAudioState, setVideoState } = useMediaCtx();
 
   const [participantList, setParticipantList] = useState<Participant[]>([]);
@@ -24,7 +25,6 @@ export const Room = () => {
   const localVideo = useRef<HTMLVideoElement>(null);
   const [videoReady, setVideoReady] = useState(false);
 
-  const ws = useRef<WebSocket | null>(null);
   const rtcPeerConnection = useRef<Record<string, RTCPeerConnection>>({});
   const remoteStreams = useRef<Record<string, MediaStream>>({});
 
@@ -111,34 +111,22 @@ export const Room = () => {
   useEffect(() => {
     if (!videoReady) return;
 
-    let wsReady = false;
-    ws.current = new WebSocket(`ws://localhost:8080/ws/signalling/${roomID}`);
-
-    const sendMessage = (message: SignallingMessage) => {
-      if (wsReady && ws.current && ws.current.readyState === WebSocket.OPEN) {
-        ws.current.send(JSON.stringify(message));
-      } else {
-        console.warn('WebSocket not ready, message not sent:', message);
-      }
-    };
+    // init websocket connection
+    connect(`/ws/signalling/${roomID}`);
 
     let isCallInitiator = false;
 
-    ws.current.onopen = () => {
-      console.log('WebSocket connection established');
-      wsReady = true;
-      console.log('start call');
-      sendMessage({
-        type: 'connect',
-        sessionID,
-      });
+    if (isConnected) {
+      sendMessage({ type: 'connect', sessionID });
 
       if (participantList.length === 1) {
         isCallInitiator = true;
       }
-    };
+    }
 
-    ws.current.onmessage = async (event) => {
+    if (!ws) return;
+
+    ws.onmessage = async (event) => {
       const data = JSON.parse(event.data);
 
       if (
@@ -290,6 +278,9 @@ export const Room = () => {
     //   Object.values(rtcPeerConnection).forEach(pc => pc.disconnect());
     // };
   }, [
+    ws,
+    isConnected,
+    sendMessage,
     videoReady,
     roomID,
     sessionID,

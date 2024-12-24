@@ -20,26 +20,27 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>(
     const divRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-      if (!ref || typeof ref == 'function' || !ref.current) return;
+      if (!ref || typeof ref === 'function' || !ref.current) return;
       const videoElement = ref.current;
-
+    
       // Pause the video before making changes to avoid AbortError
       // videoElement.pause();
-
-      if (!isLocal) return;
-
-      if (mediaState.video && localStream) {
-        if (videoElement.srcObject !== localStream) {
-          videoElement.srcObject = localStream;
+    
+      if (isLocal) {
+        if (mediaState.video && localStream) {
+          if (videoElement.srcObject !== localStream) {
+            videoElement.srcObject = localStream;
+          }
+    
+          videoElement
+            .play()
+            .catch((err) => console.error('Error playing video:', err));
+        } else {
+          videoElement.srcObject = null; 
         }
-
-        videoElement
-          .play()
-          .catch((err) => console.error('Error playing video:', err));
-      } else {
-        videoElement.srcObject = null; // Detach the stream when video is disabled
       }
     }, [isLocal, mediaState.video, localStream, ref]);
+    
 
     const videoID = isLocal ? 'local-video' : `${userSession}-video`;
 
