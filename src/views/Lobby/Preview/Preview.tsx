@@ -12,23 +12,41 @@ interface Props {
 
 const Preview = ({ username, mediaState, onGetSrc }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-    // todo: handle warning in case of a missing permission
     const openVideo = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: mediaState.audio,
-        video: mediaState.video,
-      });
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: mediaState.audio,
+          video: mediaState.video,
+        });
+        
+        mediaStreamRef.current = stream;
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (error) {
+        console.error('Error accessing media devices:', error);
       }
     };
 
     if (mediaState.video) {
       openVideo();
     }
+
+    const videoElement = videoRef.current;
+    return () => {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+
+      if (videoElement) {
+        videoElement.srcObject = null;
+      }
+    };
   }, [mediaState.audio, mediaState.video]);
 
   const renderMediaBadge = () => {
