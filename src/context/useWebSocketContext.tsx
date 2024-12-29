@@ -59,8 +59,12 @@ export const WebSocketProvider = ({
     setIsConnected(false);
   };
 
+  console.log('isConnected', isConnected);
+  console.log('ws state', ws.current?.readyState);
+
   const sendMessage = (message: SignallingMessage) => {
     if (isConnected && ws.current && ws.current.readyState === WebSocket.OPEN) {
+      console.log(message);
       ws.current.send(JSON.stringify(message));
     } else {
       console.warn('WebSocket not ready, message not sent:', message);

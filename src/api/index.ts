@@ -46,8 +46,6 @@ export const leaveRoom = async (roomID: string, jwtToken: string | null) => {
     }
   );
 
-  console.log('leftRoom', response.data);
-
   return response.data;
 };
 
@@ -95,10 +93,10 @@ export const setSession = async (roomID: string, jwt: string | null) => {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${jwt}`,
-      },  
+      },
     }
   );
-  
+
   return response.data;
 };
 

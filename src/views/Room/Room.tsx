@@ -61,16 +61,24 @@ export const Room = () => {
     if (shouldUpdateParticipants || participantList.length === 0) {
       handleGetRoomParticipants();
     }
-  }, [roomID, sessionID, shouldUpdateParticipants, participantList.length]);
+  }, [
+    roomID,
+    sessionID,
+    shouldUpdateParticipants,
+    participantList.length,
+    userSession,
+  ]);
 
   useEffect(() => {
     let isMounted = true;
 
     const setupLocalStream = async () => {
+      if (localStream) return;
+
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-          video: true,
+          audio: mediaState.audio ? true : false,
+          video: mediaState.video ? true : false,
         });
 
         if (isMounted) {
@@ -85,9 +93,8 @@ export const Room = () => {
 
     return () => {
       isMounted = false;
-      localStream?.getTracks().forEach((track) => track.stop());
     };
-  }, []);
+  }, [localStream, rtcPeerConnection, mediaState.video, mediaState.audio]);
 
   useEffect(() => {
     if (localStream && localVideo.current) {
@@ -267,16 +274,26 @@ export const Room = () => {
               delete rtcPeerConnection.current[data.sessionID];
             }
 
-            localStorage.removeItem('jwt_token');
+            setLocalStream(undefined);
+
+            if (rtcPeerConnection) {
+              Object.values(rtcPeerConnection.current).forEach((pc) => {
+                pc.getSenders().forEach((sender) => pc.removeTrack(sender));
+                pc.close();
+              });
+              rtcPeerConnection.current = {};
+            }
+
+            localStream?.getVideoTracks().forEach((track) => track.stop());
           }
           break;
       }
     };
 
-    // return () => {
-    //   ws.current?.close();
-    //   Object.values(rtcPeerConnection).forEach(pc => pc.disconnect());
-    // };
+    return () => {
+      ws.close();
+      Object.values(rtcPeerConnection.current).forEach((pc) => pc.close());
+    };
   }, [
     ws,
     isConnected,
@@ -351,6 +368,10 @@ export const Room = () => {
       >
         <div className='flex justify-center items-center h-64 duration-300'>
           <Toolbar
+            sessionID={sessionID}
+            localStream={localStream}
+            setLocalStream={setLocalStream}
+            localVideo={localVideo}
             mediaState={mediaState}
             setAudioState={setAudioState}
             setVideoState={setVideoState}
