@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { leaveRoom } from '@/api';
-import { useWebSocketCtx } from '@/context';
+import { useWebSocketCtx } from '@/context/websocket';
 import {
   VideoIcon,
   VideoOffIcon,
@@ -47,14 +47,36 @@ const Toolbar = ({
     setAudioState(roomID, !mediaState.audio);
   };
 
-  const handleVideoState = () => {
-    setVideoState(roomID, !mediaState.video);
-    if (!mediaState.video && localStream) {
-      localStream.getVideoTracks()[0].enabled = true;
-    } else if (localStream) {
-      // If turning off video, disable the track
-      localStream.getVideoTracks()[0].enabled = false;
+  const handleVideoState = async () => {
+    const videoEnabled = !mediaState.video;
+    if (videoEnabled) {
+      try {
+        const videoStream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+        });
+
+        if (localStream) {
+          videoStream
+            .getVideoTracks()
+            .forEach((track) => localStream.addTrack(track));
+        } else {
+          setLocalStream(videoStream);
+        }
+      } catch (err) {
+        console.error('Error enabling video:', err);
+      }
+    } else {
+      if (localStream) {
+        localStream.getVideoTracks().forEach((track) => {
+          track.stop();
+          localStream.removeTrack(track);
+        });
+        if (!localStream.getTracks().length) {
+          setLocalStream(undefined);
+        }
+      }
     }
+    setVideoState(roomID, videoEnabled);
   };
 
   const handleOnLeave = async () => {
