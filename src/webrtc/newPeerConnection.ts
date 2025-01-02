@@ -1,15 +1,31 @@
 import { useRef, useCallback } from 'react';
+import { createDummyAudioTrack } from './dummy-audio';
 
 export const usePeerConnection = (servers: RTCConfiguration) => {
   const peerConnection = useRef<RTCPeerConnection | null>(null);
 
   const initializePC = useCallback(
-    (stream: MediaStream) => {
+    (stream?: MediaStream) => {
       peerConnection.current = new RTCPeerConnection(servers);
 
-      stream.getTracks().forEach((track) => {
-        peerConnection.current?.addTrack(track, stream);
-      });
+      if (stream) {
+        stream.getTracks().forEach((track) => {
+          peerConnection.current?.addTrack(track, stream);
+        });
+      } else {
+        const dummyAudioStream = createDummyAudioTrack();
+        peerConnection.current.addTrack(
+          dummyAudioStream.getAudioTracks()[0],
+          dummyAudioStream
+        );
+
+        peerConnection.current.addTransceiver('audio', {
+          direction: 'recvonly',
+        });
+        peerConnection.current.addTransceiver('video', {
+          direction: 'recvonly',
+        });
+      }
 
       peerConnection.current.oniceconnectionstatechange = () => {
         console.log(
@@ -38,6 +54,12 @@ export const usePeerConnection = (servers: RTCConfiguration) => {
 
   const createAnswer = useCallback(async () => {
     if (!peerConnection.current) throw new Error('PC not initialized');
+    if (peerConnection.current.signalingState !== 'have-remote-offer') {
+      console.error(
+        `Invalid signaling state for creating an answer: ${peerConnection.current.signalingState}`
+      );
+      return;
+    }
     const answer = await peerConnection.current.createAnswer();
     await peerConnection.current.setLocalDescription(answer);
 

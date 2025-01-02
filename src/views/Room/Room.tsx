@@ -3,7 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import type { Participant } from '@/types';
-import { useMediaCtx, useWebSocketCtx } from '@/context';
+import { useWebSocketCtx, useMediaCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { usePeerConnection, ICE_SERVERS } from '@/webrtc';
 
@@ -23,7 +23,6 @@ export const Room = () => {
 
   const [localStream, setLocalStream] = useState<MediaStream>();
   const localVideo = useRef<HTMLVideoElement>(null);
-  const [videoReady, setVideoReady] = useState(false);
 
   const rtcPeerConnection = useRef<Record<string, RTCPeerConnection>>({});
   const remoteStreams = useRef<Record<string, MediaStream>>({});
@@ -76,13 +75,23 @@ export const Room = () => {
       if (localStream) return;
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: mediaState.audio ? true : false,
-          video: mediaState.video ? true : false,
-        });
+        const mediaConstraints: MediaStreamConstraints = {
+          audio: mediaState.audio,
+          video: mediaState.video,
+        };
 
-        if (isMounted) {
-          setLocalStream(stream);
+        if (mediaConstraints.audio || mediaConstraints.video) {
+          const stream = await navigator.mediaDevices.getUserMedia(
+            mediaConstraints
+          );
+
+          if (isMounted) {
+            setLocalStream(stream);
+          }
+        } else {
+          console.log(
+            'Both audio and video are disabled, no localStream acquired'
+          );
         }
       } catch (error) {
         console.error('Error accessing media devices:', error);
@@ -99,7 +108,6 @@ export const Room = () => {
   useEffect(() => {
     if (localStream && localVideo.current) {
       localVideo.current.srcObject = localStream;
-      setVideoReady(true);
     }
   }, [localStream]);
 
@@ -116,8 +124,6 @@ export const Room = () => {
   }, [localStream, mediaState.audio, mediaState.video]);
 
   useEffect(() => {
-    if (!videoReady) return;
-
     // init websocket connection
     connect(`/ws/signalling/${roomID}`);
 
@@ -133,8 +139,21 @@ export const Room = () => {
 
     if (!ws) return;
 
+    if (ws) {
+      ws.onmessage = null;
+    }
+
     ws.onmessage = async (event) => {
       const data = JSON.parse(event.data);
+
+      if (!data.type) {
+        console.error('Invalid signaling message: Missing type', data);
+        return;
+      }
+
+      // const ignoreOffer = false;
+      // const polite = true;
+      let pc: RTCPeerConnection;
 
       if (
         !rtcPeerConnection.current[data.sessionID] &&
@@ -142,7 +161,8 @@ export const Room = () => {
       ) {
         remoteStreams.current[data.sessionID] = new MediaStream();
 
-        const pc = initializePC(localStream!);
+        pc = localStream ? initializePC(localStream) : initializePC();
+
         rtcPeerConnection.current[data.sessionID] = pc;
 
         pc.onicecandidate = (event) => {
@@ -165,8 +185,39 @@ export const Room = () => {
           ) as HTMLMediaElement;
 
           if (videoElement) {
-            videoElement.srcObject = mediaStream;
+            if (videoElement.srcObject !== mediaStream) {
+              videoElement.srcObject = mediaStream;
+            }
             videoElement.play().catch(console.error);
+          } else {
+            console.warn(`No video element found for ${data.sessionID}`);
+          }
+        };
+
+        // pc.onnegotiationneeded = async () => {
+        //   try {
+        //     console.log('Renegotiation needed');
+        //     makingOffer = true;
+        //     await pc.setLocalDescription();
+        //     const offer = await createOffer();
+
+        //     sendMessage({
+        //       type: 'offer',
+        //       sessionID,
+        //       description: JSON.stringify(offer),
+        //       to: data.sessionID,
+        //     });
+        //   } catch (error) {
+        //     console.error(error);
+        //   } finally {
+        //     makingOffer = false;
+        //   }
+        // };
+
+        pc.oniceconnectionstatechange = () => {
+          console.log('oniceconnectionstatechange..');
+          if (pc.iceConnectionState === 'failed') {
+            pc.restartIce();
           }
         };
       }
@@ -225,6 +276,8 @@ export const Room = () => {
             );
 
             try {
+              // const offerCollision = data.type === 'offer' && (makingOffer || )
+
               await setRemoteDescription(JSON.parse(data.description));
               const answer = await createAnswer();
               sendMessage({
@@ -242,7 +295,13 @@ export const Room = () => {
         case 'answer':
           if (data.to === sessionID) {
             try {
+              // if (pc && pc.signalingState === 'have-local-offer') {
               await setRemoteDescription(JSON.parse(data.description));
+              // }
+              console.log(
+                'Caller: Setting remote description for answer:',
+                data
+              );
             } catch (err) {
               console.error('Error setting remote description:', err);
             }
@@ -289,16 +348,10 @@ export const Room = () => {
           break;
       }
     };
-
-    return () => {
-      ws.close();
-      Object.values(rtcPeerConnection.current).forEach((pc) => pc.close());
-    };
   }, [
     ws,
     isConnected,
     sendMessage,
-    videoReady,
     roomID,
     sessionID,
     localStream,
