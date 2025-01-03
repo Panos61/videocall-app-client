@@ -21,6 +21,10 @@ export const Room = () => {
   const videoContainerRef = useRef<HTMLDivElement>(null);
   const [openParticipants, setOpenParticipants] = useState(false);
 
+  const [isPolite, setIsPolite] = useState(false);
+  const makingOffer = useRef(false);
+  const ignoreOffer = useRef(false);
+
   const [localStream, setLocalStream] = useState<MediaStream>();
   const localVideo = useRef<HTMLVideoElement>(null);
 
@@ -139,83 +143,35 @@ export const Room = () => {
 
     if (!ws) return;
 
-    if (ws) {
-      ws.onmessage = null;
-    }
-
     ws.onmessage = async (event) => {
       const data = JSON.parse(event.data);
 
       if (!data.type) {
-        console.error('Invalid signaling message: Missing type', data);
         return;
       }
 
-      // const ignoreOffer = false;
-      // const polite = true;
-      let pc: RTCPeerConnection;
-
-      if (
-        !rtcPeerConnection.current[data.sessionID] &&
-        sessionID !== data.sessionID
-      ) {
-        remoteStreams.current[data.sessionID] = new MediaStream();
-
-        pc = localStream ? initializePC(localStream) : initializePC();
-
+      if (!rtcPeerConnection.current[data.sessionID]) {
+        const pc = localStream ? initializePC(localStream) : initializePC();
         rtcPeerConnection.current[data.sessionID] = pc;
 
-        pc.onicecandidate = (event) => {
-          if (event.candidate) {
-            sendMessage({
-              type: 'ice',
-              sessionID,
-              candidate: JSON.stringify(event.candidate),
-            });
-          }
-        };
-
         pc.ontrack = (event) => {
-          console.log(`Adding track from ${data.sessionID}:`, event.track);
-          const mediaStream = remoteStreams.current[data.sessionID];
+          const mediaStream =
+            remoteStreams.current[data.sessionID] || new MediaStream();
           mediaStream.addTrack(event.track);
+          remoteStreams.current[data.sessionID] = mediaStream;
 
           const videoElement = document.getElementById(
             `${data.sessionID}-video`
           ) as HTMLMediaElement;
 
           if (videoElement) {
-            if (videoElement.srcObject !== mediaStream) {
-              videoElement.srcObject = mediaStream;
-            }
+            videoElement.srcObject = mediaStream;
             videoElement.play().catch(console.error);
-          } else {
-            console.warn(`No video element found for ${data.sessionID}`);
           }
         };
 
-        // pc.onnegotiationneeded = async () => {
-        //   try {
-        //     console.log('Renegotiation needed');
-        //     makingOffer = true;
-        //     await pc.setLocalDescription();
-        //     const offer = await createOffer();
-
-        //     sendMessage({
-        //       type: 'offer',
-        //       sessionID,
-        //       description: JSON.stringify(offer),
-        //       to: data.sessionID,
-        //     });
-        //   } catch (error) {
-        //     console.error(error);
-        //   } finally {
-        //     makingOffer = false;
-        //   }
-        // };
-
         pc.oniceconnectionstatechange = () => {
-          console.log('oniceconnectionstatechange..');
+          console.log(`ICE connection state: ${pc.iceConnectionState}`);
           if (pc.iceConnectionState === 'failed') {
             pc.restartIce();
           }
@@ -225,6 +181,8 @@ export const Room = () => {
       if (!rtcPeerConnection.current[data.sessionID]) {
         return;
       }
+
+      const pc = rtcPeerConnection.current[data.sessionID];
 
       switch (data.type) {
         case 'session_joined':
@@ -253,65 +211,88 @@ export const Room = () => {
                 : prevState
             );
 
-            try {
-              const offer = await createOffer();
-              sendMessage({
-                type: 'offer',
-                sessionID,
-                description: JSON.stringify(offer),
-                to: data.sessionID,
+            setIsPolite(true);
+
+            if (localStream) {
+              const senders = pc.getSenders();
+              localStream.getTracks().forEach((track) => {
+                if (!senders.find((sender) => sender.track === track)) {
+                  pc.addTrack(track, localStream);
+                }
               });
-            } catch (error) {
-              console.error('Error creating offer:', error);
+            }
+
+            // Only create an offer if we haven't already
+            if (pc.signalingState === 'stable' && !makingOffer.current) {
+              try {
+                makingOffer.current = true;
+                await pc.setLocalDescription();
+                sendMessage({
+                  type: 'offer',
+                  sessionID,
+                  description: JSON.stringify(pc.localDescription),
+                  to: data.sessionID,
+                });
+              } catch (error) {
+                console.error('Error creating offer:', error);
+              } finally {
+                makingOffer.current = false;
+              }
             }
           }
           break;
 
         case 'offer':
-          if (data.to === sessionID) {
-            setUserSession((prevState) =>
-              prevState.indexOf(data.sessionID) < 0
-                ? prevState.concat(data.sessionID)
-                : prevState
+          setUserSession((prevState) =>
+            prevState.indexOf(data.sessionID) < 0
+              ? prevState.concat(data.sessionID)
+              : prevState
+          );
+
+          try {
+            const offerCollision =
+              makingOffer.current || pc.signalingState !== 'stable';
+            ignoreOffer.current = !isPolite && offerCollision;
+
+            if (ignoreOffer.current) {
+              console.log('Ignoring offer due to collision');
+              return;
+            }
+
+            await pc.setRemoteDescription(
+              new RTCSessionDescription(JSON.parse(data.description))
             );
 
-            try {
-              // const offerCollision = data.type === 'offer' && (makingOffer || )
+            if (pc.signalingState === 'have-remote-offer') {
+              await pc.setLocalDescription();
 
-              await setRemoteDescription(JSON.parse(data.description));
-              const answer = await createAnswer();
               sendMessage({
                 type: 'answer',
                 sessionID,
-                description: JSON.stringify(answer),
+                description: JSON.stringify(pc.localDescription),
                 to: data.sessionID,
               });
-            } catch (error) {
-              console.log(error);
             }
+          } catch (error) {
+            console.error('Error handling offer:', error);
           }
           break;
 
         case 'answer':
-          if (data.to === sessionID) {
-            try {
-              // if (pc && pc.signalingState === 'have-local-offer') {
-              await setRemoteDescription(JSON.parse(data.description));
-              // }
-              console.log(
-                'Caller: Setting remote description for answer:',
-                data
-              );
-            } catch (err) {
-              console.error('Error setting remote description:', err);
-            }
+          try {
+            await pc.setRemoteDescription(
+              new RTCSessionDescription(JSON.parse(data.description))
+            );
+          } catch (err) {
+            console.error('Error setting remote description:', err);
           }
           break;
 
         case 'ice':
           if (sessionID !== data.sessionID && data.candidate) {
             try {
-              await addICECandidate(JSON.parse(data.candidate));
+              const candidate = JSON.parse(data.candidate);
+              await pc.addIceCandidate(new RTCIceCandidate(candidate));
             } catch (err) {
               console.error('Error adding ICE candidate:', err);
             }
