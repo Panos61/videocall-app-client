@@ -44,38 +44,6 @@ export const usePeerConnection = (servers: RTCConfiguration) => {
     [servers]
   );
 
-  const createOffer = useCallback(async () => {
-    if (!peerConnection.current) throw new Error('PC not initialized');
-    const offer = await peerConnection.current.createOffer();
-    await peerConnection.current.setLocalDescription(offer);
-
-    return offer;
-  }, []);
-
-  const createAnswer = useCallback(async () => {
-    if (!peerConnection.current) throw new Error('PC not initialized');
-    if (peerConnection.current.signalingState !== 'have-remote-offer') {
-      console.error(
-        `Invalid signaling state for creating an answer: ${peerConnection.current.signalingState}`
-      );
-      return;
-    }
-    const answer = await peerConnection.current.createAnswer();
-    await peerConnection.current.setLocalDescription(answer);
-
-    return answer;
-  }, []);
-
-  const setRemoteDescription = useCallback(
-    async (description: RTCSessionDescriptionInit) => {
-      if (!peerConnection.current) throw new Error('PC not initialized');
-      await peerConnection.current.setRemoteDescription(
-        new RTCSessionDescription(description)
-      );
-    },
-    []
-  );
-
   const addICECandidate = useCallback(async (candidate: RTCIceCandidate) => {
     if (!peerConnection.current) throw new Error('PC not initialized');
     await peerConnection.current.addIceCandidate(
@@ -90,9 +58,6 @@ export const usePeerConnection = (servers: RTCConfiguration) => {
 
   return {
     initializePC,
-    createOffer,
-    createAnswer,
-    setRemoteDescription,
     addICECandidate,
     disconnect,
   };
