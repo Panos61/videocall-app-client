@@ -34,14 +34,8 @@ export const Room = () => {
   const location = useLocation();
   const { roomID, sessionID } = location.state;
 
-  const {
-    initializePC,
-    createOffer,
-    createAnswer,
-    setRemoteDescription,
-    addICECandidate,
-    disconnect,
-  } = usePeerConnection(ICE_SERVERS);
+  const { initializePC, addICECandidate, disconnect } =
+    usePeerConnection(ICE_SERVERS);
 
   useEffect(() => {
     const handleGetRoomParticipants = async () => {
@@ -338,9 +332,6 @@ export const Room = () => {
     localStream,
     userSession,
     initializePC,
-    createOffer,
-    createAnswer,
-    setRemoteDescription,
     addICECandidate,
     disconnect,
   ]);
