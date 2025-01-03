@@ -249,7 +249,6 @@ export const Room = () => {
             ignoreOffer.current = !isPolite && offerCollision;
 
             if (ignoreOffer.current) {
-              console.log('Ignoring offer due to collision');
               return;
             }
 
