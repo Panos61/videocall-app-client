@@ -1,14 +1,14 @@
 export const connectSSE = (
   roomID: string,
-  onKeyUpdate: (key: string) => void
+  onInvitationUpdate: (key: string) => void
 ) => {
   const source = new EventSource(
-    `http://localhost:8080/sse-key-update/${roomID}`
+    `http://localhost:8080/sse-invitation-update/${roomID}`
   );
 
   source.addEventListener('update', (event) => {
     // Call the callback function to update the state with the new key
-    onKeyUpdate(event.data);
+    onInvitationUpdate(event.data);
   });
 
   source.addEventListener('error', (event) => {

@@ -4,7 +4,7 @@ import { connectSSE } from '@/api/sse';
 
 
 // eslint-disable-next-line react-hooks/exhaustive-deps
-export const useInvitationKey = (roomID: string) => {
+export const useInvitation = (roomID: string) => {
   const { invKey, setInvKey } = useRoomCtx();
 
   useEffect(() => {

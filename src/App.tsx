@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { RoomProvider, MediaProvider, WebSocketProvider } from './context';
-import { Home, Lobby, Room } from './views';
+import { Home, Lobby, Room, InvitationValidation } from './views';
 import { Toaster } from '@/components/ui/toaster';
 
 const App = () => {
@@ -16,6 +16,10 @@ const App = () => {
     {
       path: '/room/:id/call',
       element: <Room />,
+    },
+    {
+      path: '/room-invite/:roomID/:invitationCode',
+      element: <InvitationValidation />,
     },
   ]);
 

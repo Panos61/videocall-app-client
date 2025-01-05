@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { useCopyToClipboard } from 'usehooks-ts';
-import { useInvitationKey } from '@/hooks';
+import { useInvitation } from '@/hooks';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -23,7 +23,7 @@ export const InviteModal = () => {
   const [disabled, setDisabled] = useState<boolean>(false);
 
   const roomID = pathname.split('/')[2];
-  const invKey = useInvitationKey(roomID);
+  const invKey = useInvitation(roomID);
 
   const renderTrigger = () => {
     const isCallPage = pathname.includes('/call');
@@ -55,9 +55,9 @@ export const InviteModal = () => {
       <DialogTrigger>{renderTrigger()}</DialogTrigger>
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
-          <DialogTitle>Invitation key 🔑</DialogTitle>
+          <DialogTitle>Invitation 🔗</DialogTitle>
           <DialogDescription>
-            Copy the invitation key below and share it with a user that wants to
+            Copy the invitation URL below and share it with a user that wants to
             participate in this call.
           </DialogDescription>
         </DialogHeader>

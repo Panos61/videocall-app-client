@@ -36,8 +36,8 @@ export interface LeaveRoomResponse {
   leftRoom: boolean;
 }
 
-export interface SetInvKeyResponse {
-  invitationKey: string;
+export interface SetInvitationResponse {
+  invitation: string;
 }
 
 export interface AuthInviteResponse {

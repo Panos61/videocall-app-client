@@ -3,7 +3,7 @@ import type {
   CreateRoomResponse,
   JoinRoomResponse,
   LeaveRoomResponse,
-  SetInvKeyResponse,
+  SetInvitationResponse,
   UserMedia,
 } from '@/types';
 
@@ -100,13 +100,15 @@ export const setSession = async (roomID: string, jwt: string | null) => {
   return response.data;
 };
 
-export const setInvitationKey = async (roomID: string) => {
-  const response = await axios.get<SetInvKeyResponse>(
+export const getInvitation = async (roomID: string) => {
+  const response = await axios.get<SetInvitationResponse>(
     `http://localhost:8080/room-invitation/${roomID}`,
     { headers: { 'Content-Type': 'application/json' } }
   );
+  
+  console.log(response.data.invitation);
 
-  return response.data.invitationKey;
+  return response.data.invitation;
 };
 
 export const updateUserMedia = async (
