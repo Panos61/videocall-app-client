@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { createRoom, setInvitationKey } from '@/api';
+import { createRoom, getInvitation } from '@/api';
 import { useToast } from '@/components/ui/use-toast';
 
 export const useHandleCreateRoom = () => {
@@ -15,7 +15,7 @@ export const useHandleCreateRoom = () => {
 
       localStorage.setItem('jwt_token', jwt);
 
-      const invKey = await setInvitationKey(roomID);
+      const invKey = await getInvitation(roomID);
       localStorage.setItem(`invitationKey_${roomID}`, invKey);
 
       toast({
