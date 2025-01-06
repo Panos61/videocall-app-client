@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type {
   CreateRoomResponse,
+  ValidateInvitationResponse,
   JoinRoomResponse,
   LeaveRoomResponse,
   SetInvitationResponse,
@@ -18,12 +19,35 @@ export const createRoom = async () => {
   return response.data;
 };
 
-export const joinRoom = async (invKey: string) => {
+export const validateInvitation = async (code: string, room_id: string) => {
+  try {
+    const response = await axios.post<ValidateInvitationResponse>(
+      `http://localhost:8080/validate-invitation`,
+      {
+        code,
+        room_id,
+      },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    return {
+      isValid: response.data.isValid,
+      isExpired: response.data.isExpired,
+      roomID: response.data.roomID,
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      isExpired: false,
+      roomID: null,
+    };
+  }
+};
+
+export const joinRoom = async (roomID: string) => {
   const response = await axios.post<JoinRoomResponse>(
-    'http://localhost:8080/join-room',
-    {
-      invKey,
-    },
+    `http://localhost:8080/join-room/${roomID}`,
+
     {
       headers: {
         'Content-Type': 'application/json',
@@ -31,7 +55,6 @@ export const joinRoom = async (invKey: string) => {
     }
   );
 
-  console.log('🚀 ~ joinRoom ~ response.data:', response.data);
   return response.data;
 };
 
@@ -105,8 +128,6 @@ export const getInvitation = async (roomID: string) => {
     `http://localhost:8080/room-invitation/${roomID}`,
     { headers: { 'Content-Type': 'application/json' } }
   );
-  
-  console.log(response.data.invitation);
 
   return response.data.invitation;
 };
@@ -129,15 +150,3 @@ export const updateUserMedia = async (
 
   return response.data;
 };
-
-// export const authorizeInvKey = async (keyInput: string) => {
-//   const response = await axios.post<AuthInviteResponse>(
-//     `http://localhost:8080/authorize-invite`,
-//     {
-//       keyInput,
-//     },
-//     { headers: { 'Content-Type': 'application/json' } }
-//   );
-
-//   return response.data;
-// };

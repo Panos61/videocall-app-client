@@ -18,7 +18,7 @@ const App = () => {
       element: <Room />,
     },
     {
-      path: '/room-invite/:roomID/:invitationCode',
+      path: '/room-invite',
       element: <InvitationValidation />,
     },
   ]);

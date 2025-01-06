@@ -8,6 +8,12 @@ export interface Participant {
   session_id: string;
 }
 
+export interface ValidateInvitationResponse {
+  isValid: boolean;
+  isExpired: boolean;
+  roomID: string;
+}
+
 export interface UserMedia {
   video: boolean;
   audio: boolean;
@@ -30,6 +36,7 @@ export interface CreateRoomResponse {
 export interface JoinRoomResponse {
   room_id: string;
   participant: Participant;
+  isAuthorized: boolean;
 }
 
 export interface LeaveRoomResponse {
@@ -38,11 +45,6 @@ export interface LeaveRoomResponse {
 
 export interface SetInvitationResponse {
   invitation: string;
-}
-
-export interface AuthInviteResponse {
-  isAuthorized: boolean;
-  roomID: string;
 }
 
 export interface SetSessionResponse {

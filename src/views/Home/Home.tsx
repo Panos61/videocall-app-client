@@ -75,7 +75,7 @@ export const Home = () => {
       <Card className={cardCls}>
         <CardHeader>
           <CardTitle>
-            <h1 className='text-2xl font-mono'>Rooms_</h1>
+            <span className='text-2xl font-mono'>Rooms_</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
