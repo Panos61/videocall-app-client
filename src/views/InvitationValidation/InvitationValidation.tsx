@@ -35,8 +35,6 @@ export const InvitationValidation = () => {
           roomID
         );
 
-        console.log('validationResponse', validationResponse);
-
         if (!validationResponse) {
           setIsValidating(false);
           setError(
@@ -78,12 +76,10 @@ export const InvitationValidation = () => {
             setError('Failed to join room. Something went wrong..');
           }
         } catch (joinError) {
-          console.error('Join room error:', joinError);
           setIsValidating(false);
           setError('Failed to join the room. Please try again.');
         }
       } catch (err) {
-        console.error('Validation error:', err);
         setIsValidating(false);
         setError('An error occurred while validating your invitation.');
       }
@@ -96,7 +92,7 @@ export const InvitationValidation = () => {
     return (
       <div className='flex w-full items-center justify-center mt-4'>
         <div className='flex flex-col items-center'>
-          <div className='size-36 animate-spin rounded-full border-4 border-gray-300 border-t-gray-900 ' />
+          <div className='size-28 animate-spin rounded-full border-4 border-gray-300 border-t-gray-900 ' />
         </div>
       </div>
     );

@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import classNames from 'classnames';
-import { useHandleCreateRoom, useHandleJoinRoom } from '@/hooks';
+import { useHandleCreateRoom } from '@/hooks';
 
 import { LayoutDashboard, Server, Github, UserPlus } from 'lucide-react';
-import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -14,49 +12,62 @@ import { Input } from '@/components/ui/input';
 export const Home = () => {
   const [displayInput, setDisplayInput] = useState<boolean>(false);
   const [trigerValidation, setTrigerValidation] = useState<boolean>(false);
+  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
+  const [isRedirectingSuccess, setIsRedirectingSuccess] =
+    useState<boolean>(false);
 
   const {
     register,
     watch,
     formState: { errors, isValid },
-  } = useForm({ mode: 'onChange', defaultValues: { invLink: '' } });
+  } = useForm({ mode: 'onChange', defaultValues: { invURL: '' } });
 
-  const invLink = watch('invLink');
+  const invLink = watch('invURL');
 
   const { handleCreateRoom } = useHandleCreateRoom();
-  const { handleJoinRoom } = useHandleJoinRoom();
 
   const renderInvalidInputWarning = () => {
-    if (errors.invLink) {
+    if (errors.invURL) {
       return (
-        <Alert variant='destructive' className='p-8 mt-8'>
-          <div className='flex items-center gap-8'>
-            <AlertCircle className='size-16' />
-            <AlertDescription className='text-xs'>
-              {errors.invLink.message || 'Invalid invitation key. Try Again.'}
-            </AlertDescription>
-          </div>
-        </Alert>
+        <span className='ml-4 text-xs text-red-500'>
+          Invalid invitation format. Try Again.
+        </span>
       );
     }
   };
 
+  console.log(isValid);
+
   const onInputChange = () => {
-    setTrigerValidation(true);
+    if (isValid) {
+      setTrigerValidation(true);
+    }
   };
 
   useEffect(() => {
-    if (trigerValidation && isValid) {
-      setTimeout(() => {
-        handleJoinRoom(invLink);
-      }, 1000);
+    if (isValid && trigerValidation) {
+      const codeMatch = invLink.match(/code=([^&]+)/);
+      const roomMatch = invLink.match(/room=([^&]+)/);
+
+      if (codeMatch && roomMatch) {
+        const code = codeMatch[1];
+        const room = roomMatch[1];
+
+        setIsRedirecting(true);
+        setTimeout(() => {
+          window.open(`/room-invite?code=${code}&room=${room}`, '_blank');
+          setIsRedirectingSuccess(true);
+        }, 2000);
+      }
+      setIsRedirectingSuccess(false);
+      setTrigerValidation(false);
     }
-  }, [trigerValidation, isValid, invLink, handleJoinRoom]);
+  }, [trigerValidation, isValid, invLink]);
 
   const cardCls = classNames(
     'w-auto p-12 drop-shadow transition-all duration-700 ease-in-out overflow-hidden bg-white bg-opacity-90',
     {
-      'h-[300px]': displayInput,
+      'h-[340px]': displayInput,
       'h-[246px]': !displayInput,
     }
   );
@@ -66,9 +77,8 @@ export const Home = () => {
     'opacity-0 translate-y-[20px]': !displayInput,
   });
 
-  const repoLinkCls = classNames(
-    'flex items-center justify-center gap-8 p-8 w-[212px] border border-gray-300 rounded-12 hover:bg-gray-50 hover:text-blue-700 transition-all duration-500 ease-in-out'
-  );
+  const repoLinkCls =
+    'flex items-center justify-center gap-8 w-[212px] p-8 border border-gray-300 rounded-12 hover:bg-gray-50 hover:text-blue-700 transition-all duration-500 ease-in-out';
 
   return (
     <div className='flex items-center justify-center h-screen bg-custom-bg bg-cover bg-fixed'>
@@ -99,27 +109,38 @@ export const Home = () => {
               </div>
               <div className={inputCls}>
                 {displayInput && (
-                  <Input
-                    className='mt-24 w-[392px]'
-                    placeholder='Paste your invitation link 🔗'
-                    {...register('invLink', {
-                      required: 'Invitation key is required.',
-                      minLength: {
-                        value: 16,
-                        message: 'Key must be 16 characters.',
-                      },
-                      maxLength: {
-                        value: 16,
-                        message: 'Key must be 16 characters.',
-                      },
-                      onChange: onInputChange,
-                    })}
-                  />
+                  <div className='flex flex-col gap-8 flex-wrap'>
+                    <Input
+                      className='mt-20 w-[392px]'
+                      placeholder='Paste your invitation link 🔗'
+                      {...register('invURL', {
+                        pattern: {
+                          value:
+                            /^http:\/\/localhost:5173\/room-invite\?code=[\w-]+&room=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+                          message: 'Invalid invitation link format',
+                        },
+                        onChange: onInputChange,
+                      })}
+                    />
+                    {renderInvalidInputWarning()}
+                    {!isRedirectingSuccess && (
+                      <p className='ml-4 text-xs'>
+                        {isRedirecting 
+                          ? 'Proceeding to validation...'
+                          : 'You will be redirected to the invite validation page.'}
+                      </p>
+                    )}
+                    {isRedirectingSuccess && (
+                      <p className='mt-4 ml-4 text-xs text-green-600'>Invitation format is valid! 🎉</p>
+                    )}
+                  </div>
                 )}
-                {renderInvalidInputWarning()}
               </div>
             </div>
-            <Separator orientation='vertical' className='h-72 self-center' />
+            <Separator
+              orientation='vertical'
+              className='h-72 self-center mb-56'
+            />
             <div className='ml-8'>
               <div className='flex gap-4'>
                 <p className='ml-4 mb-8 text-xs text-slate-500'>
