@@ -36,8 +36,6 @@ export const Home = () => {
     }
   };
 
-  console.log(isValid);
-
   const onInputChange = () => {
     if (isValid) {
       setTrigerValidation(true);
