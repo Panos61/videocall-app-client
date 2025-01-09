@@ -86,7 +86,12 @@ const Form = ({ setUsername, avatarSrc }: Props) => {
         </p>
         {renderInvalidInputWarning()}
       </div>
-      <Button className='w-full' disabled={!isValid} onClick={handleStartCall}>
+      <Button
+        variant='call'
+        className='w-full'
+        disabled={!isValid}
+        onClick={handleStartCall}
+      >
         Join Call
       </Button>
     </>

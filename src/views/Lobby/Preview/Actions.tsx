@@ -3,7 +3,7 @@ import { VideoIcon, MicIcon, MicOffIcon, VideoOffIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { InviteModal } from '@/components/elements';
+import { InviteModal, SettingsModal } from '@/components/elements';
 
 interface Props {
   mediaState: { audio: boolean; video: boolean };
@@ -33,15 +33,17 @@ const Actions = ({ mediaState, setAudioState, setVideoState }: Props) => {
         )}
       </Button>
       <Button size='sm' variant='outline' onClick={() => handleVideoState()}>
-        {mediaState.video
-         ? (
+        {mediaState.video ? (
           <VideoIcon className='size-16' />
         ) : (
           <VideoOffIcon className='size-16' />
         )}
       </Button>
       <Separator orientation='vertical' className='h-6 bg-gray-200' />
-      <InviteModal />
+      <div className='flex items-center gap-8'>
+        <InviteModal />
+        <SettingsModal />
+      </div>
     </div>
   );
 };

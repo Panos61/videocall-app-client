@@ -95,6 +95,29 @@ export const startCall = async (
   return response.data;
 };
 
+export const updateSettings = async (
+  roomID: string,
+  invitation_expiry: string
+) => {
+  try {
+    const response = await axios.post(
+      `http://localhost:8080/settings/${roomID}`,
+      {
+        invitation_expiry,
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const getRoomParticipants = async (roomID: string) => {
   const response = await axios.get(
     `http://localhost:8080/call-participants/${roomID}`,
