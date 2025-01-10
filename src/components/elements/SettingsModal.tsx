@@ -27,12 +27,13 @@ import { Separator } from '@/components/ui/separator';
 
 export const SettingsModal = () => {
   const [successApply, setSuccessApply] = useState<boolean>(false);
+  const [isDisabled, setIsDisabled] = useState<boolean>(false);
 
   const { pathname } = useLocation();
   const roomID = pathname.split('/')[2];
 
   const FormSchema = z.object({
-    invitation_expiry: z.enum(['30', '90', '270']),
+    invitation_expiry: z.enum(['30', '90', '180']),
   });
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -42,11 +43,19 @@ export const SettingsModal = () => {
     },
   });
 
+  const { isDirty } = form.formState;
+
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     console.log(data.invitation_expiry);
     try {
+      setIsDisabled(true);
       await updateSettings(roomID, data.invitation_expiry);
+
       setSuccessApply(true);
+      setTimeout(() => {
+        setIsDisabled(false);
+        setSuccessApply(false);
+      }, 1500);
     } catch (error) {
       setSuccessApply(false);
       console.error(error);
@@ -110,7 +119,7 @@ export const SettingsModal = () => {
                           </FormItem>
                           <FormItem className='flex items-center space-x-12 space-y-0'>
                             <FormControl>
-                              <RadioGroupItem value='270' />
+                              <RadioGroupItem value='180' />
                             </FormControl>
                             <FormLabel className='font-normal'>
                               3 hours
@@ -132,6 +141,7 @@ export const SettingsModal = () => {
               <Button
                 size='sm'
                 type='submit'
+                disabled={isDisabled || !isDirty}
                 onClick={() => onSubmit(form.getValues())}
               >
                 Apply changes
