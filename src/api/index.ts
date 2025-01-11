@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { buildMemoryStorage, setupCache } from 'axios-cache-interceptor';
 import type {
   CreateRoomResponse,
   ValidateInvitationResponse,
@@ -6,7 +7,24 @@ import type {
   LeaveRoomResponse,
   SetInvitationResponse,
   UserMedia,
+  SettingsResponse,
+  UpdateSettingsResponse,
 } from '@/types';
+
+const api = axios.create({
+  baseURL: 'http://localhost:8080',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Set up cache interceptor
+// https://axios-cache-interceptor.js.org/getting-started
+const cachedAxiosApi = setupCache(api, {
+  storage: buildMemoryStorage(),
+  ttl: 2 * 60 * 1000,
+  methods: ['get', 'post'],
+});
 
 export const createRoom = async () => {
   const response = await axios.get<CreateRoomResponse>(
@@ -95,19 +113,34 @@ export const startCall = async (
   return response.data;
 };
 
+export const getSettings = async (roomID: string) => {
+  try {
+    const response = await cachedAxiosApi.get<SettingsResponse>(
+      `http://localhost:8080/settings/${roomID}`,
+      { id: 'settings' }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const updateSettings = async (
   roomID: string,
   invitation_expiry: string
 ) => {
   try {
-    const response = await axios.post(
-      `http://localhost:8080/settings/${roomID}`,
+    const response = await cachedAxiosApi.post<UpdateSettingsResponse>(
+      `http://localhost:8080/update-settings/${roomID}`,
       {
         invitation_expiry,
       },
       {
-        headers: {
-          'Content-Type': 'application/json',
+        cache: {
+          update: {
+            settings: 'delete',
+          },
         },
       }
     );

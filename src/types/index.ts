@@ -8,10 +8,8 @@ export interface Participant {
   session_id: string;
 }
 
-export interface ValidateInvitationResponse {
-  isValid: boolean;
-  isExpired: boolean;
-  roomID: string;
+export interface SetSessionResponse {
+  sessionID: string;
 }
 
 export interface UserMedia {
@@ -43,10 +41,21 @@ export interface LeaveRoomResponse {
   leftRoom: boolean;
 }
 
+export interface SettingsResponse {
+  invitation_expiry: string;
+}
+
+export interface UpdateSettingsResponse {
+  duration: string;
+  expirationSet: boolean;
+}
+
 export interface SetInvitationResponse {
   invitation: string;
 }
 
-export interface SetSessionResponse {
-  sessionID: string;
+export interface ValidateInvitationResponse {
+  isValid: boolean;
+  isExpired: boolean;
+  roomID: string;
 }

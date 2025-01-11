@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { updateSettings } from '@/api';
+import { getSettings, updateSettings } from '@/api';
 
 import { SettingsIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -26,8 +26,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 
 export const SettingsModal = () => {
+  const [settings, setSettings] = useState('30');
   const [successApply, setSuccessApply] = useState<boolean>(false);
-  const [isDisabled, setIsDisabled] = useState<boolean>(false);
 
   const { pathname } = useLocation();
   const roomID = pathname.split('/')[2];
@@ -39,21 +39,18 @@ export const SettingsModal = () => {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      invitation_expiry: '30',
+      invitation_expiry: settings as '30' | '90' | '180',
     },
   });
 
   const { isDirty } = form.formState;
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    console.log(data.invitation_expiry);
     try {
-      setIsDisabled(true);
       await updateSettings(roomID, data.invitation_expiry);
 
       setSuccessApply(true);
       setTimeout(() => {
-        setIsDisabled(false);
         setSuccessApply(false);
       }, 1500);
     } catch (error) {
@@ -61,6 +58,25 @@ export const SettingsModal = () => {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    const handleGetSettings = async () => {
+      try {
+        const response = await getSettings(roomID);
+        if (response) {
+          setSettings(response.invitation_expiry);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    handleGetSettings();
+  }, [roomID, successApply]);
+  
+  useEffect(() => {
+    form.reset({ invitation_expiry: settings as '30' | '90' | '180' });
+  }, [settings, form, successApply]);
 
   return (
     <Dialog>
@@ -133,6 +149,7 @@ export const SettingsModal = () => {
               </div>
             </div>
             <DialogFooter className='flex items-center gap-12 mt-56'>
+              {/* {settings} */}
               {successApply && (
                 <span className='font-bold text-xs text-green-600'>
                   Changes applied!
@@ -141,7 +158,7 @@ export const SettingsModal = () => {
               <Button
                 size='sm'
                 type='submit'
-                disabled={isDisabled || !isDirty}
+                disabled={!isDirty}
                 onClick={() => onSubmit(form.getValues())}
               >
                 Apply changes
