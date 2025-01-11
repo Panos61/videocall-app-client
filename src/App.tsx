@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { RoomProvider, MediaProvider, WebSocketProvider } from './context';
-import { Home, Lobby, Room } from './views';
+import { MediaProvider, WebSocketProvider } from './context';
+import { Home, Lobby, Room, InvitationValidation } from './views';
 import { Toaster } from '@/components/ui/toaster';
 
 const App = () => {
@@ -17,16 +17,18 @@ const App = () => {
       path: '/room/:id/call',
       element: <Room />,
     },
+    {
+      path: '/room-invite',
+      element: <InvitationValidation />,
+    },
   ]);
 
   return (
     <WebSocketProvider>
-      <RoomProvider>
-        <MediaProvider>
-          <RouterProvider router={router} />
-          <Toaster />
-        </MediaProvider>
-      </RoomProvider>
+      <MediaProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </MediaProvider>
     </WebSocketProvider>
   );
 };
