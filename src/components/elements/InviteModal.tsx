@@ -1,9 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { useCopyToClipboard } from 'usehooks-ts';
-import { useInvitation } from '@/hooks';
+import { connectSSE } from '@/api/sse';
+import { getInvitation } from '@/api';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,11 +20,34 @@ import { Input } from '@/components/ui/input';
 export const InviteModal = () => {
   const { pathname } = useLocation();
 
-  const [copiedText, copy] = useCopyToClipboard();
+  const [invitation, setInvitation] = useState('');
   const [disabled, setDisabled] = useState<boolean>(false);
+  const [copiedText, copy] = useCopyToClipboard();
 
   const roomID = pathname.split('/')[2];
-  const invKey = useInvitation(roomID);
+
+  useEffect(() => {
+    const fetchInitialInvitation = async () => {
+      try {
+        const initialInvitation = await getInvitation(roomID);
+        setInvitation(initialInvitation);
+      } catch (error) {
+        console.error('Error fetching initial invitation:', error);
+      }
+    };
+
+    fetchInitialInvitation();
+
+    const source = connectSSE(roomID, (newKey: string) => {
+      setInvitation(newKey);
+    });
+
+    return () => {
+      source.close();
+    };
+  }, [roomID]);
+
+  console.log('invitation', invitation);
 
   const renderTrigger = () => {
     const isCallPage = pathname.includes('/call');
@@ -62,12 +86,12 @@ export const InviteModal = () => {
           </DialogDescription>
         </DialogHeader>
         <div className='flex gap-12 mt-8'>
-          <Input id='name' value={invKey} disabled />
+          <Input id='invitation' value={invitation} disabled />
           <Button
             type='submit'
             variant='ghost'
             disabled={disabled}
-            onClick={handleCopy(invKey)}
+            onClick={handleCopy(invitation)}
           >
             {copiedText && disabled ? 'Copied' : 'Copy'}
           </Button>
