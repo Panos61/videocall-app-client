@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { useCopyToClipboard } from 'usehooks-ts';
@@ -19,18 +19,26 @@ import { Input } from '@/components/ui/input';
 
 export const InviteModal = () => {
   const { pathname } = useLocation();
-
-  const [invitation, setInvitation] = useState('');
-  const [disabled, setDisabled] = useState<boolean>(false);
   const [copiedText, copy] = useCopyToClipboard();
-
+  
+  const sseRef = useRef<EventSource | null>(null);
+  const [invitation, setInvitation] = useState('');
+  const [formattedInvitation , setFormattedInvitation] = useState('');
+  const [disabled, setDisabled] = useState<boolean>(false);
+  
   const roomID = pathname.split('/')[2];
+  
+  const formatInvitation = (invitation: string) => {
+    const formattedInvitation = invitation.replace('http://localhost:5173', '');
+    setFormattedInvitation(formattedInvitation);
+  }
 
   useEffect(() => {
     const fetchInitialInvitation = async () => {
       try {
         const initialInvitation = await getInvitation(roomID);
         setInvitation(initialInvitation);
+        formatInvitation(initialInvitation);
       } catch (error) {
         console.error('Error fetching initial invitation:', error);
       }
@@ -38,16 +46,23 @@ export const InviteModal = () => {
 
     fetchInitialInvitation();
 
-    const source = connectSSE(roomID, (newKey: string) => {
-      setInvitation(newKey);
-    });
+    if (!sseRef.current) {
+      sseRef.current = connectSSE(roomID, (newInvitation: string) => {
+        setInvitation((prev) => {
+          if (prev !== newInvitation) {
+            formatInvitation(newInvitation);
+            return newInvitation;
+          }
+          return prev;
+        });
+      });
+    }
 
     return () => {
-      source.close();
+      sseRef.current?.close();
+      sseRef.current = null;
     };
   }, [roomID]);
-
-  console.log('invitation', invitation);
 
   const renderTrigger = () => {
     const isCallPage = pathname.includes('/call');
@@ -86,7 +101,7 @@ export const InviteModal = () => {
           </DialogDescription>
         </DialogHeader>
         <div className='flex gap-12 mt-8'>
-          <Input id='invitation' value={invitation} disabled />
+          <Input id='invitation' value={formattedInvitation} disabled />
           <Button
             type='submit'
             variant='ghost'
