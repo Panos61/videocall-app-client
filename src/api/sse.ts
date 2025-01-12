@@ -7,12 +7,8 @@ export const connectSSE = (
   );
 
   source.addEventListener('update', (event) => {
-    // Call the callback function to update the state with the new key
-    onInvitationUpdate(event.data);
-  });
-
-  source.addEventListener('error', (event) => {
-    console.error('SSE error:', event);
+    const newInvitation = event.data;
+    onInvitationUpdate(newInvitation);
   });
 
   return source;

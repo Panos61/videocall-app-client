@@ -1,20 +1,26 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import classNames from 'classnames';
-import { useHandleCreateRoom } from '@/hooks';
+import { createRoom } from '@/api';
 
 import { LayoutDashboard, Server, Github, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 
 export const Home = () => {
+  const navigate = useNavigate();
+
   const [displayInput, setDisplayInput] = useState<boolean>(false);
   const [trigerValidation, setTrigerValidation] = useState<boolean>(false);
   const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
   const [isRedirectingSuccess, setIsRedirectingSuccess] =
     useState<boolean>(false);
+
+  const { toast } = useToast();
 
   const {
     register,
@@ -24,7 +30,25 @@ export const Home = () => {
 
   const invLink = watch('invURL');
 
-  const { handleCreateRoom } = useHandleCreateRoom();
+
+  const handleCreateRoom = async () => {
+    try {
+      const response = await createRoom();
+      
+      const roomID = response.id;
+      const { jwt } = response.participants;
+
+      localStorage.setItem('jwt_token', jwt);
+      navigate(`/room/${roomID}`);
+      
+      toast({
+        title: 'Created a room! 🎉',
+        description: 'You can now join in. 🚀',
+      });
+    } catch (error) {
+      console.error('err: ', error);
+    }
+  };
 
   const renderInvalidInputWarning = () => {
     if (errors.invURL) {
@@ -61,6 +85,7 @@ export const Home = () => {
       setTrigerValidation(false);
     }
   }, [trigerValidation, isValid, invLink]);
+  
 
   const cardCls = classNames(
     'w-auto p-12 drop-shadow transition-all duration-700 ease-in-out overflow-hidden bg-white bg-opacity-90',
@@ -123,13 +148,15 @@ export const Home = () => {
                     {renderInvalidInputWarning()}
                     {!isRedirectingSuccess && (
                       <p className='ml-4 text-xs'>
-                        {isRedirecting 
+                        {isRedirecting
                           ? 'Proceeding to validation...'
                           : 'You will be redirected to the invite validation page.'}
                       </p>
                     )}
                     {isRedirectingSuccess && (
-                      <p className='mt-4 ml-4 text-xs text-green-600'>Invitation format is valid! 🎉</p>
+                      <p className='mt-4 ml-4 text-xs text-green-600'>
+                        Invitation format is valid! 🎉
+                      </p>
                     )}
                   </div>
                 )}

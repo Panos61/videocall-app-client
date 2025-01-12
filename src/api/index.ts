@@ -122,6 +122,11 @@ export const getSettings = async (roomID: string) => {
 
     return response.data;
   } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 400) {
+      return {
+        invitation_expiry: '30',
+      };
+    }
     console.error(error);
   }
 };
