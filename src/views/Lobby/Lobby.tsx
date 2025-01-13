@@ -27,7 +27,7 @@ export const Lobby = () => {
         const participantData: Participant[] = await getRoomParticipants(
           roomID
         );
-        console.log(participantData);
+
         setParticipants(participantData);
       } catch (error) {
         console.log(error);
@@ -62,7 +62,6 @@ export const Lobby = () => {
       try {
         const response = await getSettings(roomID);
         if (response) {
-          console.log('settings', response);
           setSettings(response.invitation_expiry);
         }
       } catch (error) {

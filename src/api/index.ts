@@ -110,9 +110,6 @@ export const getMe = async (roomID: string, jwt: string) => {
       }
     );
 
-    const cacheStatus = response.cached ? 'from cache' : 'from network';
-    console.log(`Data retrieved ${cacheStatus}:`, response.data);
-    console.log('me', response.data);
     return response.data;
   } catch (error) {
     console.error(error);
