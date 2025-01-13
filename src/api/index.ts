@@ -18,13 +18,19 @@ const api = axios.create({
   },
 });
 
-// Set up cache interceptor
+// Set up axios cache interceptor
 // https://axios-cache-interceptor.js.org/getting-started
 const cachedAxiosApi = setupCache(api, {
   storage: buildMemoryStorage(),
   ttl: 2 * 60 * 1000,
   methods: ['get', 'post'],
 });
+
+export const checkCache = async (id: string) => {
+  const cache = cachedAxiosApi.storage.get(id);
+  console.log('cache', cache);
+  return cache;
+};
 
 export const createRoom = async () => {
   const response = await axios.get<CreateRoomResponse>(
@@ -88,6 +94,29 @@ export const leaveRoom = async (roomID: string, jwtToken: string | null) => {
   );
 
   return response.data;
+};
+
+export const getMe = async (roomID: string, jwt: string) => {
+  try {
+    const response = await cachedAxiosApi.post(
+      `http://localhost:8080/get-me/${roomID}`,
+      {
+        id: 'me',
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${jwt}`
+        },
+      }
+    );
+
+    const cacheStatus = response.cached ? 'from cache' : 'from network';
+    console.log(`Data retrieved ${cacheStatus}:`, response.data);
+    console.log('me', response.data);
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const startCall = async (
