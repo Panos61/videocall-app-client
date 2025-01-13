@@ -10,11 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Props {
+  isHost: boolean | undefined;
   setUsername: (username: string) => void;
   avatarSrc: string | null | undefined;
 }
 
-const Form = ({ setUsername, avatarSrc }: Props) => {
+const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
   const {
     register,
     watch,
@@ -89,10 +90,10 @@ const Form = ({ setUsername, avatarSrc }: Props) => {
       <Button
         variant='call'
         className='w-full'
-        disabled={!isValid}
+        disabled={!isHost || !isValid}
         onClick={handleStartCall}
       >
-        Join Call
+        {isHost ? 'Start Call' : 'Join Call'}
       </Button>
     </>
   );
