@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { getSettings, updateSettings } from '@/api';
+import { updateSettings } from '@/api';
 
 import { SettingsIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,8 +25,12 @@ import {
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 
-export const SettingsModal = () => {
-  const [settings, setSettings] = useState('30');
+interface Props {
+  settings: string;
+  isHost: boolean | undefined;
+}
+
+export const SettingsModal = ({ settings, isHost }: Props) => {
   const [successApply, setSuccessApply] = useState<boolean>(false);
 
   const { pathname } = useLocation();
@@ -55,28 +59,58 @@ export const SettingsModal = () => {
       }, 1500);
     } catch (error) {
       setSuccessApply(false);
-      console.error(error);
     }
   };
 
   useEffect(() => {
-    const handleGetSettings = async () => {
-      try {
-        const response = await getSettings(roomID);
-        if (response) {
-          setSettings(response.invitation_expiry);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    handleGetSettings();
-  }, [roomID, successApply]);
-  
-  useEffect(() => {
     form.reset({ invitation_expiry: settings as '30' | '90' | '180' });
   }, [settings, form, successApply]);
+
+  const renderSettingsForm = () => {
+    return (
+      <div>
+        <div className='flex gap-24 items-center mt-16 ml-4'>
+          <div className='flex flex-col w-[120px]'>
+            <span className='text-sm font-medium'>Invitation expiry: </span>
+          </div>
+          <FormField
+            control={form.control}
+            name='invitation_expiry'
+            render={({ field }) => (
+              <FormItem className='space-y-12'>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    className='flex flex-col space-y-4'
+                  >
+                    <FormItem className='flex items-center space-x-12 space-y-0'>
+                      <FormControl>
+                        <RadioGroupItem value='30' />
+                      </FormControl>
+                      <FormLabel className='font-normal'>30 minutes</FormLabel>
+                    </FormItem>
+                    <FormItem className='flex items-center space-x-12 space-y-0'>
+                      <FormControl>
+                        <RadioGroupItem value='90' />
+                      </FormControl>
+                      <FormLabel className='font-normal'>90 minutes</FormLabel>
+                    </FormItem>
+                    <FormItem className='flex items-center space-x-12 space-y-0'>
+                      <FormControl>
+                        <RadioGroupItem value='180' />
+                      </FormControl>
+                      <FormLabel className='font-normal'>3 hours</FormLabel>
+                    </FormItem>
+                  </RadioGroup>
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
+    );
+  };
 
   return (
     <Dialog>
@@ -99,57 +133,18 @@ export const SettingsModal = () => {
                 <Separator className='w-full mt-8' />
               </DialogTitle>
             </DialogHeader>
-            <div>
-              <div className='flex gap-24 items-center mt-16 ml-4'>
-                <div className='flex flex-col w-[120px]'>
-                  <span className='text-sm font-medium'>
-                    Invitation expiry:{' '}
-                  </span>
-                </div>
-                <FormField
-                  control={form.control}
-                  name='invitation_expiry'
-                  render={({ field }) => (
-                    <FormItem className='space-y-12'>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className='flex flex-col space-y-4'
-                        >
-                          <FormItem className='flex items-center space-x-12 space-y-0'>
-                            <FormControl>
-                              <RadioGroupItem value='30' />
-                            </FormControl>
-                            <FormLabel className='font-normal'>
-                              30 minutes
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className='flex items-center space-x-12 space-y-0'>
-                            <FormControl>
-                              <RadioGroupItem value='90' />
-                            </FormControl>
-                            <FormLabel className='font-normal'>
-                              90 minutes
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className='flex items-center space-x-12 space-y-0'>
-                            <FormControl>
-                              <RadioGroupItem value='180' />
-                            </FormControl>
-                            <FormLabel className='font-normal'>
-                              3 hours
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+            {isHost ? (
+              renderSettingsForm()
+            ) : (
+              <div className='flex flex-col gap-12 mt-12'>
+                <p className='text-sm'>Settings are locked by the host.</p>
+                <p className='text-sm italic text-slate-600'>
+                  The invitation is being updated every{' '}
+                  <span className='underline'>{settings}</span> minutes.
+                </p>
               </div>
-            </div>
+            )}
             <DialogFooter className='flex items-center gap-12 mt-56'>
-              {/* {settings} */}
               {successApply && (
                 <span className='font-bold text-xs text-green-600'>
                   Changes applied!

@@ -1,17 +1,26 @@
 import { useLocation } from 'react-router-dom';
 import { VideoIcon, MicIcon, MicOffIcon, VideoOffIcon } from 'lucide-react';
+import type { Participant } from '@/types';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { InviteModal, SettingsModal } from '@/components/elements';
 
 interface Props {
+  me: Participant | undefined;
+  settings: string;
   mediaState: { audio: boolean; video: boolean };
   setAudioState: (roomID: string, enabled: boolean) => Promise<void>;
   setVideoState: (roomID: string, enabled: boolean) => Promise<void>;
 }
 
-const Actions = ({ mediaState, setAudioState, setVideoState }: Props) => {
+const Actions = ({
+  me,
+  settings,
+  mediaState,
+  setAudioState,
+  setVideoState,
+}: Props) => {
   const { pathname } = useLocation();
   const roomID = pathname.split('/')[2];
 
@@ -42,7 +51,7 @@ const Actions = ({ mediaState, setAudioState, setVideoState }: Props) => {
       <Separator orientation='vertical' className='h-6 bg-gray-200' />
       <div className='flex items-center gap-8'>
         <InviteModal />
-        <SettingsModal />
+        <SettingsModal settings={settings} isHost={me?.isHost} />
       </div>
     </div>
   );

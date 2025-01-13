@@ -1,35 +1,15 @@
-import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import type { Participant } from '@/types';
-import { getRoomParticipants } from '@/api';
 import { Avatar, AvatarStack } from '@/components/elements';
 
-const Participants = () => {
-  const { pathname } = useLocation();
-  const [participants, setParticipants] = useState<Participant[]>([]);
+interface Props {
+  participants: Participant[];
+}
 
-  const roomID: string = pathname.split('/')[2];
-
-  useEffect(() => {
-    const handleGetRoomParticipants = async () => {
-      try {
-        const participantData: Participant[] = await getRoomParticipants(
-          roomID
-        );
-        console.log(participantData);
-        setParticipants(participantData);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    handleGetRoomParticipants();
-  }, [roomID]);
-
+const Participants = ({ participants }: Props) => {
   if (participants.length === 0)
     return (
       <span className='flex justify-center mt-28 text-xs text-gray-600 whitespace-nowrap'>
-        You will be the host of this call.
+        Host has not started the call yet.
       </span>
     );
 
