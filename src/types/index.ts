@@ -8,7 +8,7 @@ export interface Participant {
   session_id: string;
 }
 
-export interface SetSessionResponse {
+export interface SetSession {
   sessionID: string;
 }
 
@@ -25,37 +25,37 @@ export interface SignallingMessage {
   to?: string;
 }
 
-export interface CreateRoomResponse {
+export interface CreateRoom{
   id: string;
   invKey: string;
   participants: Participant;
 }
 
-export interface JoinRoomResponse {
-  room_id: string;
+export interface JoinRoom {
+  roomID: string;
   participant: Participant;
   isAuthorized: boolean;
 }
 
-export interface LeaveRoomResponse {
+export interface LeaveRoom {
   leftRoom: boolean;
 }
 
-export interface SettingsResponse {
+export interface Settings {
   invitation_expiry: string;
 }
 
-export interface UpdateSettingsResponse {
+export interface UpdateSettings {
   duration: string;
   expirationSet: boolean;
 }
 
-export interface SetInvitationResponse {
+export interface SetInvitation {
   invitation: string;
 }
 
-export interface ValidateInvitationResponse {
+export interface ValidateInvitation {
+  roomID: string;
   isValid: boolean;
   isExpired: boolean;
-  roomID: string;
 }
