@@ -57,14 +57,16 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
   const renderLocalPreview = () => {
     if (mediaState.video) {
       return (
-        <video
+       <div id='video-wrapper' className='relative size-full'>
+         <video
           id={videoID}
           key={index}
           ref={ref}
           autoPlay
           muted={!mediaState.audio}
-          className='size-full object-cover z-50'
+          className='absolute size-full object-cover'
         />
+       </div>
       );
     }
 

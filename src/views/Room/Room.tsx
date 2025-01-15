@@ -391,7 +391,7 @@ export const Room = () => {
           gridCls={videoTileClass[totalVideos - 1]}
         />
       </div>
-      <div className='relative flex justify-center items-center border border-slate-900 rounded-se-sm bg-slate-850'>
+      <div className='relative flex justify-center items-center border border-slate-900 rounded-se-sm bg-slate-950'>
         <div className='flex justify-center items-center h-64 duration-300'>
           <Toolbar
             sessionID={sessionID}
