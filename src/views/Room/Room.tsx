@@ -1,11 +1,14 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import classNames from 'classnames';
+import { useMediaQuery } from 'usehooks-ts';
 
 import type { Participant } from '@/types';
 import { useWebSocketCtx, useMediaCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { usePeerConnection, ICE_SERVERS } from '@/webrtc';
+import { computeGridLayout } from './computeGridLayout';
 
 import { VideoTile, Toolbar, Participants } from './components';
 
@@ -13,13 +16,11 @@ export const Room = () => {
   const { ws, connect, isConnected, sendMessage } = useWebSocketCtx();
   const { mediaState, setAudioState, setVideoState } = useMediaCtx();
 
+  const [openParticipants, setOpenParticipants] = useState(false);
   const [participantList, setParticipantList] = useState<Participant[]>([]);
   const [userSession, setUserSession] = useState<string[]>([]);
   const [shouldUpdateParticipants, setShouldUpdateParticipants] =
     useState(false);
-
-  const videoContainerRef = useRef<HTMLDivElement>(null);
-  const [openParticipants, setOpenParticipants] = useState(false);
 
   const [isPolite, setIsPolite] = useState(false);
   const makingOffer = useRef(false);
@@ -343,53 +344,54 @@ export const Room = () => {
     return participantList.find((p) => p.session_id == sessionID);
   };
 
+  const totalVideos = userSession.length;
+  const isMedium = useMediaQuery('(max-width: 1024px)');
+
+  const { containerClasses, videoTileClasses } = computeGridLayout(
+    totalVideos,
+    isMedium
+  );
+
+  const actionsCls = classNames(
+    'flex-grow relative mx-48 mt-48 mb-24 transition-all duration-300 ease-in-out',
+    {
+      'mr-[320px]': openParticipants,
+      'mr-[48px]': !openParticipants,
+    }
+  );
+
+  const roomContainerCls = containerClasses.concat(' ', actionsCls);
+
   return (
     <div className='flex flex-col w-full h-screen bg-black'>
-      <div
-        ref={videoContainerRef}
-        className={`flex-grow m-48 transition-all duration-300 ease-in-out`}
-        style={{
-          marginRight: openParticipants ? '164px' : '0',
-          marginBottom: '24px',
-        }}
-      >
-        <div
-          className={`flex flex-wrap gap-16 h-full transition-all duration-300 ease-in-out`}
-          style={{
-            marginRight: openParticipants ? '164px' : '0',
-          }}
-        >
-          {userSession
-            .filter((session) => session !== sessionID)
-            .map((session, index) => {
-              return (
-                <VideoTile
-                  key={session}
-                  index={index}
-                  participant={remoteParticipant(session)}
-                  userSession={session}
-                  localStream={localStream}
-                  isLocal={false}
-                  mediaState={mediaState}
-                />
-              );
-            })}
-          <VideoTile
-            key='local-video'
-            ref={localVideo}
-            participant={localParticipant}
-            localStream={localStream}
-            isLocal={true}
-            mediaState={mediaState}
-          />
-        </div>
+      <div className={roomContainerCls}>
+        {userSession
+          .filter((session) => session !== sessionID)
+          .map((session, index) => {
+            return (
+              <VideoTile
+                key={session}
+                index={index}
+                participant={remoteParticipant(session)}
+                userSession={session}
+                localStream={localStream}
+                isLocal={false}
+                mediaState={mediaState}
+                gridCls={videoTileClasses[index]}
+              />
+            );
+          })}
+        <VideoTile
+          key='local-video'
+          ref={localVideo}
+          participant={localParticipant}
+          localStream={localStream}
+          isLocal={true}
+          mediaState={mediaState}
+          gridCls={videoTileClasses[totalVideos - 1]}
+        />
       </div>
-      <div
-        className='relative flex justify-center items-center border border-slate-900 rounded-se-sm bg-slate-950'
-        style={{
-          backgroundColor: 'rgba(15, 23, 42, 0.65)',
-        }}
-      >
+      <div className='relative flex justify-center items-center border border-slate-900 rounded-se-sm bg-slate-850'>
         <div className='flex justify-center items-center h-64 duration-300'>
           <Toolbar
             sessionID={sessionID}
@@ -404,7 +406,7 @@ export const Room = () => {
         </div>
       </div>
       <Participants
-        open={true}
+        open={openParticipants}
         participants={participantList}
         mediaState={mediaState}
         onClose={() => setOpenParticipants(false)}

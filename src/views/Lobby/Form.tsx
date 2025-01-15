@@ -90,7 +90,7 @@ const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
       <Button
         variant='call'
         className='w-full'
-        disabled={!isHost || !isValid}
+        disabled={!isValid}
         onClick={handleStartCall}
       >
         {isHost ? 'Start Call' : 'Join Call'}
