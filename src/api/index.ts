@@ -1,14 +1,14 @@
 import axios from 'axios';
 import { buildMemoryStorage, setupCache } from 'axios-cache-interceptor';
 import type {
-  CreateRoomResponse,
-  ValidateInvitationResponse,
-  JoinRoomResponse,
-  LeaveRoomResponse,
-  SetInvitationResponse,
+  CreateRoom,
+  ValidateInvitation,
+  JoinRoom,
+  LeaveRoom,
+  SetInvitation,
   UserMedia,
-  SettingsResponse,
-  UpdateSettingsResponse,
+  Settings,
+  UpdateSettings,
 } from '@/types';
 
 const api = axios.create({
@@ -33,7 +33,7 @@ export const checkCache = async (id: string) => {
 };
 
 export const createRoom = async () => {
-  const response = await axios.get<CreateRoomResponse>(
+  const response = await axios.get<CreateRoom>(
     'http://localhost:8080/create-room',
     {
       headers: { 'Content-Type': 'application/json' },
@@ -45,7 +45,7 @@ export const createRoom = async () => {
 
 export const validateInvitation = async (code: string, room_id: string) => {
   try {
-    const response = await axios.post<ValidateInvitationResponse>(
+    const response = await axios.post<ValidateInvitation>(
       `http://localhost:8080/validate-invitation`,
       {
         code,
@@ -69,7 +69,7 @@ export const validateInvitation = async (code: string, room_id: string) => {
 };
 
 export const joinRoom = async (roomID: string) => {
-  const response = await axios.post<JoinRoomResponse>(
+  const response = await axios.post<JoinRoom>(
     `http://localhost:8080/join-room/${roomID}`,
 
     {
@@ -83,7 +83,7 @@ export const joinRoom = async (roomID: string) => {
 };
 
 export const leaveRoom = async (roomID: string, jwtToken: string | null) => {
-  const response = await axios.get<LeaveRoomResponse>(
+  const response = await axios.get<LeaveRoom>(
     `http://localhost:8080/leave-room/${roomID}`,
     {
       headers: {
@@ -141,7 +141,7 @@ export const startCall = async (
 
 export const getSettings = async (roomID: string) => {
   try {
-    const response = await cachedAxiosApi.get<SettingsResponse>(
+    const response = await cachedAxiosApi.get<Settings>(
       `http://localhost:8080/settings/${roomID}`,
       { id: 'settings' }
     );
@@ -162,7 +162,7 @@ export const updateSettings = async (
   invitation_expiry: string
 ) => {
   try {
-    const response = await cachedAxiosApi.post<UpdateSettingsResponse>(
+    const response = await cachedAxiosApi.post<UpdateSettings>(
       `http://localhost:8080/update-settings/${roomID}`,
       {
         invitation_expiry,
@@ -211,7 +211,7 @@ export const setSession = async (roomID: string, jwt: string | null) => {
 };
 
 export const getInvitation = async (roomID: string) => {
-  const response = await axios.get<SetInvitationResponse>(
+  const response = await axios.get<SetInvitation>(
     `http://localhost:8080/room-invitation/${roomID}`,
     { headers: { 'Content-Type': 'application/json' } }
   );
