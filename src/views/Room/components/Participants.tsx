@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import { X, MicIcon, MicOffIcon, VideoIcon, VideoOffIcon } from 'lucide-react';
 import type { Participant } from '@/types';
 
@@ -13,12 +14,16 @@ interface Props {
 }
 
 const Participants = ({ open, participants, onClose }: Props) => {
+  const cls = classNames(
+    'fixed right-0 top-0 h-[85%] w-[256px] mt-20 mr-16 rounded-12 border border-slate-800 bg-slate-950 shadow-lg transform transition-all duration-300 ease-in-out',
+    {
+      'translate-x-0 opacity-100 visible': open,
+      'translate-x-full opacity-0 invisible': !open,
+    }
+  );
+
   return (
-    <div
-      className={`fixed right-0 top-0 h-[85%] w-[256px] mt-20 mr-16 rounded-12 border border-slate-800 bg-slate-950 shadow-lg transform ${
-        open ? 'translate-x-0' : 'translate-x-full'
-      } transition-transform duration-300 ease-in-out`}
-    >
+    <div className={cls}>
       <div className='flex flex-col mx-8'>
         <Button size='sm' onClick={onClose} className='absolute top-8 right-8'>
           <X size='20px' />

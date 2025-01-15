@@ -10,106 +10,93 @@ interface Props {
   localStream: MediaStream | undefined;
   isLocal: boolean;
   mediaState: { audio: boolean; video: boolean };
+  gridCls: string;
 }
 
-const VideoTile = forwardRef<HTMLVideoElement, Props>(
-  (
-    { index, participant, userSession, localStream, isLocal, mediaState },
-    ref
-  ) => {
-    const divRef = useRef<HTMLDivElement>(null);
+const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
+  const {
+    index,
+    participant,
+    userSession,
+    localStream,
+    isLocal,
+    mediaState,
+    gridCls,
+  } = props;
+  const videoTileRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-      if (!ref || typeof ref === 'function' || !ref.current) return;
-      const videoElement = ref.current;
-      const isPlaying =
-        !videoElement.paused &&
-        !videoElement.ended &&
-        videoElement.currentTime > 0 &&
-        videoElement.readyState > videoElement.HAVE_CURRENT_DATA;
+  useEffect(() => {
+    if (!ref || typeof ref === 'function' || !ref.current) return;
 
-      if (isLocal) {
-        if (mediaState.video && localStream) {
-          if (videoElement.srcObject !== localStream) {
-            videoElement.srcObject = localStream;
-          }
+    const videoElement = ref.current;
+    const isPlaying =
+      !videoElement.paused &&
+      !videoElement.ended &&
+      videoElement.currentTime > 0 &&
+      videoElement.readyState > videoElement.HAVE_CURRENT_DATA;
 
-          if (isPlaying) {
-            videoElement
-              .play()
-              .catch((err) => console.error('Error playing video:', err));
-          }
-        } else {
-          videoElement.srcObject = null;
+    if (isLocal) {
+      if (mediaState.video && localStream) {
+        if (videoElement.srcObject !== localStream) {
+          videoElement.srcObject = localStream;
         }
+
+        if (isPlaying) {
+          videoElement
+            .play()
+            .catch((err) => console.error('Error playing video:', err));
+        }
+      } else {
+        videoElement.srcObject = null;
       }
-    }, [isLocal, mediaState.video, localStream, ref]);
+    }
+  }, [isLocal, mediaState.video, localStream, ref]);
 
-    const videoID = isLocal ? 'local-video' : `${userSession}-video`;
+  const videoID = isLocal ? 'local-video' : `${userSession}-video`;
 
-    const renderLocalPreview = () => {
-      if (mediaState.video) {
-        return (
-          <video
-            id={videoID}
-            key={index}
-            ref={ref}
-            autoPlay
-            muted={!mediaState.audio}
-            className='size-full object-cover z-50'
-          />
-        );
-      }
-
+  const renderLocalPreview = () => {
+    if (mediaState.video) {
       return (
-        <Avatar
-          src={participant?.avatar_src}
-          className='self-center object-cover flex-grow'
+       <div id='video-wrapper' className='relative size-full'>
+         <video
+          id={videoID}
+          key={index}
+          ref={ref}
+          autoPlay
+          muted={!mediaState.audio}
+          className='absolute size-full object-cover'
         />
+       </div>
       );
-    };
-
-    // const renderRemotePreview = () => {
-    //   if (mediaState.video) {
-    //     return (
-    //       <video
-    //         id={videoID}
-    //         key={index}
-    //         ref={ref}
-    //         autoPlay
-    //         muted={!mediaState.audio}
-    //         className='size-full object-cover z-50'
-    //       />
-    //     );
-    //   }
-
-    //   return (
-    //     <Avatar
-    //       src={participant?.avatar_src}
-    //       className='self-center object-cover flex-grow'
-    //     />
-    //   );
-    // };
+    }
 
     return (
-      <div
-        ref={divRef}
-        className='relative size-[668px] flex items-center justify-center rounded-8 overflow-hidden bg-zinc-900 text-gr'
-      >
-        {renderLocalPreview()}
-        <div className='absolute bottom-4 right-12 px-12 py-4 rounded-md text-sm text-white bg-black bg-opacity-45 z-50'>
-          {participant?.username}
-        </div>
-        <div className='absolute bottom-4 left-12 py-4 z-50'>
-          {mediaState.audio ? (
-            <MicIcon color='#e5e7eb' className='size-20' />
-          ) : (
-            <MicOffIcon color='#dc2626' className='size-20' />
-          )}
-        </div>
-      </div>
+      <Avatar
+        src={participant?.avatar_src}
+        className='self-center object-cover flex-grow'
+      />
     );
-  }
-);
+  };
+
+  const videoTileCls =
+    'relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr';
+  const cls = videoTileCls.concat(' ', gridCls);
+
+  return (
+    <div ref={videoTileRef} className={cls}>
+      {renderLocalPreview()}
+      <div className='absolute bottom-4 right-12 px-12 py-4 rounded-md text-sm text-white bg-black bg-opacity-45 z-50'>
+        {participant?.username}
+      </div>
+      <div className='absolute bottom-4 left-12 py-4 z-50'>
+        {mediaState.audio ? (
+          <MicIcon color='#e5e7eb' className='size-20' />
+        ) : (
+          <MicOffIcon color='#dc2626' className='size-20' />
+        )}
+      </div>
+    </div>
+  );
+});
 
 export default VideoTile;

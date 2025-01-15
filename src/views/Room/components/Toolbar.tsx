@@ -108,7 +108,7 @@ const Toolbar = ({
   };
 
   return (
-    <div className='flex items-center border border-opacity-35 rounded-xl z-20 border-gray-100 bg-transparent'>
+    <div className='flex items-center border border-opacity-15 rounded-xl z-20 border-gray-100 bg-transparent'>
       <div className='flex gap-8 m-8'>
         <Button
           variant='secondary'
