@@ -2,8 +2,8 @@
 // todo: update responsiveness
 
 type GridConfig = {
-  containerClasses: string;
-  videoTileClasses: string[];
+  containerClass: string;
+  videoTileClass: string[];
 };
 
 export const computeGridLayout = (
@@ -18,20 +18,24 @@ export const computeGridLayout = (
 
   //@ update it for more that 2-3 users
   console.log(isMediumScreen);
-  const gridRows = isMediumScreen && 'grid-rows-2';
+  const gridRows = () => {
+    if (isMediumScreen) {
+      return 'grid-rows-2';
+    }
 
-  const containerClasses = `grid ${gridCols} ${gridRows} gap-8 h-full`;
-  
-  console.log('containerClasses', containerClasses);
+    return 'auto-rows-auto';
+  };
 
-  const videoTileClasses: string[] = [];
+  const containerClass = `grid ${gridCols} ${gridRows()} gap-8 h-full`;
+
+  const videoTileClass: string[] = [];
   for (let i = 0; i < totalVideos; i++) {
     if (!isMediumScreen && isOdd(totalVideos) && i === totalVideos - 1) {
-      videoTileClasses.push('col-span-full row-span-1');
+      videoTileClass.push('col-span-full row-span-1');
     } else {
-      videoTileClasses.push('row-span-1 w-full');
+      videoTileClass.push('row-span-1 w-full');
     }
   }
 
-  return { containerClasses, videoTileClasses };
+  return { containerClass, videoTileClass };
 };

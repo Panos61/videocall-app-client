@@ -347,7 +347,7 @@ export const Room = () => {
   const totalVideos = userSession.length;
   const isMedium = useMediaQuery('(max-width: 1024px)');
 
-  const { containerClasses, videoTileClasses } = computeGridLayout(
+  const { containerClass, videoTileClass } = computeGridLayout(
     totalVideos,
     isMedium
   );
@@ -360,7 +360,7 @@ export const Room = () => {
     }
   );
 
-  const roomContainerCls = containerClasses.concat(' ', actionsCls);
+  const roomContainerCls = containerClass.concat(' ', actionsCls);
 
   return (
     <div className='flex flex-col w-full h-screen bg-black'>
@@ -377,7 +377,7 @@ export const Room = () => {
                 localStream={localStream}
                 isLocal={false}
                 mediaState={mediaState}
-                gridCls={videoTileClasses[index]}
+                gridCls={videoTileClass[index]}
               />
             );
           })}
@@ -388,7 +388,7 @@ export const Room = () => {
           localStream={localStream}
           isLocal={true}
           mediaState={mediaState}
-          gridCls={videoTileClasses[totalVideos - 1]}
+          gridCls={videoTileClass[totalVideos - 1]}
         />
       </div>
       <div className='relative flex justify-center items-center border border-slate-900 rounded-se-sm bg-slate-850'>
