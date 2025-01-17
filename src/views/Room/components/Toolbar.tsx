@@ -20,8 +20,8 @@ interface Props {
   setLocalStream: Dispatch<SetStateAction<MediaStream | undefined>>;
   localVideo: React.RefObject<HTMLVideoElement>;
   mediaState: { audio: boolean; video: boolean };
-  setAudioState: (enabled: boolean) => Promise<void>;
-  setVideoState: (enabled: boolean) => Promise<void>;
+  setAudioState: (enabled: boolean, sessionID: string) => Promise<void>;
+  setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
   onOpenParticipants: () => void;
 }
 
@@ -44,7 +44,7 @@ const Toolbar = ({
   const jwt = localStorage.getItem('jwt_token');
 
   const handleAudioState = () => {
-    setAudioState(!mediaState.audio);
+    setAudioState(!mediaState.audio, sessionID);
   };
 
   const handleVideoState = async () => {
@@ -76,7 +76,7 @@ const Toolbar = ({
         }
       }
     }
-    setVideoState(videoEnabled);
+    setVideoState(videoEnabled, sessionID);
   };
 
   const handleOnLeave = async () => {
@@ -97,8 +97,8 @@ const Toolbar = ({
       }
 
       // Reset media state in context
-      setAudioState(false);
-      setVideoState(false);
+      setAudioState(false, sessionID);
+      setVideoState(false, sessionID);
 
       navigate('/');
       localStorage.removeItem('jwt_token');

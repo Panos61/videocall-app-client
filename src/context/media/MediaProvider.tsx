@@ -16,12 +16,12 @@ interface Message {
 }
 
 export interface Props {
-  connect: (roomID: string, sessionID: string) => void;
-  disconnect: () => void;
+  connectMedia: (roomID: string, sessionID: string) => void;
+  disconnectMedia: () => void;
   mediaState: MediaState;
   remoteMediaStates: RemoteMediaState;
-  setAudioState: (enabled: boolean, sessionID?: string) => Promise<void>;
-  setVideoState: (enabled: boolean, sessionID?: string) => Promise<void>;
+  setAudioState: (enabled: boolean, sessionID: string) => Promise<void>;
+  setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
 }
 
 export const MediaContext = createContext<Props | undefined>(undefined);
@@ -35,37 +35,79 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
   );
   const [isConnected, setIsConnected] = useState(false);
 
-  const connect = (roomID: string, sessionID: string) => {
-    if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
-      if (ws.current) {
-        ws.current.close();
-      }
+  const connectMedia = (route: string, sessionID: string) => {
+    // Clean up any existing connection
+    disconnectMedia();
 
-      ws.current = new WebSocket(`${BASE_WS_URL}/ws/media/${roomID}`);
+    const jwt = localStorage.getItem('jwt_token');
+    if (!jwt) return;
 
-      ws.current.onopen = () => {
-        console.log('connection established!');
-        setIsConnected(true);
+    try {
+      const socket = new WebSocket(`${BASE_WS_URL}${route}`);
+
+      // Store socket reference before setting up handlers
+      ws.current = socket;
+
+      socket.onopen = () => {
+        console.log('Media connection established');
+        // Only send auth if socket is still the current one
+        if (ws.current === socket) {
+          socket.send(
+            JSON.stringify({
+              type: 'auth',
+              token: jwt,
+              sessionID,
+            })
+          );
+          setIsConnected(true);
+        }
       };
 
-      ws.current.onclose = () => {
-        console.log('connection closed!');
+      socket.onclose = () => {
+        console.log('Media connection closed');
         setIsConnected(false);
       };
 
-      ws.current.onmessage = (event) => {
-        const data: Message = JSON.parse(event.data);
-        if (data.sessionID !== sessionID) {
-          setRemoteMediaStates((prev) => ({
-            ...prev,
-            [data.sessionID]: data.media,
-          }));
+      socket.onerror = (error) => {
+        console.error('Media connection error:', error);
+        setIsConnected(false);
+      };
+
+      socket.onmessage = (event) => {
+        if (ws.current !== socket) return;
+
+        try {
+          const data = JSON.parse(event.data);
+          console.log('Media WS - Parsed message:', data);
+
+          // Handle error messages from backend
+          if (data.error) {
+            console.error('Media WS - Server error:', data.error);
+            return;
+          }
+
+          // Handle media state updates
+          if (data.sessionID && data.media) {
+            if (data.sessionID !== sessionID) {
+              setRemoteMediaStates((prev) => ({
+                ...prev,
+                [data.sessionID]: data.media,
+              }));
+            }
+          }
+          console.log('remoteMediaStates', remoteMediaStates);
+        } catch (error) {
+          console.error('Media WS - Failed to parse message:', error);
         }
       };
+      console.log('remoteMediaStates', remoteMediaStates);
+    } catch (error) {
+      console.error('Failed to establish WebSocket connection:', error);
+      setIsConnected(false);
     }
   };
 
-  const disconnect = () => {
+  const disconnectMedia = () => {
     if (ws.current) {
       ws.current.close();
       ws.current = null;
@@ -84,24 +126,20 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const setAudioState = async (enabled: boolean, sessionID?: string) => {
+  const setAudioState = async (enabled: boolean, sessionID = '') => {
     const updatedState = { ...mediaState, audio: enabled };
     setMediaState(updatedState);
 
-    // await updateUserMedia(roomID, participantJWT, updatedState);
-    if (sessionID) {
+    if (isConnected) {
       sendMediaUpdate(sessionID, updatedState);
     }
   };
 
-  const setVideoState = async (
-    enabled: boolean,
-    sessionID?: string | undefined
-  ) => {
+  const setVideoState = async (enabled: boolean, sessionID = '') => {
     const updatedState = { ...mediaState, video: enabled };
     setMediaState(updatedState);
 
-    if (sessionID) {
+    if (isConnected) {
       sendMediaUpdate(sessionID, updatedState);
     }
   };
@@ -109,9 +147,9 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
   return (
     <MediaContext.Provider
       value={{
-        connect,
+        connectMedia,
         remoteMediaStates,
-        disconnect,
+        disconnectMedia,
         mediaState,
         setAudioState,
         setVideoState,

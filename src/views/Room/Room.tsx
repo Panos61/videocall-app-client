@@ -13,8 +13,16 @@ import { computeGridLayout } from './computeGridLayout';
 import { VideoTile, Toolbar, Participants } from './components';
 
 export const Room = () => {
-  const { ws, connect, isConnected, sendMessage } = useSignallingCtx();
-  const { mediaState, setAudioState, setVideoState } = useMediaCtx();
+  const { ws, connectSignalling, isConnected, sendMessage } =
+    useSignallingCtx();
+  const {
+    connectMedia,
+    disconnectMedia,
+    mediaState,
+    remoteMediaStates,
+    setAudioState,
+    setVideoState,
+  } = useMediaCtx();
 
   const [openParticipants, setOpenParticipants] = useState(false);
   const [participantList, setParticipantList] = useState<Participant[]>([]);
@@ -122,9 +130,9 @@ export const Room = () => {
     }
   }, [localStream, mediaState.audio, mediaState.video]);
 
+  // signalling websocket connection & webrtc handling
   useEffect(() => {
-    // init websocket connection
-    connect(`/ws/signalling/${roomID}`);
+    connectSignalling(`/ws/signalling/${roomID}`);
 
     let isCallInitiator = false;
 
@@ -336,6 +344,23 @@ export const Room = () => {
     disconnect,
   ]);
 
+  // media websocket connection
+  useEffect(() => {
+    const connect = async () => {
+      try {
+        await connectMedia(`/ws/media/${roomID}`, sessionID);
+      } catch (error) {
+        console.error('Failed to establish WebSocket connection:', error);
+      }
+    };
+
+    connect();
+
+    return () => {
+      disconnectMedia();
+    };
+  }, [roomID, sessionID]);
+
   const localParticipant: Participant | undefined = participantList.find(
     (p) => p.session_id == sessionID
   );
@@ -377,6 +402,7 @@ export const Room = () => {
                 localStream={localStream}
                 isLocal={false}
                 mediaState={mediaState}
+                // remoteMediaStates={remoteMediaStates}
                 gridCls={videoTileClass[index]}
               />
             );
@@ -408,7 +434,9 @@ export const Room = () => {
       <Participants
         open={openParticipants}
         participants={participantList}
+        sessionID={sessionID}
         mediaState={mediaState}
+        remoteMediaStates={remoteMediaStates}
         onClose={() => setOpenParticipants(false)}
       />
     </div>

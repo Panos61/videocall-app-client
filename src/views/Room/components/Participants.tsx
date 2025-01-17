@@ -9,11 +9,13 @@ import { Avatar, InviteModal } from '@/components/elements';
 interface Props {
   open: boolean;
   participants: Participant[];
+  sessionID: string;
   mediaState: { audio: boolean; video: boolean };
+  remoteMediaStates: { [sessionID: string]: { audio: boolean; video: boolean } };
   onClose: () => void;
 }
 
-const Participants = ({ open, participants, onClose }: Props) => {
+const Participants = ({ open, participants, sessionID, mediaState, remoteMediaStates, onClose }: Props) => {
   const cls = classNames(
     'fixed right-0 top-0 h-[85%] w-[256px] mt-20 mr-16 rounded-12 border border-slate-800 bg-slate-950 shadow-lg transform transition-all duration-300 ease-in-out',
     {
@@ -21,6 +23,13 @@ const Participants = ({ open, participants, onClose }: Props) => {
       'translate-x-full opacity-0 invisible': !open,
     }
   );
+  
+  const renderMediaState = (remoteSessionID: string) => {
+    const audioState = sessionID === remoteSessionID ? mediaState.audio : remoteMediaStates[remoteSessionID]?.audio;
+    const videoState = sessionID === remoteSessionID ? mediaState.video : remoteMediaStates[remoteSessionID]?.video;
+    
+    return { audioState, videoState };
+  }
 
   return (
     <div className={cls}>
@@ -51,12 +60,12 @@ const Participants = ({ open, participants, onClose }: Props) => {
                 )}
               </div>
               <div className='flex items-center gap-8 ml-auto'>
-                {participant.media.audio ? (
+                {renderMediaState(participant.session_id).audioState ? (
                   <MicIcon color='#000000' className='size-12' />
                 ) : (
                   <MicOffIcon color='#dc2626' className='size-12' />
                 )}
-                {participant.media.video ? (
+                {renderMediaState(participant.session_id).videoState ? (
                   <VideoIcon color='#000000' className='size-12' />
                 ) : (
                   <VideoOffIcon color='#dc2626' className='size-12' />

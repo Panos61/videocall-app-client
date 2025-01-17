@@ -4,7 +4,7 @@ import { BASE_WS_URL } from '@/utils/constants';
 
 export interface Props {
   ws: WebSocket | null;
-  connect: (route: string) => void;
+  connectSignalling: (route: string) => void;
   sendMessage: (message: SignallingMessage) => void;
   disconnect: () => void;
   isConnected: boolean;
@@ -20,7 +20,7 @@ export const SignallingProvider = ({
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  const connect = (route: string) => {
+  const connectSignalling = (route: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       if (ws.current) {
         ws.current.close();
@@ -59,7 +59,7 @@ export const SignallingProvider = ({
 
   return (
     <SignallingContext.Provider
-      value={{ ws: ws.current, connect, sendMessage, disconnect, isConnected }}
+      value={{ ws: ws.current, connectSignalling, sendMessage, disconnect, isConnected }}
     >
       {children}
     </SignallingContext.Provider>
