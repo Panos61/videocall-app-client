@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import { useMediaQuery } from 'usehooks-ts';
 
 import type { Participant } from '@/types';
-import { useWebSocketCtx, useMediaCtx } from '@/context';
+import { useSignallingCtx, useMediaCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { usePeerConnection, ICE_SERVERS } from '@/webrtc';
 import { computeGridLayout } from './computeGridLayout';
@@ -13,7 +13,7 @@ import { computeGridLayout } from './computeGridLayout';
 import { VideoTile, Toolbar, Participants } from './components';
 
 export const Room = () => {
-  const { ws, connect, isConnected, sendMessage } = useWebSocketCtx();
+  const { ws, connect, isConnected, sendMessage } = useSignallingCtx();
   const { mediaState, setAudioState, setVideoState } = useMediaCtx();
 
   const [openParticipants, setOpenParticipants] = useState(false);
@@ -138,7 +138,7 @@ export const Room = () => {
 
     if (!ws) return;
 
-    ws.onmessage = async (event) => {
+    ws.onmessage = async (event: MessageEvent) => {
       const data = JSON.parse(event.data);
 
       if (!data.type) {

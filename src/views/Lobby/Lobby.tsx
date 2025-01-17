@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import type { Participant } from '@/types';
 import { checkCache, getRoomParticipants, getMe, getSettings } from '@/api';
 import { useMediaCtx } from '@/context';
-import type { Participant } from '@/types';
 
 import Form from './Form';
 import Participants from './Participants';

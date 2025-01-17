@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { leaveRoom } from '@/api';
-import { useWebSocketCtx } from '@/context/websocket';
+import { useSignallingCtx } from '@/context/signalling';
 import {
   VideoIcon,
   VideoOffIcon,
@@ -20,8 +20,8 @@ interface Props {
   setLocalStream: Dispatch<SetStateAction<MediaStream | undefined>>;
   localVideo: React.RefObject<HTMLVideoElement>;
   mediaState: { audio: boolean; video: boolean };
-  setAudioState: (roomID: string, enabled: boolean) => Promise<void>;
-  setVideoState: (roomID: string, enabled: boolean) => Promise<void>;
+  setAudioState: (enabled: boolean) => Promise<void>;
+  setVideoState: (enabled: boolean) => Promise<void>;
   onOpenParticipants: () => void;
 }
 
@@ -35,7 +35,7 @@ const Toolbar = ({
   setVideoState,
   onOpenParticipants,
 }: Props) => {
-  const { sendMessage } = useWebSocketCtx();
+  const { sendMessage } = useSignallingCtx();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,7 +44,7 @@ const Toolbar = ({
   const jwt = localStorage.getItem('jwt_token');
 
   const handleAudioState = () => {
-    setAudioState(roomID, !mediaState.audio);
+    setAudioState(!mediaState.audio);
   };
 
   const handleVideoState = async () => {
@@ -76,7 +76,7 @@ const Toolbar = ({
         }
       }
     }
-    setVideoState(roomID, videoEnabled);
+    setVideoState(videoEnabled);
   };
 
   const handleOnLeave = async () => {
@@ -97,8 +97,8 @@ const Toolbar = ({
       }
 
       // Reset media state in context
-      setAudioState(roomID, false);
-      setVideoState(roomID, false);
+      setAudioState(false);
+      setVideoState(false);
 
       navigate('/');
       localStorage.removeItem('jwt_token');

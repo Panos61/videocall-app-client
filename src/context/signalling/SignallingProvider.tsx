@@ -10,9 +10,9 @@ export interface Props {
   isConnected: boolean;
 }
 
-export const WebSocketContext = createContext<Props | undefined>(undefined);
+export const SignallingContext = createContext<Props | undefined>(undefined);
 
-export const WebSocketProvider = ({
+export const SignallingProvider = ({
   children,
 }: {
   children: React.ReactNode;
@@ -58,10 +58,10 @@ export const WebSocketProvider = ({
   };
 
   return (
-    <WebSocketContext.Provider
+    <SignallingContext.Provider
       value={{ ws: ws.current, connect, sendMessage, disconnect, isConnected }}
     >
       {children}
-    </WebSocketContext.Provider>
+    </SignallingContext.Provider>
   );
 };

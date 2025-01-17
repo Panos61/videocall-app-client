@@ -1,4 +1,3 @@
-import { useLocation } from 'react-router-dom';
 import { VideoIcon, MicIcon, MicOffIcon, VideoOffIcon } from 'lucide-react';
 import type { Participant } from '@/types';
 
@@ -10,8 +9,8 @@ interface Props {
   me: Participant | undefined;
   settings: string;
   mediaState: { audio: boolean; video: boolean };
-  setAudioState: (roomID: string, enabled: boolean) => Promise<void>;
-  setVideoState: (roomID: string, enabled: boolean) => Promise<void>;
+  setAudioState: (enabled: boolean) => Promise<void>;
+  setVideoState: (enabled: boolean) => Promise<void>;
 }
 
 const Actions = ({
@@ -21,15 +20,12 @@ const Actions = ({
   setAudioState,
   setVideoState,
 }: Props) => {
-  const { pathname } = useLocation();
-  const roomID = pathname.split('/')[2];
-
   const handleAudioState = () => {
-    setAudioState(roomID, !mediaState.audio);
+    setAudioState(!mediaState.audio);
   };
 
   const handleVideoState = () => {
-    setVideoState(roomID, !mediaState.video);
+    setVideoState(!mediaState.video);
   };
 
   return (

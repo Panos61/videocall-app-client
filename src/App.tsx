@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { MediaProvider, WebSocketProvider } from './context';
+import { MediaProvider, SignallingProvider } from './context';
 import { Home, Lobby, Room, InvitationValidation } from './views';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -24,12 +24,12 @@ const App = () => {
   ]);
 
   return (
-    <WebSocketProvider>
+    <SignallingProvider>
       <MediaProvider>
         <RouterProvider router={router} />
         <Toaster />
       </MediaProvider>
-    </WebSocketProvider>
+    </SignallingProvider>
   );
 };
 
