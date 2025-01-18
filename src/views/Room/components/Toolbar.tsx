@@ -11,6 +11,7 @@ import {
   UsersIcon,
   SettingsIcon,
   GaugeIcon,
+  MessageCircleIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -22,7 +23,8 @@ interface Props {
   mediaState: { audio: boolean; video: boolean };
   setAudioState: (enabled: boolean, sessionID: string) => Promise<void>;
   setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
-  onOpenParticipants: () => void;
+  activePanel: 'participants' | 'chat' | null;
+  setActivePanel: (panel: 'participants' | 'chat' | null) => void;
 }
 
 const Toolbar = ({
@@ -33,7 +35,8 @@ const Toolbar = ({
   mediaState,
   setAudioState,
   setVideoState,
-  onOpenParticipants,
+  activePanel,
+  setActivePanel,
 }: Props) => {
   const { sendMessage } = useSignallingCtx();
 
@@ -128,8 +131,11 @@ const Toolbar = ({
             <VideoOffIcon color='#dc2626' className='size-16' />
           )}
         </Button>
-        <Button variant='outline' size='sm' onClick={onOpenParticipants}>
+        <Button variant='outline' size='sm' onClick={() => setActivePanel(activePanel === 'participants' ? null : 'participants')}>
           <UsersIcon className='size-16' />
+        </Button>
+        <Button variant='outline' size='sm' onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}>
+          <MessageCircleIcon className='size-16' />
         </Button>
         <Button variant='outline' size='sm'>
           <SettingsIcon className='size-16' />
