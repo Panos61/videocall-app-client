@@ -6,10 +6,13 @@ import { Avatar } from '@/components/elements';
 interface Props {
   index?: number;
   participant: Participant | undefined;
-  userSession?: string;
+  remoteSession?: string;
   localStream: MediaStream | undefined;
   isLocal: boolean;
   mediaState: { audio: boolean; video: boolean };
+  remoteMediaStates: {
+    [sessionID: string]: { audio: boolean; video: boolean };
+  };
   gridCls: string;
 }
 
@@ -17,10 +20,11 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
   const {
     index,
     participant,
-    userSession,
+    remoteSession,
     localStream,
     isLocal,
     mediaState,
+    remoteMediaStates,
     gridCls,
   } = props;
   const videoTileRef = useRef<HTMLDivElement>(null);
@@ -52,30 +56,71 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
     }
   }, [isLocal, mediaState.video, localStream, ref]);
 
-  const videoID = isLocal ? 'local-video' : `${userSession}-video`;
+  const videoID = isLocal ? 'local-video' : `${remoteSession}-video`;
 
   const renderLocalPreview = () => {
     if (mediaState.video) {
       return (
-       <div id='video-wrapper' className='relative size-full'>
-         <video
-          id={videoID}
-          key={index}
-          ref={ref}
-          autoPlay
-          muted={!mediaState.audio}
-          className='absolute size-full object-cover'
-        />
-       </div>
+        <div id='video-wrapper' className='relative size-full'>
+          <video
+            id={videoID}
+            key={index}
+            ref={ref}
+            autoPlay
+            muted={!mediaState.audio}
+            className='absolute size-full object-cover'
+          />
+        </div>
       );
     }
 
     return (
-      <Avatar
-        src={participant?.avatar_src}
-        className='self-center object-cover flex-grow'
-      />
+      <div className='absolute inset-0 size-full flex items-center justify-center'>
+        <Avatar
+          src={participant?.avatar_src}
+          className='size-24 object-cover'
+        />
+      </div>
     );
+  };
+
+  const renderRemotePreview = () => {
+    if (!remoteSession || !participant) return;
+
+    if (participant.media.video || remoteMediaStates[remoteSession]?.video) {
+      return (
+        <video
+          id={videoID}
+          key={index}
+          ref={ref}
+          autoPlay
+          muted={!remoteMediaStates[remoteSession]?.audio}
+          className='absolute size-full object-cover'
+        />
+      );
+    }
+
+    return (
+      <div className='absolute inset-0 size-full flex items-center justify-center'>
+        <Avatar
+          src={participant.avatar_src}
+          className='size-24 object-cover'
+        />
+      </div>
+    );
+  };
+
+  const getMediaState = () => {
+    if (isLocal) {
+      return mediaState;
+    }
+
+    if (!remoteSession || !participant) return { audio: false, video: false };
+
+    return {
+      audio: remoteMediaStates[remoteSession]?.audio ?? participant.media.audio,
+      video: remoteMediaStates[remoteSession]?.video ?? participant.media.video,
+    };
   };
 
   const videoTileCls =
@@ -84,12 +129,12 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
 
   return (
     <div ref={videoTileRef} className={cls}>
-      {renderLocalPreview()}
+      {isLocal ? renderLocalPreview() : renderRemotePreview()}
       <div className='absolute bottom-4 right-12 px-12 py-4 rounded-md text-sm text-white bg-black bg-opacity-45 z-50'>
         {participant?.username}
       </div>
       <div className='absolute bottom-4 left-12 py-4 z-50'>
-        {mediaState.audio ? (
+        {getMediaState().audio ? (
           <MicIcon color='#e5e7eb' className='size-20' />
         ) : (
           <MicOffIcon color='#dc2626' className='size-20' />

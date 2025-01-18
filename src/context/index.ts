@@ -1,9 +1,9 @@
-import { useMediaCtx, MediaProvider } from './useMediaContext';
-import { WebSocketProvider, useWebSocketCtx } from './websocket';
+import { useMediaCtx, MediaProvider } from './media';
+import { SignallingProvider, useSignallingCtx } from './signalling';
 
 export {
   useMediaCtx,
   MediaProvider,
-  WebSocketProvider,
-  useWebSocketCtx,
+  useSignallingCtx,
+  SignallingProvider,
 };

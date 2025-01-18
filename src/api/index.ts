@@ -6,9 +6,9 @@ import type {
   JoinRoom,
   LeaveRoom,
   SetInvitation,
-  UserMedia,
   Settings,
   UpdateSettings,
+  Media,
 } from '@/types';
 
 const api = axios.create({
@@ -120,13 +120,15 @@ export const startCall = async (
   roomID: string,
   username: string,
   avatar_src: string | null | undefined,
-  jwtToken: string | null
+  jwtToken: string | null,
+  mediaState: Media
 ) => {
   const response = await axios.post(
     `http://localhost:8080/start-call/${roomID}`,
     {
       username,
       avatar_src,
+      media: mediaState,
     },
     {
       headers: {
@@ -217,23 +219,4 @@ export const getInvitation = async (roomID: string) => {
   );
 
   return response.data.invitation;
-};
-
-export const updateUserMedia = async (
-  roomID: string,
-  jwt: string | null,
-  media: { audio: boolean; video: boolean }
-) => {
-  const response = await axios.post<UserMedia>(
-    `http://localhost:8080/update-user-media/${roomID}`,
-    { media },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwt}`,
-      },
-    }
-  );
-
-  return response.data;
 };

@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
 import { setSession, startCall } from '@/api';
+import { useMediaCtx } from '@/context';
 
 import { AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -16,6 +17,7 @@ interface Props {
 }
 
 const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
+  const { mediaState } = useMediaCtx();
   const {
     register,
     watch,
@@ -37,7 +39,7 @@ const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
   const handleStartCall = async () => {
     try {
       const sessionID: string = await setSession(roomID, jwt);
-      await startCall(roomID, username, avatarSrc, jwt);
+      await startCall(roomID, username, avatarSrc, jwt, mediaState);
 
       navigate(`/room/${roomID}/call`, {
         state: { roomID: roomID, sessionID: sessionID },

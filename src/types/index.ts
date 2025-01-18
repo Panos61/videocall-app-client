@@ -12,11 +12,6 @@ export interface SetSession {
   sessionID: string;
 }
 
-export interface UserMedia {
-  video: boolean;
-  audio: boolean;
-}
-
 export interface SignallingMessage {
   type: string;
   sessionID: string;
@@ -39,6 +34,11 @@ export interface JoinRoom {
 
 export interface LeaveRoom {
   leftRoom: boolean;
+}
+
+export interface Media {
+  audio: boolean;
+  video: boolean;
 }
 
 export interface Settings {

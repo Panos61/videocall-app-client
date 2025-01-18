@@ -5,7 +5,7 @@ import classNames from 'classnames';
 import { useMediaQuery } from 'usehooks-ts';
 
 import type { Participant } from '@/types';
-import { useWebSocketCtx, useMediaCtx } from '@/context';
+import { useSignallingCtx, useMediaCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { usePeerConnection, ICE_SERVERS } from '@/webrtc';
 import { computeGridLayout } from './computeGridLayout';
@@ -13,8 +13,16 @@ import { computeGridLayout } from './computeGridLayout';
 import { VideoTile, Toolbar, Participants } from './components';
 
 export const Room = () => {
-  const { ws, connect, isConnected, sendMessage } = useWebSocketCtx();
-  const { mediaState, setAudioState, setVideoState } = useMediaCtx();
+  const { ws, connectSignalling, isConnected, sendMessage } =
+    useSignallingCtx();
+  const {
+    connectMedia,
+    disconnectMedia,
+    mediaState,
+    remoteMediaStates,
+    setAudioState,
+    setVideoState,
+  } = useMediaCtx();
 
   const [openParticipants, setOpenParticipants] = useState(false);
   const [participantList, setParticipantList] = useState<Participant[]>([]);
@@ -122,9 +130,9 @@ export const Room = () => {
     }
   }, [localStream, mediaState.audio, mediaState.video]);
 
+  // signalling websocket connection & webrtc handling
   useEffect(() => {
-    // init websocket connection
-    connect(`/ws/signalling/${roomID}`);
+    connectSignalling(`/ws/signalling/${roomID}`);
 
     let isCallInitiator = false;
 
@@ -138,7 +146,7 @@ export const Room = () => {
 
     if (!ws) return;
 
-    ws.onmessage = async (event) => {
+    ws.onmessage = async (event: MessageEvent) => {
       const data = JSON.parse(event.data);
 
       if (!data.type) {
@@ -336,6 +344,23 @@ export const Room = () => {
     disconnect,
   ]);
 
+  // media websocket connection
+  useEffect(() => {
+    const connect = async () => {
+      try {
+        await connectMedia(`/ws/media/${roomID}`, sessionID);
+      } catch (error) {
+        console.error('Failed to establish WebSocket connection:', error);
+      }
+    };
+
+    connect();
+
+    return () => {
+      disconnectMedia();
+    };
+  }, [roomID, sessionID]);
+
   const localParticipant: Participant | undefined = participantList.find(
     (p) => p.session_id == sessionID
   );
@@ -367,16 +392,17 @@ export const Room = () => {
       <div className={roomContainerCls}>
         {userSession
           .filter((session) => session !== sessionID)
-          .map((session, index) => {
+          .map((remoteSession, index) => {
             return (
               <VideoTile
-                key={session}
+                key={remoteSession}
                 index={index}
-                participant={remoteParticipant(session)}
-                userSession={session}
+                participant={remoteParticipant(remoteSession)}
+                remoteSession={remoteSession}
                 localStream={localStream}
                 isLocal={false}
                 mediaState={mediaState}
+                remoteMediaStates={remoteMediaStates}
                 gridCls={videoTileClass[index]}
               />
             );
@@ -388,6 +414,7 @@ export const Room = () => {
           localStream={localStream}
           isLocal={true}
           mediaState={mediaState}
+          remoteMediaStates={remoteMediaStates}
           gridCls={videoTileClass[totalVideos - 1]}
         />
       </div>
@@ -408,7 +435,9 @@ export const Room = () => {
       <Participants
         open={openParticipants}
         participants={participantList}
+        sessionID={sessionID}
         mediaState={mediaState}
+        remoteMediaStates={remoteMediaStates}
         onClose={() => setOpenParticipants(false)}
       />
     </div>
