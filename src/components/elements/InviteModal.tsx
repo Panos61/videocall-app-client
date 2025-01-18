@@ -68,7 +68,7 @@ export const InviteModal = () => {
     const isCallPage = pathname.includes('/call');
     if (isCallPage) {
       return (
-        <div className='flex items-center justify-center gap-8 mt-12 p-8 w-full rounded-md text-sm text-white bg-slate-900 hover:bg-slate-800 duration-150'>
+        <div className='flex items-center justify-center gap-8 mt-12 p-8 w-full rounded-md text-sm text-white bg-indigo-900 hover:bg-indigo-800 duration-300'>
           <UserPlus size={16} />
           Invite someone
         </div>

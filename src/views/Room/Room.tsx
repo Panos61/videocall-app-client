@@ -10,7 +10,7 @@ import { getRoomParticipants } from '@/api';
 import { usePeerConnection, ICE_SERVERS } from '@/webrtc';
 import { computeGridLayout } from './computeGridLayout';
 
-import { VideoTile, Toolbar, Participants } from './components';
+import { VideoTile, Toolbar, Participants, Chat } from './components';
 
 export const Room = () => {
   const { ws, connectSignalling, isConnected, sendMessage } =
@@ -24,7 +24,9 @@ export const Room = () => {
     setVideoState,
   } = useMediaCtx();
 
-  const [openParticipants, setOpenParticipants] = useState(false);
+  const [activePanel, setActivePanel] = useState<
+    'participants' | 'chat' | null
+  >(null);
   const [participantList, setParticipantList] = useState<Participant[]>([]);
   const [userSession, setUserSession] = useState<string[]>([]);
   const [shouldUpdateParticipants, setShouldUpdateParticipants] =
@@ -380,8 +382,8 @@ export const Room = () => {
   const actionsCls = classNames(
     'flex-grow relative mx-48 mt-48 mb-24 transition-all duration-300 ease-in-out',
     {
-      'mr-[320px]': openParticipants,
-      'mr-[48px]': !openParticipants,
+      'mr-[428px]': activePanel !== null,
+      'mr-[48px]': activePanel === null,
     }
   );
 
@@ -428,17 +430,22 @@ export const Room = () => {
             mediaState={mediaState}
             setAudioState={setAudioState}
             setVideoState={setVideoState}
-            onOpenParticipants={() => setOpenParticipants(!openParticipants)}
+            activePanel={activePanel}
+            setActivePanel={setActivePanel}
           />
         </div>
       </div>
       <Participants
-        open={openParticipants}
+        open={activePanel === 'participants'}
         participants={participantList}
         sessionID={sessionID}
         mediaState={mediaState}
         remoteMediaStates={remoteMediaStates}
-        onClose={() => setOpenParticipants(false)}
+        onClose={() => setActivePanel(null)}
+      />
+      <Chat
+        open={activePanel === 'chat'}
+        onClose={() => setActivePanel(null)}
       />
     </div>
   );
