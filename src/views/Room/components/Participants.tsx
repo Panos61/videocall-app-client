@@ -11,11 +11,20 @@ interface Props {
   participants: Participant[];
   sessionID: string;
   mediaState: { audio: boolean; video: boolean };
-  remoteMediaStates: { [sessionID: string]: { audio: boolean; video: boolean } };
+  remoteMediaStates: {
+    [sessionID: string]: { audio: boolean; video: boolean };
+  };
   onClose: () => void;
 }
 
-const Participants = ({ open, participants, sessionID, mediaState, remoteMediaStates, onClose }: Props) => {
+const Participants = ({
+  open,
+  participants,
+  mediaState,
+  remoteMediaStates,
+  sessionID,
+  onClose,
+}: Props) => {
   const cls = classNames(
     'fixed right-0 top-0 h-[85%] w-[256px] mt-20 mr-16 rounded-12 border border-slate-800 bg-slate-950 shadow-lg transform transition-all duration-300 ease-in-out',
     {
@@ -23,13 +32,20 @@ const Participants = ({ open, participants, sessionID, mediaState, remoteMediaSt
       'translate-x-full opacity-0 invisible': !open,
     }
   );
-  
-  const renderMediaState = (remoteSessionID: string) => {
-    const audioState = sessionID === remoteSessionID ? mediaState.audio : remoteMediaStates[remoteSessionID]?.audio;
-    const videoState = sessionID === remoteSessionID ? mediaState.video : remoteMediaStates[remoteSessionID]?.video;
+
+  const getMediaState = (remoteSession: string, participant: Participant) => {
+    const isLocal = sessionID === remoteSession;
+    if (isLocal) {
+      return mediaState;
+    }
     
-    return { audioState, videoState };
-  }
+    if (!remoteSession || !participant) return { audio: false, video: false };
+    
+    return {
+      audio: remoteMediaStates[remoteSession]?.audio ?? participant.media.audio,
+      video: remoteMediaStates[remoteSession]?.video ?? participant.media.video,
+    };
+  };
 
   return (
     <div className={cls}>
@@ -60,12 +76,12 @@ const Participants = ({ open, participants, sessionID, mediaState, remoteMediaSt
                 )}
               </div>
               <div className='flex items-center gap-8 ml-auto'>
-                {renderMediaState(participant.session_id).audioState ? (
+                {getMediaState(participant.session_id, participant).audio ? (
                   <MicIcon color='#000000' className='size-12' />
                 ) : (
                   <MicOffIcon color='#dc2626' className='size-12' />
                 )}
-                {renderMediaState(participant.session_id).videoState ? (
+                {getMediaState(participant.session_id, participant).video ? (
                   <VideoIcon color='#000000' className='size-12' />
                 ) : (
                   <VideoOffIcon color='#dc2626' className='size-12' />

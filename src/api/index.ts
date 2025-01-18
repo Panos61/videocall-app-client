@@ -8,6 +8,7 @@ import type {
   SetInvitation,
   Settings,
   UpdateSettings,
+  Media,
 } from '@/types';
 
 const api = axios.create({
@@ -119,13 +120,15 @@ export const startCall = async (
   roomID: string,
   username: string,
   avatar_src: string | null | undefined,
-  jwtToken: string | null
+  jwtToken: string | null,
+  mediaState: Media
 ) => {
   const response = await axios.post(
     `http://localhost:8080/start-call/${roomID}`,
     {
       username,
       avatar_src,
+      media: mediaState,
     },
     {
       headers: {

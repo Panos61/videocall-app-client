@@ -36,6 +36,11 @@ export interface LeaveRoom {
   leftRoom: boolean;
 }
 
+export interface Media {
+  audio: boolean;
+  video: boolean;
+}
+
 export interface Settings {
   invitation_expiry: string;
 }

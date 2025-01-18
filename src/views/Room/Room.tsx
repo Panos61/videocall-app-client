@@ -392,17 +392,17 @@ export const Room = () => {
       <div className={roomContainerCls}>
         {userSession
           .filter((session) => session !== sessionID)
-          .map((session, index) => {
+          .map((remoteSession, index) => {
             return (
               <VideoTile
-                key={session}
+                key={remoteSession}
                 index={index}
-                participant={remoteParticipant(session)}
-                userSession={session}
+                participant={remoteParticipant(remoteSession)}
+                remoteSession={remoteSession}
                 localStream={localStream}
                 isLocal={false}
                 mediaState={mediaState}
-                // remoteMediaStates={remoteMediaStates}
+                remoteMediaStates={remoteMediaStates}
                 gridCls={videoTileClass[index]}
               />
             );
@@ -414,6 +414,7 @@ export const Room = () => {
           localStream={localStream}
           isLocal={true}
           mediaState={mediaState}
+          remoteMediaStates={remoteMediaStates}
           gridCls={videoTileClass[totalVideos - 1]}
         />
       </div>
