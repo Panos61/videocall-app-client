@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useEffect, useCallback } from 'react';
+import { forwardRef, useRef, useEffect } from 'react';
 import { MicIcon, MicOffIcon } from 'lucide-react';
 import type { Participant } from '@/types';
 import { Avatar } from '@/components/elements';
@@ -84,7 +84,7 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
     );
   };
 
-  const renderRemotePreview = useCallback(() => {
+  const renderRemotePreview = () => {
     if (!remoteSession || !participant) return;
 
     if (participant.media.video || remoteMediaStates[remoteSession]?.video) {
@@ -108,7 +108,7 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
         />
       </div>
     );
-  }, [videoID, index, ref, remoteSession, remoteMediaStates, participant]);
+  };
 
   const getMediaState = () => {
     if (isLocal) {

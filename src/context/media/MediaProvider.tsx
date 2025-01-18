@@ -44,12 +44,9 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       const socket = new WebSocket(`${BASE_WS_URL}${route}`);
-
-      // Store socket reference before setting up handlers
       ws.current = socket;
 
       socket.onopen = () => {
-        console.log('Media connection established');
         // Only send auth if socket is still the current one
         if (ws.current === socket) {
           socket.send(
@@ -64,12 +61,10 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
       };
 
       socket.onclose = () => {
-        console.log('Media connection closed');
         setIsConnected(false);
       };
 
-      socket.onerror = (error) => {
-        console.error('Media connection error:', error);
+      socket.onerror = () => {
         setIsConnected(false);
       };
 
@@ -78,15 +73,11 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
 
         try {
           const data = JSON.parse(event.data);
-          console.log('Media WS - Parsed message:', data);
 
-          // Handle error messages from backend
           if (data.error) {
-            console.error('Media WS - Server error:', data.error);
             return;
           }
 
-          // Handle media state updates
           if (data.sessionID && data.media) {
             if (data.sessionID !== sessionID) {
               setRemoteMediaStates((prev) => ({
@@ -95,12 +86,10 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
               }));
             }
           }
-          console.log('remoteMediaStates', remoteMediaStates);
         } catch (error) {
           console.error('Media WS - Failed to parse message:', error);
         }
       };
-      console.log('remoteMediaStates', remoteMediaStates);
     } catch (error) {
       console.error('Failed to establish WebSocket connection:', error);
       setIsConnected(false);
