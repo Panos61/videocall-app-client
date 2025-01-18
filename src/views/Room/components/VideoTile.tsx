@@ -75,10 +75,12 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
     }
 
     return (
-      <Avatar
-        src={participant?.avatar_src}
-        className='self-center object-cover flex-grow'
-      />
+      <div className='absolute inset-0 size-full flex items-center justify-center'>
+        <Avatar
+          src={participant?.avatar_src}
+          className='size-24 object-cover'
+        />
+      </div>
     );
   };
 
@@ -99,10 +101,12 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
     }
 
     return (
-      <Avatar
-        src={participant.avatar_src}
-        className='self-center object-cover flex-grow'
-      />
+      <div className='absolute inset-0 size-full flex items-center justify-center'>
+        <Avatar
+          src={participant.avatar_src}
+          className='size-24 object-cover'
+        />
+      </div>
     );
   }, [videoID, index, ref, remoteSession, remoteMediaStates, participant]);
 
