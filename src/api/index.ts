@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { buildMemoryStorage, setupCache } from 'axios-cache-interceptor';
 import type {
   CreateRoom,
@@ -10,6 +10,10 @@ import type {
   UpdateSettings,
   Media,
 } from '@/types';
+
+interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
 
 const api = axios.create({
   baseURL: 'http://localhost:8080',
@@ -31,6 +35,65 @@ export const checkCache = async (id: string) => {
   console.log('cache', cache);
   return cache;
 };
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('jwt_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    if (!error.config) {
+      return Promise.reject(error);
+    }
+
+    const originalRequest = error.config as CustomAxiosRequestConfig;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+
+      try {
+        const token = localStorage.getItem('jwt_token');
+        if (!token) {
+          localStorage.removeItem('jwt_token');
+          window.location.href = '/';
+          return Promise.reject(error);
+        }
+
+        const response = await axios.post(
+          'http://localhost:8080/refresh-token',
+          {},
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.token) {
+          const newToken = response.data.token;
+          localStorage.setItem('jwt_token', newToken);
+
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        localStorage.removeItem('jwt_token');
+        window.location.href = '/';
+        return Promise.reject(refreshError);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const createRoom = async () => {
   const response = await axios.get<CreateRoom>(
@@ -69,8 +132,8 @@ export const validateInvitation = async (code: string, room_id: string) => {
 };
 
 export const joinRoom = async (roomID: string) => {
-  const response = await axios.post<JoinRoom>(
-    `http://localhost:8080/join-room/${roomID}`,
+  const response = await api.post<JoinRoom>(
+    `/join-room/${roomID}`,
 
     {
       headers: {
@@ -83,15 +146,12 @@ export const joinRoom = async (roomID: string) => {
 };
 
 export const leaveRoom = async (roomID: string, jwtToken: string | null) => {
-  const response = await axios.get<LeaveRoom>(
-    `http://localhost:8080/leave-room/${roomID}`,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwtToken}`,
-      },
-    }
-  );
+  const response = await api.get<LeaveRoom>(`/leave-room/${roomID}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${jwtToken}`,
+    },
+  });
 
   return response.data;
 };
@@ -99,13 +159,13 @@ export const leaveRoom = async (roomID: string, jwtToken: string | null) => {
 export const getMe = async (roomID: string, jwt: string) => {
   try {
     const response = await cachedAxiosApi.post(
-      `http://localhost:8080/get-me/${roomID}`,
+      `/get-me/${roomID}`,
       {
         id: 'me',
       },
       {
         headers: {
-          Authorization: `Bearer ${jwt}`
+          Authorization: `Bearer ${jwt}`,
         },
       }
     );
@@ -123,8 +183,8 @@ export const startCall = async (
   jwtToken: string | null,
   mediaState: Media
 ) => {
-  const response = await axios.post(
-    `http://localhost:8080/start-call/${roomID}`,
+  const response = await api.post(
+    `/start-call/${roomID}`,
     {
       username,
       avatar_src,
@@ -143,10 +203,9 @@ export const startCall = async (
 
 export const getSettings = async (roomID: string) => {
   try {
-    const response = await cachedAxiosApi.get<Settings>(
-      `http://localhost:8080/settings/${roomID}`,
-      { id: 'settings' }
-    );
+    const response = await cachedAxiosApi.get<Settings>(`/settings/${roomID}`, {
+      id: 'settings',
+    });
 
     return response.data;
   } catch (error) {
@@ -165,7 +224,7 @@ export const updateSettings = async (
 ) => {
   try {
     const response = await cachedAxiosApi.post<UpdateSettings>(
-      `http://localhost:8080/update-settings/${roomID}`,
+      `/update-settings/${roomID}`,
       {
         invitation_expiry,
       },
@@ -198,8 +257,8 @@ export const getRoomParticipants = async (roomID: string) => {
 };
 
 export const setSession = async (roomID: string, jwt: string | null) => {
-  const response = await axios.post(
-    `http://localhost:8080/set-session/${roomID}`,
+  const response = await api.post(
+    `/set-session/${roomID}`,
     {},
     {
       headers: {
