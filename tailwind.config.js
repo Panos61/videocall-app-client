@@ -34,7 +34,8 @@ const config = {
       xlg: '1399px',
     },
     backgroundImage: {
-      'custom-bg': "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'%3E%3Cpolygon fill='%232a0b8e' points='957 450 539 900 1396 900'/%3E%3Cpolygon fill='%239262cf' points='957 450 872.9 900 1396 900'/%3E%3Cpolygon fill='%230e47b6' points='-60 900 398 662 816 900'/%3E%3Cpolygon fill='%237564cf' points='337 900 398 662 816 900'/%3E%3Cpolygon fill='%237051d6' points='1203 546 1552 900 876 900'/%3E%3Cpolygon fill='%236557df' points='1203 546 1552 900 1162 900'/%3E%3Cpolygon fill='%236f64c9' points='641 695 886 900 367 900'/%3E%3Cpolygon fill='%235148eb' points='587 900 641 695 886 900'/%3E%3Cpolygon fill='%237f71bc' points='1710 900 1401 632 1096 900'/%3E%3Cpolygon fill='%237b2ff7' points='1710 900 1401 632 1365 900'/%3E%3Cpolygon fill='%238c86a4' points='1210 900 971 687 725 900'/%3E%3Cpolygon fill='%236a11fb' points='943 900 1210 900 971 687'/%3E%3C/svg%3E\")",
+      'custom-bg':
+        "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900'%3E%3Cpolygon fill='%232a0b8e' points='957 450 539 900 1396 900'/%3E%3Cpolygon fill='%239262cf' points='957 450 872.9 900 1396 900'/%3E%3Cpolygon fill='%230e47b6' points='-60 900 398 662 816 900'/%3E%3Cpolygon fill='%237564cf' points='337 900 398 662 816 900'/%3E%3Cpolygon fill='%237051d6' points='1203 546 1552 900 876 900'/%3E%3Cpolygon fill='%236557df' points='1203 546 1552 900 1162 900'/%3E%3Cpolygon fill='%236f64c9' points='641 695 886 900 367 900'/%3E%3Cpolygon fill='%235148eb' points='587 900 641 695 886 900'/%3E%3Cpolygon fill='%237f71bc' points='1710 900 1401 632 1096 900'/%3E%3Cpolygon fill='%237b2ff7' points='1710 900 1401 632 1365 900'/%3E%3Cpolygon fill='%238c86a4' points='1210 900 971 687 725 900'/%3E%3Cpolygon fill='%236a11fb' points='943 900 1210 900 971 687'/%3E%3C/svg%3E\")",
     },
     boxShadow: {
       'border-b': '0px 1px 0px 0px #eeeeee',
@@ -127,19 +128,17 @@ const config = {
           '0%': { transform: 'translateX(100%) scale(0.5)', opacity: '0' },
           '50%': { transform: 'translateX(0) scale(1.2)' },
           '100%': { transform: 'translateX(0) scale(1)', opacity: '1' },
-        }
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
         pulse: 'pulse 2.7s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-        'circle-entrance': 'slide-scale 1.5s ease-out forwards'
+        'circle-entrance': 'slide-scale 1.5s ease-out forwards',
       },
     },
   },
-  plugins: [
-    import('tailwindcss-animate'),
-  ],
+  plugins: [],
 };
 
 export default config;
