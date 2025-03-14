@@ -88,7 +88,7 @@ export const Home = () => {
   
 
   const cardCls = classNames(
-    'w-auto p-12 drop-shadow transition-all duration-700 ease-in-out overflow-hidden bg-white bg-opacity-90',
+    'w-auto p-12 drop-shadow-sm transition-all duration-700 ease-in-out overflow-hidden bg-white bg-opacity-90',
     {
       'h-[340px]': displayInput,
       'h-[246px]': !displayInput,
