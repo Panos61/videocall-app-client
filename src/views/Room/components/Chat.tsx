@@ -25,7 +25,7 @@ const Chat = ({ open, onClose }: Props) => {
           <div className='flex gap-4 w-full'>
             <input
               placeholder='Send a message to everyone'
-              className='flex-1 py-12 px-4 rounded-12 text-sm font-light indent-16 bg-gray-200 outline-none duration-300 ease-in-out hover:bg-gray-100 focus:outline-none focus:bg-gray-100'
+              className='flex-1 py-12 px-4 rounded-12 text-sm font-light indent-16 bg-gray-200 outline-hidden duration-300 ease-in-out hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100'
             />
             <button className='p-12 rounded-8 duration-200 hover:bg-green-200'>
               <SendHorizonalIcon size={20} className='text-green-600' />

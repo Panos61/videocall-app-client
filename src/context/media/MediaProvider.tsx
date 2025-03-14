@@ -20,8 +20,8 @@ export interface Props {
   disconnectMedia: () => void;
   mediaState: MediaState;
   remoteMediaStates: RemoteMediaState;
-  setAudioState: (enabled: boolean, sessionID: string) => Promise<void>;
-  setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
+  setAudioState: (enabled: boolean, sessionID?: string) => Promise<void>;
+  setVideoState: (enabled: boolean, sessionID?: string) => Promise<void>;
 }
 
 export const MediaContext = createContext<Props | undefined>(undefined);

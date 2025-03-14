@@ -380,7 +380,7 @@ export const Room = () => {
   );
 
   const actionsCls = classNames(
-    'flex-grow relative mx-48 mt-48 mb-24 transition-all duration-300 ease-in-out',
+    'grow relative mx-48 mt-48 mb-24 transition-all duration-300 ease-in-out',
     {
       'mr-[428px]': activePanel !== null,
       'mr-[48px]': activePanel === null,
