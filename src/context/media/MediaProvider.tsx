@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useState, useRef } from 'react';
+import Cookie from 'js-cookie';
 import { BASE_WS_URL } from '@/utils/constants';
 
 interface MediaState {
@@ -39,7 +40,7 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
     // Clean up any existing connection
     disconnectMedia();
 
-    const jwt = localStorage.getItem('jwt_token');
+    const jwt = Cookie.get('rsCookie');
     if (!jwt) return;
 
     try {

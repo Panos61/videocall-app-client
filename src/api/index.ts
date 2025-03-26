@@ -1,5 +1,6 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { buildMemoryStorage, setupCache } from 'axios-cache-interceptor';
+import Cookie from 'js-cookie';
 import type {
   CreateRoom,
   ValidateInvitation,
@@ -38,7 +39,7 @@ export const checkCache = async (id: string) => {
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('jwt_token');
+    const token = Cookie.get('rsCookie');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -60,9 +61,9 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const token = localStorage.getItem('jwt_token');
+        const token = Cookie.get('rsCookie');
         if (!token) {
-          localStorage.removeItem('jwt_token');
+          Cookie.remove('rsCookie');
           window.location.href = '/';
           return Promise.reject(error);
         }
@@ -80,13 +81,13 @@ api.interceptors.response.use(
 
         if (response.data.token) {
           const newToken = response.data.token;
-          localStorage.setItem('jwt_token', newToken);
+          Cookie.set('rsCookie', newToken);
 
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return api(originalRequest);
         }
       } catch (refreshError) {
-        localStorage.removeItem('jwt_token');
+        Cookie.remove('rsCookie');
         window.location.href = '/';
         return Promise.reject(refreshError);
       }
@@ -145,7 +146,7 @@ export const joinRoom = async (roomID: string) => {
   return response.data;
 };
 
-export const leaveRoom = async (roomID: string, jwtToken: string | null) => {
+export const leaveRoom = async (roomID: string, jwtToken: string | undefined) => {
   const response = await api.get<LeaveRoom>(`/leave-room/${roomID}`, {
     headers: {
       'Content-Type': 'application/json',
@@ -180,7 +181,7 @@ export const startCall = async (
   roomID: string,
   username: string,
   avatar_src: string | null | undefined,
-  jwtToken: string | null,
+  jwtToken: string | undefined,
   mediaState: Media
 ) => {
   const response = await api.post(
@@ -256,7 +257,7 @@ export const getRoomParticipants = async (roomID: string) => {
   return response.data.roomParticipants;
 };
 
-export const setSession = async (roomID: string, jwt: string | null) => {
+export const setSession = async (roomID: string, jwt: string | undefined) => {
   const response = await api.post(
     `/set-session/${roomID}`,
     {},
