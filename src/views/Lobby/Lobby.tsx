@@ -56,7 +56,7 @@ export const Lobby = () => {
 
     fetchMe();
   }, [roomID, jwt]);
-  
+
   useEffect(() => {
     const handleGetSettings = async () => {
       try {
@@ -76,23 +76,26 @@ export const Lobby = () => {
     <>
       <div className='grid grid-cols-4 h-screen'>
         <div className='col-span-1 flex items-center justify-center'>
-          <div className='w-full mx-48'>
-            <h3 className='mb-20 text-center text-xl font-semibold tracking-tight'>
-              {meData?.isHost ? 'Start Call' : 'Join Call'}
-            </h3>
-            <Form
-              isHost={meData?.isHost}
-              setUsername={setUsername}
-              avatarSrc={avatarSrc}
-            />
-            <Actions
-              me={meData}
-              settings={settings}
-              mediaState={mediaState}
-              setAudioState={setAudioState}
-              setVideoState={setVideoState}
-            />
-            <Participants participants={participants} />
+          <div className='flex flex-col gap-32 w-full h-screen mx-48'>
+            <span className='mt-48 text-3xl font-bold font-mono'>Rooms_</span>
+            <div className='flex flex-col flex-1 justify-center'>
+              <h3 className='mb-20 text-center text-xl font-semibold tracking-tight'>
+                {meData?.isHost ? 'Start Call' : 'Join Call'}
+              </h3>
+              <Form
+                isHost={meData?.isHost}
+                setUsername={setUsername}
+                avatarSrc={avatarSrc}
+              />
+              <Actions
+                me={meData}
+                settings={settings}
+                mediaState={mediaState}
+                setAudioState={setAudioState}
+                setVideoState={setVideoState}
+              />
+              <Participants participants={participants} />
+            </div>
           </div>
         </div>
         <div className='col-span-3 flex items-center mr-48 my-48'>
