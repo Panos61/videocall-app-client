@@ -5,9 +5,11 @@ import Cookie from 'js-cookie';
 import type { Participant } from '@/types';
 import { checkCache, getRoomParticipants, getMe, getSettings } from '@/api';
 import { useMediaCtx } from '@/context';
+
+import Actions from './Actions';
 import Form from './Form';
 import Participants from './Participants';
-import { Preview, Actions } from './Preview';
+import Preview from './Preview';
 
 export const Lobby = () => {
   const { pathname } = useLocation();
