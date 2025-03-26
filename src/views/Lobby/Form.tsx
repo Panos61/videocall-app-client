@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import Cookie from 'js-cookie';
 
 import { setSession, startCall } from '@/api';
 import { useMediaCtx } from '@/context';
@@ -34,7 +35,7 @@ const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
   const navigate = useNavigate();
 
   const roomID: string = pathname.split('/')[2];
-  const jwt: string | null = localStorage.getItem('jwt_token');
+  const jwt: string | undefined = Cookie.get('rsCookie');
 
   const handleStartCall = async () => {
     try {

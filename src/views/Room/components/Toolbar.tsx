@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import Cookie from 'js-cookie';
 import { leaveRoom } from '@/api';
 import { useSignallingCtx } from '@/context/signalling';
 import {
@@ -44,7 +45,7 @@ const Toolbar = ({
   const location = useLocation();
   const { roomID } = location.state;
 
-  const jwt = localStorage.getItem('jwt_token');
+  const jwt: string | undefined = Cookie.get('rsCookie');
 
   const handleAudioState = () => {
     setAudioState(!mediaState.audio, sessionID);
@@ -104,7 +105,7 @@ const Toolbar = ({
       setVideoState(false, sessionID);
 
       navigate('/');
-      localStorage.removeItem('jwt_token');
+      Cookie.remove('rsCookie');
     } catch (error) {
       console.error('Error during leave:', error);
     }

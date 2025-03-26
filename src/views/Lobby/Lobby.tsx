@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import Cookie from 'js-cookie';
+
 import type { Participant } from '@/types';
 import { checkCache, getRoomParticipants, getMe, getSettings } from '@/api';
 import { useMediaCtx } from '@/context';
-
 import Form from './Form';
 import Participants from './Participants';
 import { Preview, Actions } from './Preview';
@@ -18,7 +19,7 @@ export const Lobby = () => {
   const [username, setUsername] = useState('');
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
-  const jwt = localStorage.getItem('jwt_token');
+  const jwt = Cookie.get('rsCookie');
   const roomID = pathname.split('/')[2];
 
   useEffect(() => {

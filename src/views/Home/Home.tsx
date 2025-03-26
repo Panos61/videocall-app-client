@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import Cookie from 'js-cookie';
 import classNames from 'classnames';
 import { createRoom } from '@/api';
 
@@ -28,19 +29,16 @@ export const Home = () => {
     formState: { errors, isValid },
   } = useForm({ mode: 'onChange', defaultValues: { invURL: '' } });
 
-  const invLink = watch('invURL');
-
+  const invitationLink = watch('invURL');
 
   const handleCreateRoom = async () => {
     try {
       const response = await createRoom();
-      
-      const roomID = response.id;
-      const { jwt } = response.participants;
+      const { id, participants } = response;
 
-      localStorage.setItem('jwt_token', jwt);
-      navigate(`/room/${roomID}`);
-      
+      Cookie.set('rsCookie', participants.jwt);
+      navigate(`/room/${id}`);
+
       toast({
         title: 'Created a room! 🎉',
         description: 'You can now join in. 🚀',
@@ -68,8 +66,8 @@ export const Home = () => {
 
   useEffect(() => {
     if (isValid && trigerValidation) {
-      const codeMatch = invLink.match(/code=([^&]+)/);
-      const roomMatch = invLink.match(/room=([^&]+)/);
+      const codeMatch = invitationLink.match(/code=([^&]+)/);
+      const roomMatch = invitationLink.match(/room=([^&]+)/);
 
       if (codeMatch && roomMatch) {
         const code = codeMatch[1];
@@ -84,8 +82,7 @@ export const Home = () => {
       setIsRedirectingSuccess(false);
       setTrigerValidation(false);
     }
-  }, [trigerValidation, isValid, invLink]);
-  
+  }, [trigerValidation, isValid, invitationLink]);
 
   const cardCls = classNames(
     'w-auto p-12 drop-shadow-sm transition-all duration-700 ease-in-out overflow-hidden bg-white bg-opacity-90',

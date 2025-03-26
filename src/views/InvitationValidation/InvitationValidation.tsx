@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import Cookie from 'js-cookie';
 import { validateInvitation, joinRoom } from '@/api';
 import { CircleCheckBig, CircleX } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,11 +58,13 @@ export const InvitationValidation = () => {
 
         try {
           const joinRoomResponse = await joinRoom(roomID);
-          if (joinRoomResponse.isAuthorized) {
+          const { isAuthorized, participant } = joinRoomResponse;
+          
+          if (isAuthorized) {
             await new Promise((resolve) => setTimeout(resolve, 1000));
             setIsSuccess(true);
             setIsValidating(false);
-            localStorage.setItem('jwt_token', joinRoomResponse.participant.jwt);
+            Cookie.set('rsCookie', participant.jwt);
 
             setTimeout(() => {
               navigate(`/room/${roomID}`, {
