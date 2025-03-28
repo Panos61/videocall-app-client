@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import type { Participant } from '@/types';
+import type { DevicePreferences } from '@/context/media/MediaProvider';
 import {
   ChevronUp,
   VideoIcon,
@@ -9,8 +11,11 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
 import { InviteModal, SettingsModal } from '@/components/elements';
@@ -21,6 +26,10 @@ interface Props {
   mediaState: { audio: boolean; video: boolean };
   setAudioState: (enabled: boolean) => Promise<void>;
   setVideoState: (enabled: boolean) => Promise<void>;
+  setAudioDevice: (device: DevicePreferences) => void;
+  setVideoDevice: (device: DevicePreferences) => void;
+  audioDevice: DevicePreferences | null;
+  videoDevice: DevicePreferences | null;
 }
 
 const Actions = ({
@@ -29,13 +38,67 @@ const Actions = ({
   mediaState,
   setAudioState,
   setVideoState,
+  setAudioDevice,
+  setVideoDevice,
+  audioDevice,
+  videoDevice,
 }: Props) => {
-  const handleAudioState = () => {
-    setAudioState(!mediaState.audio);
+  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
+  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
+
+  // get all devices as options
+  useEffect(() => {
+    const getDevices = async () => {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      setAudioDevices(devices.filter((device) => device.kind === 'audioinput'));
+      setVideoDevices(devices.filter((device) => device.kind === 'videoinput'));
+    };
+
+    getDevices();
+  }, []);
+
+  const handleAudioDeviceChange = async (deviceId: string, label: string) => {
+    setAudioDevice({ deviceId, label });
   };
 
-  const handleVideoState = () => {
-    setVideoState(!mediaState.video);
+  const handleVideoDeviceChange = async (deviceId: string, label: string) => {
+    setVideoDevice({ deviceId, label });
+  };
+
+  const renderDropdownMenu = (isAudio: boolean) => {
+    const devices = isAudio ? audioDevices : videoDevices;
+    const currentDevice = isAudio ? audioDevice : videoDevice;
+
+    return (
+      <DropdownMenuContent side='bottom' align='start'>
+        <DropdownMenuLabel>
+          {isAudio ? 'Audio Device' : 'Video Device'}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {devices.map((device) => {
+          const isChecked = currentDevice?.deviceId === device.deviceId;
+          return (
+            <DropdownMenuRadioGroup
+              key={device.deviceId}
+              value={currentDevice?.deviceId}
+              onValueChange={(deviceId) =>
+                isAudio
+                  ? handleAudioDeviceChange(deviceId, device.label)
+                  : handleVideoDeviceChange(deviceId, device.label)
+              }
+            >
+              <DropdownMenuRadioItem
+                key={device.deviceId}
+                value={device.deviceId}
+                disabled={isChecked}
+              >
+                {device.label}
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          );
+        })}
+      </DropdownMenuContent>
+    );
   };
 
   return (
@@ -50,19 +113,12 @@ const Actions = ({
               <ChevronUp className='size-16' />
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side='bottom' align='start'>
-            <DropdownMenuItem>
-              Macbook Pro Microphone (Built-in) (System default)
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              Microsoft Teams Audio Device (Virtual)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
+          {renderDropdownMenu(true)}
         </DropdownMenu>
         <Separator orientation='vertical' className='h-24 bg-gray-200' />
         <div
           className='w-32 h-full flex items-center justify-center duration-300 hover:bg-accent'
-          onClick={() => handleAudioState()}
+          onClick={() => setAudioState(!mediaState.audio)}
         >
           {mediaState.audio ? (
             <MicIcon className='size-16' />
@@ -81,16 +137,12 @@ const Actions = ({
               <ChevronUp className='size-16' />
             </div>
           </DropdownMenuTrigger>
-          <DropdownMenuContent side='bottom' align='start'>
-            <DropdownMenuItem>
-              FaceTime HD Camera (Built-in)
-            </DropdownMenuItem>
-          </DropdownMenuContent>
+          {renderDropdownMenu(false)}
         </DropdownMenu>
         <Separator orientation='vertical' className='h-24 bg-gray-200' />
         <div
           className='w-32 h-full flex items-center justify-center duration-300 hover:bg-accent'
-          onClick={() => handleVideoState()}
+          onClick={() => setVideoState(!mediaState.video)}
         >
           {mediaState.video ? (
             <VideoIcon className='size-16' />

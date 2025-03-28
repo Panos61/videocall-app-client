@@ -1,53 +1,98 @@
 import { useEffect, useRef } from 'react';
 import classNames from 'classnames';
 import { VideoIcon, MicIcon } from 'lucide-react';
+
+import type { DevicePreferences } from '@/context/media/MediaProvider';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/elements';
-
 interface Props {
   username: string;
   mediaState: { audio: boolean; video: boolean };
+  audioDevice: DevicePreferences | null;
+  videoDevice: DevicePreferences | null;
   onGetSrc: (src: string | null) => void;
 }
 
-const Preview = ({ username, mediaState, onGetSrc }: Props) => {
+const Preview = ({
+  username,
+  mediaState,
+  audioDevice,
+  videoDevice,
+  onGetSrc,
+}: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
-  useEffect(() => {
-    const openVideo = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: mediaState.audio,
-          video: mediaState.video,
+  const switchStream = async (constraints: MediaStreamConstraints) => {
+    try {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => {
+          track.stop();
         });
-        
-        mediaStreamRef.current = stream;
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-        }
-      } catch (error) {
-        console.error('Error accessing media devices:', error);
       }
+
+      const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+      mediaStreamRef.current = newStream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = newStream;
+      }
+    } catch (error) {
+      console.error('Error switching media devices:', error);
+    }
+  };
+
+  useEffect(() => {
+    const constraints = {
+      audio: mediaState.audio
+        ? {
+            deviceId: {
+              exact: audioDevice?.deviceId,
+            },
+          }
+        : false,
+      video: mediaState.video
+        ? {
+            deviceId: {
+              exact: videoDevice?.deviceId,
+            },
+          }
+        : false,
     };
 
-    if (mediaState.video) {
-      openVideo();
+    if (mediaState.audio || mediaState.video) {
+      switchStream(constraints);
+    } else {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
+        mediaStreamRef.current = null;
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
     }
 
     const videoElement = videoRef.current;
+
     return () => {
       if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current.getTracks().forEach((track) => {
+          track.stop();
+        });
         mediaStreamRef.current = null;
       }
-
       if (videoElement) {
         videoElement.srcObject = null;
       }
     };
-  }, [mediaState.audio, mediaState.video]);
+  }, [
+    mediaState.audio,
+    mediaState.video,
+    audioDevice,
+    videoDevice,
+  ]);
 
   const renderMediaBadge = () => {
     const activeBadges = [
