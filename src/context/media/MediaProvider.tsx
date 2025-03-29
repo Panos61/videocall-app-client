@@ -151,6 +151,12 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const getCurrentDevice = async () => {
       const devices = await navigator.mediaDevices.enumerateDevices();
+      
+      // Try to load saved preferences first
+      const savedAudio = JSON.parse(localStorage.getItem('rs-audio-device') || '{}');
+      const savedVideo = JSON.parse(localStorage.getItem('rs-video-device') || '{}');
+
+      // Find current devices
       const audioDevice = devices.find(
         (device) => device.kind === 'audioinput'
       );
@@ -158,23 +164,24 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
         (device) => device.kind === 'videoinput'
       );
 
-      const audioPreference = {
+      // Use saved preferences if they exist, otherwise use default devices
+      const audioPreference = savedAudio?.deviceId ? savedAudio : {
         deviceId: audioDevice?.deviceId,
         label: audioDevice?.label,
       };
-      const videoPreference = {
+      const videoPreference = savedVideo?.deviceId ? savedVideo : {
         deviceId: videoDevice?.deviceId,
         label: videoDevice?.label,
       };
 
-      setAudioDevice(audioPreference);
-      setVideoDevice(videoPreference);
+      setSelectedAudioDevice(audioPreference);
+      setSelectedVideoDevice(videoPreference);
 
-      sessionStorage.setItem(
+      localStorage.setItem(
         'rs-audio-device',
         JSON.stringify(audioPreference)
       );
-      sessionStorage.setItem(
+      localStorage.setItem(
         'rs-video-device',
         JSON.stringify(videoPreference)
       );
@@ -189,7 +196,7 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
       deviceId: device.deviceId,
       label: device.label,
     });
-    sessionStorage.setItem('rs-audio-device', JSON.stringify(device));
+    localStorage.setItem('rs-audio-device', JSON.stringify(device));
 
     if (mediaState.audio) {
       await setAudioState(false);
@@ -202,7 +209,7 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
       deviceId: device.deviceId,
       label: device.label,
     });
-    sessionStorage.setItem('rs-video-device', JSON.stringify(device));
+    localStorage.setItem('rs-video-device', JSON.stringify(device));
 
     if (mediaState.video) {
       await setVideoState(false);
