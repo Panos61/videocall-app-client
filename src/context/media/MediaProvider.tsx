@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useState, useRef } from 'react';
+import { createContext, ReactNode, useState, useRef, useEffect } from 'react';
 import Cookie from 'js-cookie';
 import { BASE_WS_URL } from '@/utils/constants';
 
@@ -16,16 +16,25 @@ interface Message {
   media: MediaState;
 }
 
-export interface Props {
+export interface DevicePreferences {
+  deviceId: string | undefined;
+  label: string | undefined;
+}
+
+export interface CtxProps {
   connectMedia: (roomID: string, sessionID: string) => void;
   disconnectMedia: () => void;
   mediaState: MediaState;
   remoteMediaStates: RemoteMediaState;
   setAudioState: (enabled: boolean, sessionID?: string) => Promise<void>;
   setVideoState: (enabled: boolean, sessionID?: string) => Promise<void>;
+  audioDevice: DevicePreferences | null;
+  videoDevice: DevicePreferences | null;
+  setAudioDevice: (device: DevicePreferences) => void;
+  setVideoDevice: (device: DevicePreferences) => void;
 }
 
-export const MediaContext = createContext<Props | undefined>(undefined);
+export const MediaContext = createContext<CtxProps | undefined>(undefined);
 
 export const MediaProvider = ({ children }: { children: ReactNode }) => {
   const ws = useRef<WebSocket | null>(null);
@@ -35,6 +44,10 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
     {}
   );
   const [isConnected, setIsConnected] = useState(false);
+  const [audioDevice, setSelectedAudioDevice] =
+    useState<DevicePreferences | null>(null);
+  const [videoDevice, setSelectedVideoDevice] =
+    useState<DevicePreferences | null>(null);
 
   const connectMedia = (route: string, sessionID: string) => {
     // Clean up any existing connection
@@ -134,6 +147,76 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // set current device preferences
+  useEffect(() => {
+    const getCurrentDevice = async () => {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      
+      // Try to load saved preferences first
+      const savedAudio = JSON.parse(localStorage.getItem('rs-audio-device') || '{}');
+      const savedVideo = JSON.parse(localStorage.getItem('rs-video-device') || '{}');
+
+      // Find current devices
+      const audioDevice = devices.find(
+        (device) => device.kind === 'audioinput'
+      );
+      const videoDevice = devices.find(
+        (device) => device.kind === 'videoinput'
+      );
+
+      // Use saved preferences if they exist, otherwise use default devices
+      const audioPreference = savedAudio?.deviceId ? savedAudio : {
+        deviceId: audioDevice?.deviceId,
+        label: audioDevice?.label,
+      };
+      const videoPreference = savedVideo?.deviceId ? savedVideo : {
+        deviceId: videoDevice?.deviceId,
+        label: videoDevice?.label,
+      };
+
+      setSelectedAudioDevice(audioPreference);
+      setSelectedVideoDevice(videoPreference);
+
+      localStorage.setItem(
+        'rs-audio-device',
+        JSON.stringify(audioPreference)
+      );
+      localStorage.setItem(
+        'rs-video-device',
+        JSON.stringify(videoPreference)
+      );
+    };
+
+    getCurrentDevice();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setAudioDevice = async (device: DevicePreferences) => {
+    setSelectedAudioDevice({
+      deviceId: device.deviceId,
+      label: device.label,
+    });
+    localStorage.setItem('rs-audio-device', JSON.stringify(device));
+
+    if (mediaState.audio) {
+      await setAudioState(false);
+      await setAudioState(true);
+    }
+  };
+
+  const setVideoDevice = async (device: DevicePreferences) => {
+    setSelectedVideoDevice({
+      deviceId: device.deviceId,
+      label: device.label,
+    });
+    localStorage.setItem('rs-video-device', JSON.stringify(device));
+
+    if (mediaState.video) {
+      await setVideoState(false);
+      await setVideoState(true);
+    }
+  };
+
   return (
     <MediaContext.Provider
       value={{
@@ -143,6 +226,10 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
         mediaState,
         setAudioState,
         setVideoState,
+        setAudioDevice,
+        setVideoDevice,
+        audioDevice,
+        videoDevice,
       }}
     >
       {children}

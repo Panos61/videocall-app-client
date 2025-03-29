@@ -1,8 +1,8 @@
 import { useContext } from 'react';
-import type { Props } from './MediaProvider';
+import type { CtxProps } from './MediaProvider';
 import { MediaContext } from './MediaProvider';
 
-export const useMediaCtx = (): Props => {
+export const useMediaCtx = (): CtxProps => {
   const context = useContext(MediaContext);
 
   if (!context) {

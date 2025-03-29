@@ -3,15 +3,25 @@ import { useLocation } from 'react-router-dom';
 import Cookie from 'js-cookie';
 
 import type { Participant } from '@/types';
-import { checkCache, getRoomParticipants, getMe, getSettings } from '@/api';
+import { getRoomParticipants, getMe, getSettings } from '@/api';
 import { useMediaCtx } from '@/context';
+
+import Actions from './Actions';
 import Form from './Form';
 import Participants from './Participants';
-import { Preview, Actions } from './Preview';
+import Preview from './Preview';
 
 export const Lobby = () => {
   const { pathname } = useLocation();
-  const { mediaState, setAudioState, setVideoState } = useMediaCtx();
+  const {
+    mediaState,
+    setAudioState,
+    setVideoState,
+    setAudioDevice,
+    setVideoDevice,
+    audioDevice,
+    videoDevice,
+  } = useMediaCtx();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [meData, setMeData] = useState<Participant | undefined>();
@@ -41,11 +51,6 @@ export const Lobby = () => {
   useEffect(() => {
     const fetchMe = async () => {
       if (!jwt || !roomID) return;
-
-      const cachedData = checkCache('me');
-      if (cachedData) {
-        console.log('Using cached data:', cachedData);
-      }
 
       try {
         const meResponseData = await getMe(roomID, jwt);
@@ -78,7 +83,7 @@ export const Lobby = () => {
       <div className='grid grid-cols-4 h-screen'>
         <div className='col-span-1 flex items-center justify-center'>
           <div className='flex flex-col gap-32 w-full h-screen mx-48'>
-            <span className='mt-48 text-3xl font-bold font-mono'>Rooms_</span>
+            <span className='mt-48 text-3xl font-black font-mono'>Rooms_</span>
             <div className='flex flex-col flex-1 justify-center'>
               <h3 className='mb-20 text-center text-xl font-semibold tracking-tight'>
                 {meData?.isHost ? 'Start Call' : 'Join Call'}
@@ -94,15 +99,39 @@ export const Lobby = () => {
                 mediaState={mediaState}
                 setAudioState={setAudioState}
                 setVideoState={setVideoState}
+                setAudioDevice={setAudioDevice}
+                setVideoDevice={setVideoDevice}
+                audioDevice={audioDevice}
+                videoDevice={videoDevice}
               />
               <Participants participants={participants} />
+              <div
+                className='flex flex-col gap-8 p-8 mt-76 outline outline-slate-200 rounded-4 
+                shadow-[0_4px_20px_-4px_rgba(0,0,255,0.1)]
+                transition-shadow duration-300'
+              >
+                <div className='flex items-center gap-16'>
+                  <span className='text-xs'>Audio:</span>
+                  <span className='text-xs text-muted-foreground'>
+                    {audioDevice?.label}
+                  </span>
+                </div>
+                <div className='flex items-center gap-16'>
+                  <span className='text-xs'>Video:</span>
+                  <span className='text-xs text-muted-foreground'>
+                    {videoDevice?.label}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
-        <div className='col-span-3 flex items-center mr-48 my-48'>
+        <div className='col-span-3 flex items-center mr-48 mt-48 mb-24'>
           <Preview
             username={username}
             mediaState={mediaState}
+            audioDevice={audioDevice}
+            videoDevice={videoDevice}
             onGetSrc={setAvatarSrc}
           />
         </div>
