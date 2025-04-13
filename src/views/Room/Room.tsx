@@ -312,6 +312,8 @@ export const Room = () => {
               return updatedParticipants;
             });
 
+            setShouldUpdateParticipants(true);
+
             delete remoteStreams.current[data.sessionID];
             if (rtcPeerConnection.current[data.sessionID]) {
               disconnect();
