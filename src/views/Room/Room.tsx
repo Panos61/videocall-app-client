@@ -48,6 +48,19 @@ export const Room = () => {
   const { initializePC, addICECandidate, disconnect } =
     usePeerConnection(ICE_SERVERS);
 
+  const updateUserSession = (sessionID: string, action: 'add' | 'remove') => {
+    setUserSession((prevState) => {
+      if (action === 'add') {
+        return prevState.includes(sessionID)
+          ? prevState
+          : [...prevState, sessionID];
+      } else {
+        return prevState.filter((id) => id !== sessionID);
+      }
+    });
+    setShouldUpdateParticipants(true);
+  };
+
   useEffect(() => {
     const handleGetRoomParticipants = async () => {
       try {
@@ -191,12 +204,7 @@ export const Room = () => {
 
       switch (data.type) {
         case 'session_joined':
-          setUserSession((prev) => {
-            if (!prev.includes(data.sessionID)) {
-              return [...prev, data.sessionID];
-            }
-            return prev;
-          });
+          updateUserSession(data.sessionID, 'add');
 
           if (isCallInitiator) {
             sendMessage({
@@ -204,18 +212,11 @@ export const Room = () => {
               sessionID,
             });
           }
-
-          setShouldUpdateParticipants(true);
           break;
 
         case 'start_call':
           if (data.sessionID !== sessionID) {
-            setUserSession((prevState) =>
-              prevState.indexOf(data.sessionID) < 0
-                ? prevState.concat(data.sessionID)
-                : prevState
-            );
-
+            updateUserSession(data.sessionID, 'add');
             setIsPolite(true);
 
             if (localStream) {
@@ -248,11 +249,7 @@ export const Room = () => {
           break;
 
         case 'offer':
-          setUserSession((prevState) =>
-            prevState.indexOf(data.sessionID) < 0
-              ? prevState.concat(data.sessionID)
-              : prevState
-          );
+          updateUserSession(data.sessionID, 'add');
 
           try {
             const offerCollision =
@@ -305,14 +302,7 @@ export const Room = () => {
 
         case 'disconnect':
           if (data.sessionID !== sessionID) {
-            setUserSession((prevParticipants) => {
-              const updatedParticipants = prevParticipants.filter(
-                (sessionID) => sessionID !== data.sessionID
-              );
-              return updatedParticipants;
-            });
-
-            setShouldUpdateParticipants(true);
+            updateUserSession(data.sessionID, 'remove');
 
             delete remoteStreams.current[data.sessionID];
             if (rtcPeerConnection.current[data.sessionID]) {
