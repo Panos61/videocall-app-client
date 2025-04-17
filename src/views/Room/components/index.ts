@@ -1,6 +1,6 @@
-import VideoTile from './VideoTile';
-import Toolbar from './Toolbar';
-import Participants from './Participants';
 import Chat from './Chat';
+import Participants from './Participants';
+import Toolbar from './Toolbar';
+import VideoTile from './VideoTile';
 
-export { VideoTile, Toolbar, Participants, Chat };
+export { Chat, Participants, Toolbar, VideoTile };
