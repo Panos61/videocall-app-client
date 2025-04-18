@@ -359,10 +359,9 @@ export const Room = () => {
   }, [roomID, sessionID]);
 
   const { toast } = useToast();
-  const userEventsWS = useRef<WebSocket | null>(null);
 
-  console.log('userSession', userSession);
-  console.log('userSession.length', userSession.length);
+  const [displayHostBtn, setDisplayHostBtn] = useState<boolean>(false);
+  const userEventsWS = useRef<WebSocket | null>(null);
 
   // ws connection for user events (notifications)
   useEffect(() => {
@@ -372,34 +371,42 @@ export const Room = () => {
 
     if (!userEventsWS.current) return;
 
-    userEventsWS.current.onmessage = (event: MessageEvent) => {
+    userEventsWS.current.onmessage = async (event: MessageEvent) => {
       const data: UserEvent = JSON.parse(event.data);
       const { payload } = data;
       const eventType: string = data.type;
 
       let text: string = '';
+      let shouldShowHostBtn: boolean = false;
 
       if (eventType === 'user_left') {
-        text = `${payload.participant_name} has left the call`;
+        text = `${payload.participant_name} has left the call.`;
       } else if (eventType === 'host_left') {
-        if (userSession.length <= 2) {
-          text =
-            'The previous host has left the call. You are now the host of the call';
-        } else {
-          text =
-            'The host has left the call. Be the first to make a move! After 30 seconds, the host will be chosen randomly.';
+        try {
+          const participants = await getRoomParticipants(roomID);
+
+          if (participants.length >= 2) {
+            shouldShowHostBtn = true;
+            setDisplayHostBtn(shouldShowHostBtn);
+            text =
+              'The host has left the call. Be the first to make a move! After 30 seconds, the host will be chosen randomly.';
+          } else {
+            text =
+              'The previous host has left the call. You are now the host of the call.';
+          }
+        } catch (error) {
+          text = 'The host has left the call.';
         }
       }
 
       const toastConfig = {
-        duration:
-          eventType === 'host_left' && userSession.length > 2 ? 30000 : 5000,
+        duration: shouldShowHostBtn ? 30000 : 5000,
         description: (
           <div className='flex items-center gap-8'>
             <LogOutIcon size={24} color='#fb2c36' />
             <div className='flex flex-col gap-4'>
               <span>{text}</span>
-              {eventType === 'host_left' && userSession.length > 2 && (
+              {shouldShowHostBtn && (
                 <Button size='sm' onClick={() => console.log('make me host')}>
                   Make me host 🙌
                 </Button>
@@ -410,6 +417,11 @@ export const Room = () => {
       };
 
       toast(toastConfig);
+
+      // Update the local participant list after showing the toast
+      if (eventType === 'host_left' || eventType === 'user_left') {
+        setShouldUpdateParticipants(true);
+      }
     };
 
     return () => {
@@ -418,7 +430,7 @@ export const Room = () => {
       }
       userEventsWS.current = null;
     };
-  }, [roomID, userSession, toast]);
+  }, [roomID, userSession, toast, displayHostBtn]);
 
   const localParticipant: Participant | undefined = participantList.find(
     (p) => p.session_id == sessionID
