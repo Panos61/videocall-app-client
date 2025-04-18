@@ -3,14 +3,17 @@ import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import classNames from 'classnames';
 import { useMediaQuery } from 'usehooks-ts';
+import { LogOutIcon } from 'lucide-react';
 
-import type { Participant } from '@/types';
+import type { Participant, UserEvent } from '@/types';
 import { useSignallingCtx, useMediaCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { usePeerConnection, ICE_SERVERS } from '@/webrtc';
+import { useToast } from '@/components/ui/use-toast';
 import { computeGridLayout } from './computeGridLayout';
 
 import { VideoTile, Toolbar, Participants, Chat } from './components';
+import { Button } from '@/components/ui/button';
 
 export const Room = () => {
   const { ws, connectSignalling, isConnected, sendMessage } =
@@ -354,6 +357,80 @@ export const Room = () => {
       disconnectMedia();
     };
   }, [roomID, sessionID]);
+
+  const { toast } = useToast();
+
+  const [displayHostBtn, setDisplayHostBtn] = useState<boolean>(false);
+  const userEventsWS = useRef<WebSocket | null>(null);
+
+  // ws connection for user events (notifications)
+  useEffect(() => {
+    userEventsWS.current = new WebSocket(
+      `ws://localhost:8080/ws/user-events/${roomID}`
+    );
+
+    if (!userEventsWS.current) return;
+
+    userEventsWS.current.onmessage = async (event: MessageEvent) => {
+      const data: UserEvent = JSON.parse(event.data);
+      const { payload } = data;
+      const eventType: string = data.type;
+
+      let text: string = '';
+      let shouldShowHostBtn: boolean = false;
+
+      if (eventType === 'user_left') {
+        text = `${payload.participant_name} has left the call.`;
+      } else if (eventType === 'host_left') {
+        try {
+          const participants = await getRoomParticipants(roomID);
+
+          if (participants.length >= 2) {
+            shouldShowHostBtn = true;
+            setDisplayHostBtn(shouldShowHostBtn);
+            text =
+              'The host has left the call. Be the first to make a move! After 30 seconds, the host will be chosen randomly.';
+          } else {
+            text =
+              'The previous host has left the call. You are now the host of the call.';
+          }
+        } catch (error) {
+          text = 'The host has left the call.';
+        }
+      }
+
+      const toastConfig = {
+        duration: shouldShowHostBtn ? 30000 : 5000,
+        description: (
+          <div className='flex items-center gap-8'>
+            <LogOutIcon size={24} color='#fb2c36' />
+            <div className='flex flex-col gap-4'>
+              <span>{text}</span>
+              {shouldShowHostBtn && (
+                <Button size='sm' onClick={() => console.log('make me host')}>
+                  Make me host 🙌
+                </Button>
+              )}
+            </div>
+          </div>
+        ),
+      };
+
+      toast(toastConfig);
+
+      // Update the local participant list after showing the toast
+      if (eventType === 'host_left' || eventType === 'user_left') {
+        setShouldUpdateParticipants(true);
+      }
+    };
+
+    return () => {
+      if (userEventsWS.current?.readyState === WebSocket.OPEN) {
+        userEventsWS.current.close(1000, 'Component unmounting');
+      }
+      userEventsWS.current = null;
+    };
+  }, [roomID, userSession, toast, displayHostBtn]);
 
   const localParticipant: Participant | undefined = participantList.find(
     (p) => p.session_id == sessionID

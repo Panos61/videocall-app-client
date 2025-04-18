@@ -20,7 +20,7 @@ export interface SignallingMessage {
   to?: string;
 }
 
-export interface CreateRoom{
+export interface CreateRoom {
   id: string;
   invKey: string;
   participants: Participant;
@@ -58,4 +58,12 @@ export interface ValidateInvitation {
   roomID: string;
   isValid: boolean;
   isExpired: boolean;
+}
+
+export interface UserEvent {
+  type: string;
+  payload: {
+    participant_id: string;
+    participant_name: string;
+  };
 }

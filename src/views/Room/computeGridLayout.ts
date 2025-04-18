@@ -17,7 +17,6 @@ export const computeGridLayout = (
   const gridCols = isMediumScreen ? 'grid-cols-1' : `grid-cols-${maxCols}`;
 
   //@ update it for more that 2-3 users
-  console.log(isMediumScreen);
   const gridRows = () => {
     if (isMediumScreen) {
       return 'grid-rows-2';
