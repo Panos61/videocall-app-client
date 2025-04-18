@@ -29,7 +29,6 @@ export const InvitationValidation = () => {
       setIsSuccess(false);
 
       try {
-        await new Promise((resolve) => setTimeout(resolve, 500));
 
         const validationResponse = await validateInvitation(
           invitationCode,
@@ -61,16 +60,16 @@ export const InvitationValidation = () => {
           const { isAuthorized, participant } = joinRoomResponse;
           
           if (isAuthorized) {
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // await new Promise((resolve) => setTimeout(resolve, 1000));
             setIsSuccess(true);
             setIsValidating(false);
             Cookie.set('rsCookie', participant.jwt);
 
-            setTimeout(() => {
+            // setTimeout(() => {
               navigate(`/room/${roomID}`, {
                 state: { roomID: roomID },
               });
-            }, 2000);
+            // }, 2000);
             toast({
               description: 'Successfully joined in! 🎉',
             });
