@@ -1,3 +1,4 @@
 import { Room } from './Room';
+import { RoomV2 } from './RoomV2';
 
-export default Room;
+export { Room, RoomV2 };
