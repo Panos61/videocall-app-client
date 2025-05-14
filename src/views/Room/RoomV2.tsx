@@ -25,10 +25,9 @@ import { computeGridLayout } from './computeGridLayout';
 import { Button } from '@/components/ui/button';
 import { VideoTile, Toolbar, Participants, Chat } from './components';
 
-// fix types
 interface TrackInfo {
-  track: LocalVideoTrack | RemoteVideoTrack; 
-  participantIdentity: string; 
+  track: LocalVideoTrack | RemoteVideoTrack;
+  participantIdentity: string;
 }
 
 export const RoomV2 = () => {
@@ -85,7 +84,9 @@ export const RoomV2 = () => {
       _publication: RemoteTrackPublication,
       participant: RemoteParticipant
     ) => {
-      console.log(`Track subscribed: ${track.kind} from ${participant.identity}`);
+      console.log(
+        `Track subscribed: ${track.kind} from ${participant.identity}`
+      );
       if (track.kind === Track.Kind.Video) {
         setRemoteTracks((prev) => [
           ...prev,
@@ -134,6 +135,9 @@ export const RoomV2 = () => {
           newMap.delete(participant.identity);
           return newMap;
         });
+        setRemoteTracks((prevTracks) =>
+          prevTracks.filter((track) => track.participantIdentity !== participant.identity)
+        );
         console.log('remoteParticipants: ', remoteParticipants);
       }
     );
@@ -364,19 +368,19 @@ export const RoomV2 = () => {
       <div className={roomContainerCls}>
         {remoteTracks.map((remoteTrack, index) => {
           console.log('remoteTrack: ', remoteTrack);
-          return remoteTrack.track.kind === 'video' ? (
-            <VideoTile
-              key={remoteTrack.track.sid}
-              index={index}
-              participant={remoteParticipant(remoteTrack.participantIdentity)}
-              track={remoteTrack.track}
-              remoteSession={remoteTrack.participantIdentity}
-              isLocal={false}
-              remoteMediaStates={remoteMediaStates}
-              gridCls={videoTileClass[index]}
-            />
-          ) : (
-            <h1 className='text-white'>ERROR</h1>
+          return (
+            remoteTrack.track.kind === 'video' && (
+              <VideoTile
+                key={remoteTrack.track.sid}
+                index={index}
+                participant={remoteParticipant(remoteTrack.participantIdentity)}
+                track={remoteTrack.track}
+                remoteSession={remoteTrack.participantIdentity}
+                isLocal={false}
+                remoteMediaStates={remoteMediaStates}
+                gridCls={videoTileClass[index]}
+              />
+            )
           );
         })}
         <VideoTile
