@@ -1,6 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { MediaProvider, SignallingProvider } from './context';
-import { Home, Lobby, RoomV2, InvitationValidation } from './views';
+import { Home, Lobby, Room, InvitationValidation } from './views';
 import { Toaster } from '@/components/ui/toaster';
 
 const App = () => {
@@ -15,7 +15,7 @@ const App = () => {
     },
     {
       path: '/room/:id/call',
-      element: <RoomV2 />,
+      element: <Room />,
     },
     {
       path: '/room-invite',
