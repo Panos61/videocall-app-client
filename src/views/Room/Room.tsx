@@ -17,7 +17,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import { LogOutIcon } from 'lucide-react';
 
 import type { Participant, SignallingMessage, UserEvent } from '@/types';
-import { useMediaCtx, useSignallingCtx } from '@/context';
+import { useMediaCtx, useSessionCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { useToast } from '@/components/ui/use-toast';
 import { computeGridLayout } from './computeGridLayout';
@@ -31,8 +31,8 @@ interface TrackInfo {
 }
 
 export const Room = () => {
-  const { ws, connectSignalling, isConnected, sendMessage } =
-    useSignallingCtx();
+  const { ws, connectSession, isConnected, sendMessage } =
+    useSessionCtx();
   // Media Context: websocket connection for media device control
   // todo: rename provider
   const {
@@ -250,7 +250,7 @@ export const Room = () => {
   }, [roomID, sessionID, remoteParticipants]);
 
   useEffect(() => {
-    connectSignalling(`/ws/signalling/${roomID}`);
+    connectSession(`/ws/signalling/${roomID}`);
 
     if (isConnected) sendMessage({ type: 'connect', sessionID });
 

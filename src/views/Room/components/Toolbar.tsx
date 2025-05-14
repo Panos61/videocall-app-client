@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import { Room } from 'livekit-client';
 import { leaveRoom } from '@/api';
-import { useSignallingCtx } from '@/context/signalling';
+import { useSessionCtx } from '@/context/session';
 import {
   VideoIcon,
   VideoOffIcon,
@@ -35,7 +35,7 @@ const Toolbar = ({
   activePanel,
   setActivePanel,
 }: Props) => {
-  const { sendMessage } = useSignallingCtx();
+  const { sendMessage } = useSessionCtx();
 
   const navigate = useNavigate();
   const location = useLocation();
