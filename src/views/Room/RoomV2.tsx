@@ -8,6 +8,9 @@ import {
   RemoteTrack,
   RemoteTrackPublication,
   RemoteParticipant,
+  VideoPresets,
+  LocalVideoTrack,
+  RemoteVideoTrack,
 } from 'livekit-client';
 import classNames from 'classnames';
 import { useMediaQuery } from 'usehooks-ts';
@@ -19,12 +22,20 @@ import { getRoomParticipants } from '@/api';
 import { useToast } from '@/components/ui/use-toast';
 import { computeGridLayout } from './computeGridLayout';
 
-import { VideoTile, Toolbar, Participants, Chat } from './components';
 import { Button } from '@/components/ui/button';
+import { VideoTile, Toolbar, Participants, Chat } from './components';
+
+// fix types
+interface TrackInfo {
+  track: LocalVideoTrack | RemoteVideoTrack; 
+  participantIdentity: string; 
+}
 
 export const RoomV2 = () => {
   const { ws, connectSignalling, isConnected, sendMessage } =
     useSignallingCtx();
+  // Media Context: websocket connection for media device control
+  // todo: rename provider
   const {
     connectMedia,
     disconnectMedia,
@@ -43,25 +54,62 @@ export const RoomV2 = () => {
   >(new Map());
   const [participantList, setParticipantList] = useState<Participant[]>([]);
 
-  const [localStream, setLocalStream] = useState<MediaStream>();
   const [lvkToken, setLvkToken] = useState<SignallingMessage['token'] | null>(
     null
   );
 
-  const localVideo = useRef<HTMLVideoElement>(null);
+  const [localTrack, setLocalTrack] = useState<LocalVideoTrack | undefined>(
+    undefined
+  );
+  const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
+
   const livekitRoom = useRef<Room | null>(null);
 
   const location = useLocation();
   const { roomID, sessionID } = location.state;
 
+  // Setup LiveKit room & event listeners
   useEffect(() => {
     livekitRoom.current = new Room({
       adaptiveStream: true,
       dynacast: true,
+      videoCaptureDefaults: {
+        resolution: VideoPresets.h720.resolution,
+      },
     });
 
     const room: Room = livekitRoom.current;
 
+    const handleTrackSubscribed = (
+      track: RemoteTrack,
+      _publication: RemoteTrackPublication,
+      participant: RemoteParticipant
+    ) => {
+      console.log(`Track subscribed: ${track.kind} from ${participant.identity}`);
+      if (track.kind === Track.Kind.Video) {
+        setRemoteTracks((prev) => [
+          ...prev,
+          {
+            track: track as RemoteVideoTrack,
+            participantIdentity: participant.identity,
+          },
+        ]);
+      }
+    };
+
+    const handleLocalTrackPublished = () => {
+      // Update the local track when it's published
+      const videoTrack = room?.localParticipant?.videoTrackPublications
+        .values()
+        .next().value?.videoTrack;
+      console.log('Local track published:', videoTrack);
+      setLocalTrack(videoTrack || undefined);
+    };
+
+    // Listen for local track published event
+    room.localParticipant.on('trackPublished', handleLocalTrackPublished);
+
+    // Add event listeners
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
 
@@ -93,134 +141,29 @@ export const RoomV2 = () => {
     room.on(RoomEvent.Disconnected, () => {
       console.log('Disconnected from room');
       setRemoteParticipants(new Map());
+      handleDisconnect();
     });
 
     return () => {
+      room.localParticipant.off('trackPublished', handleLocalTrackPublished);
       room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
       room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.disconnect();
     };
   }, []);
 
-  const handleTrackSubscribed = (
-    track: RemoteTrack,
-    _publication: RemoteTrackPublication,
-    participant: RemoteParticipant
-  ) => {
-    console.log(`Track subscribed: ${track.kind} from ${participant.identity}`);
+  const handleDisconnect = () => {
+    console.log('disconnecting...');
   };
 
   const handleTrackUnsubscribed = (track: RemoteTrack) => {
     track.detach();
   };
 
+  // Connect to LiveKit room
   useEffect(() => {
-    const handleGetRoomParticipants = async () => {
-      try {
-        const participantData: Participant[] = await getRoomParticipants(
-          roomID
-        );
-        
-        setParticipantList(participantData);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    handleGetRoomParticipants();
-  }, [roomID, sessionID, remoteParticipants]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const setupLocalStream = async () => {
-      if (localStream) return;
-
-      try {
-        const mediaConstraints: MediaStreamConstraints = {
-          audio: mediaState.audio,
-          video: mediaState.video,
-        };
-
-        if (mediaConstraints.audio || mediaConstraints.video) {
-          const stream = await navigator.mediaDevices.getUserMedia(
-            mediaConstraints
-          );
-
-          if (isMounted) {
-            setLocalStream(stream);
-          }
-        } else {
-          console.log(
-            'Both audio and video are disabled, no localStream acquired'
-          );
-        }
-      } catch (error) {
-        console.error('Error accessing media devices:', error);
-      }
-    };
-
-    setupLocalStream();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [mediaState.video, mediaState.audio]);
-
-  useEffect(() => {
-    if (localStream && localVideo.current) {
-      localVideo.current.srcObject = localStream;
-    }
-  }, [localStream]);
-
-  useEffect(() => {
-    if (localStream) {
-      localStream.getVideoTracks().forEach((track) => {
-        track.enabled = mediaState.video;
-      });
-
-      localStream.getAudioTracks().forEach((track) => {
-        track.enabled = mediaState.audio;
-      });
-    }
-
-    if (livekitRoom.current?.localParticipant) {
-      console.log('localParticipant: ', livekitRoom.current.localParticipant);
-      // const localParticipant = livekitRoom.current.localParticipant;
-      // const cameraPublication = localParticipant.getTrackPublication(
-      //   Track.Source.Camera
-      // );
-      // const microphonePublication = localParticipant.getTrackPublication(
-      //   Track.Source.Microphone
-      // );
-
-      // if (cameraPublication) {
-      //   cameraPublication.track?.
-      // }
-
-      // if (microphonePublication) {
-      //   microphonePublication.track?.setEnabled(mediaState.audio);
-      // }
-    }
-  }, [localStream, mediaState.audio, mediaState.video]);
-
-  useEffect(() => {
-    connectSignalling(`/ws/signalling/${roomID}`);
-
-    if (isConnected) sendMessage({ type: 'connect', sessionID });
-
-    if (!ws) return;
-    ws.onmessage = (event: MessageEvent) => {
-      const data: SignallingMessage = JSON.parse(event.data);
-      console.log('signalling msg: ', data);
-
-      const lvkToken = data?.token;
-      setLvkToken(lvkToken);
-    };
-  }, [ws, isConnected, sendMessage, localStream]);
-
-  useEffect(() => {
-    if (!livekitRoom.current) return;
+    const room = livekitRoom.current;
+    if (!room) return;
 
     const connectToRoom = async () => {
       try {
@@ -236,27 +179,29 @@ export const RoomV2 = () => {
         }
 
         // Pre-warm connection
-        livekitRoom.current?.prepareConnection(livekitUrl, lvkToken);
+        room?.prepareConnection(livekitUrl, lvkToken);
 
         // Connect to room
-        await livekitRoom.current?.connect(livekitUrl, lvkToken);
-        console.log(
-          'Connected to LiveKit room:',
-          livekitRoom.current?.numParticipants
-        );
+        await room.connect(livekitUrl, lvkToken);
+
+        const localParticipant = room?.localParticipant;
+        await localParticipant?.setCameraEnabled(true);
+        await localParticipant?.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
-        if (livekitRoom.current?.remoteParticipants) {
+        if (room?.remoteParticipants) {
           const participantsMap = new Map<string, RemoteParticipant>();
-          console.log(
-            'remoteParticipants: ',
-            livekitRoom.current.remoteParticipants
-          );
-          livekitRoom.current.remoteParticipants.forEach((participant) => {
+          console.log('remoteParticipants: ', room.remoteParticipants);
+          room.remoteParticipants.forEach((participant) => {
             participantsMap.set(participant.identity, participant);
           });
           setRemoteParticipants(participantsMap);
         }
+
+        setLocalTrack(
+          room?.localParticipant?.videoTrackPublications.values().next().value
+            ?.videoTrack || undefined
+        );
       } catch (error) {
         console.error('Error connecting to LiveKit room:', error);
       }
@@ -265,32 +210,36 @@ export const RoomV2 = () => {
     connectToRoom();
   }, [roomID, sessionID, lvkToken]);
 
-  // Publish local media when available
   useEffect(() => {
-    if (!localStream || !livekitRoom.current?.localParticipant) return;
-
-    // Publish all local tracks to the room
-    const publishTracks = async () => {
+    const handleGetRoomParticipants = async () => {
       try {
-        // Publish each track from the local stream
-        localStream.getTracks().forEach((track) => {
-          const source =
-            track.kind === 'video'
-              ? Track.Source.Camera
-              : Track.Source.Microphone;
+        const participantData: Participant[] = await getRoomParticipants(
+          roomID
+        );
 
-          livekitRoom.current?.localParticipant.publishTrack(track, {
-            source,
-            simulcast: track.kind === 'video', // Enable simulcast for video
-          });
-        });
+        setParticipantList(participantData);
       } catch (error) {
-        console.error('Error publishing tracks:', error);
+        console.log(error);
       }
     };
 
-    publishTracks();
-  }, [localStream]);
+    handleGetRoomParticipants();
+  }, [roomID, sessionID, remoteParticipants]);
+
+  useEffect(() => {
+    connectSignalling(`/ws/signalling/${roomID}`);
+
+    if (isConnected) sendMessage({ type: 'connect', sessionID });
+
+    if (!ws) return;
+    ws.onmessage = (event: MessageEvent) => {
+      const data: SignallingMessage = JSON.parse(event.data);
+      // console.log('signalling msg: ', data);
+
+      const lvkToken = data?.token;
+      setLvkToken(lvkToken);
+    };
+  }, [ws, isConnected, sendMessage]);
 
   useEffect(() => {
     const connect = async () => {
@@ -380,7 +329,6 @@ export const RoomV2 = () => {
     (p) => p.session_id == sessionID
   );
 
-
   const totalVideos = remoteParticipants.size + 1;
   const isMedium = useMediaQuery('(max-width: 1024px)');
 
@@ -402,8 +350,7 @@ export const RoomV2 = () => {
   const remoteUserSessions = Array.from(remoteParticipants.keys()).filter(
     (session) => session !== sessionID
   );
-  console.log('remoteUserSessions: ', remoteUserSessions);
-  
+
   const remoteParticipant = (remoteSessionID: string) => {
     const remoteSession = remoteUserSessions.find(
       (session) => session === remoteSessionID
@@ -415,26 +362,27 @@ export const RoomV2 = () => {
   return (
     <div className='flex flex-col w-full h-screen bg-black'>
       <div className={roomContainerCls}>
-        {remoteUserSessions.map((remoteSession, index) => {
-          return (
+        {remoteTracks.map((remoteTrack, index) => {
+          console.log('remoteTrack: ', remoteTrack);
+          return remoteTrack.track.kind === 'video' ? (
             <VideoTile
-                key={remoteSession}
-                index={index}
-                participant={remoteParticipant(remoteSession)}
-                remoteSession={remoteSession}
-                localStream={localStream}
-                isLocal={false}
-                mediaState={mediaState}
-                remoteMediaStates={remoteMediaStates}
-                gridCls={videoTileClass[index]}
-              />
-            );
-          })}
+              key={remoteTrack.track.sid}
+              index={index}
+              participant={remoteParticipant(remoteTrack.participantIdentity)}
+              track={remoteTrack.track}
+              remoteSession={remoteTrack.participantIdentity}
+              isLocal={false}
+              remoteMediaStates={remoteMediaStates}
+              gridCls={videoTileClass[index]}
+            />
+          ) : (
+            <h1 className='text-white'>ERROR</h1>
+          );
+        })}
         <VideoTile
           key='local-video'
-          ref={localVideo}
           participant={localParticipant}
-          localStream={localStream}
+          track={localTrack as LocalVideoTrack}
           isLocal={true}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}
@@ -445,9 +393,7 @@ export const RoomV2 = () => {
         <div className='flex justify-center items-center h-64 duration-300'>
           <Toolbar
             sessionID={sessionID}
-            localStream={localStream}
-            setLocalStream={setLocalStream}
-            localVideo={localVideo}
+            room={livekitRoom.current}
             mediaState={mediaState}
             setAudioState={setAudioState}
             setVideoState={setVideoState}
