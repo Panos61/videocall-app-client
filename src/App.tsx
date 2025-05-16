@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { MediaProvider, SessionProvider } from './context';
+import { MediaControlProvider, SessionProvider } from './context';
 import { Home, Lobby, Room, InvitationValidation } from './views';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -25,10 +25,10 @@ const App = () => {
 
   return (
     <SessionProvider>
-      <MediaProvider>
+      <MediaControlProvider>
         <RouterProvider router={router} />
         <Toaster />
-      </MediaProvider>
+      </MediaControlProvider>
     </SessionProvider>
   );
 };
