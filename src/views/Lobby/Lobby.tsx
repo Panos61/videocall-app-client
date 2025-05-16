@@ -4,7 +4,7 @@ import Cookie from 'js-cookie';
 
 import type { Participant } from '@/types';
 import { getRoomParticipants, getMe, getSettings } from '@/api';
-import { useMediaCtx } from '@/context';
+import { useMediaControlCtx } from '@/context';
 
 import Actions from './Actions';
 import Form from './Form';
@@ -23,7 +23,7 @@ export const Lobby = () => {
     setVideoDevice,
     audioDevice,
     videoDevice,
-  } = useMediaCtx();
+  } = useMediaControlCtx();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [meData, setMeData] = useState<Participant | undefined>();

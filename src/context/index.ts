@@ -1,9 +1,9 @@
-import { useMediaCtx, MediaProvider } from './media';
-import { SignallingProvider, useSignallingCtx } from './signalling';
+import { useMediaControlCtx, MediaControlProvider } from './media';
+import { SessionProvider, useSessionCtx } from './session';
 
 export {
-  useMediaCtx,
-  MediaProvider,
-  useSignallingCtx,
-  SignallingProvider,
+  useMediaControlCtx,
+  MediaControlProvider,
+  useSessionCtx,
+  SessionProvider,
 };

@@ -1,23 +1,39 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
+import {
+  Room as LivekitRoom,
+  RoomEvent,
+  Track,
+  RemoteTrack,
+  RemoteTrackPublication,
+  RemoteParticipant,
+  VideoPresets,
+  LocalVideoTrack,
+  RemoteVideoTrack,
+} from 'livekit-client';
 import classNames from 'classnames';
 import { useMediaQuery } from 'usehooks-ts';
 import { LogOutIcon } from 'lucide-react';
 
-import type { Participant, UserEvent } from '@/types';
-import { useSignallingCtx, useMediaCtx } from '@/context';
+import type { Participant, SignallingMessage, UserEvent } from '@/types';
+import { useSessionCtx, useMediaControlCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
-import { usePeerConnection, ICE_SERVERS } from '@/webrtc';
 import { useToast } from '@/components/ui/use-toast';
 import { computeGridLayout } from './computeGridLayout';
 
-import { VideoTile, Toolbar, Participants, Chat } from './components';
 import { Button } from '@/components/ui/button';
+import { VideoTile, Toolbar, Participants, Chat } from './components';
+
+interface TrackInfo {
+  track: LocalVideoTrack | RemoteVideoTrack;
+  participantIdentity: string;
+}
 
 export const Room = () => {
-  const { ws, connectSignalling, isConnected, sendMessage } =
-    useSignallingCtx();
+  // Signalling Context: websocket connection for session/livekit token exchange
+  const { ws, connectSession, isConnected, sendMessage } = useSessionCtx();
+  // Media Control Context: websocket connection for media device control
   const {
     connectMedia,
     disconnectMedia,
@@ -25,44 +41,190 @@ export const Room = () => {
     remoteMediaStates,
     setAudioState,
     setVideoState,
-  } = useMediaCtx();
+  } = useMediaControlCtx();
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
   >(null);
+
+  const [remoteParticipants, setRemoteParticipants] = useState<
+    Map<string, RemoteParticipant>
+  >(new Map());
   const [participantList, setParticipantList] = useState<Participant[]>([]);
-  const [userSession, setUserSession] = useState<string[]>([]);
-  const [shouldUpdateParticipants, setShouldUpdateParticipants] =
-    useState(false);
 
-  const [isPolite, setIsPolite] = useState(false);
-  const makingOffer = useRef(false);
-  const ignoreOffer = useRef(false);
+  const [lvkToken, setLvkToken] = useState<SignallingMessage['token'] | null>(
+    null
+  );
 
-  const [localStream, setLocalStream] = useState<MediaStream>();
-  const localVideo = useRef<HTMLVideoElement>(null);
+  const [localTrack, setLocalTrack] = useState<LocalVideoTrack | undefined>(
+    undefined
+  );
+  const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
 
-  const rtcPeerConnection = useRef<Record<string, RTCPeerConnection>>({});
-  const remoteStreams = useRef<Record<string, MediaStream>>({});
+  const livekitRoom = useRef<LivekitRoom | null>(null);
 
   const location = useLocation();
   const { roomID, sessionID } = location.state;
 
-  const { initializePC, addICECandidate, disconnect } =
-    usePeerConnection(ICE_SERVERS);
+  // Setup LiveKit room & event listeners
+  useEffect(() => {
+    livekitRoom.current = new LivekitRoom({
+      adaptiveStream: true,
+      dynacast: true,
+      videoCaptureDefaults: {
+        resolution: VideoPresets.h720.resolution,
+      },
+    });
 
-  const updateUserSession = (sessionID: string, action: 'add' | 'remove') => {
-    setUserSession((prevState) => {
-      if (action === 'add') {
-        return prevState.includes(sessionID)
-          ? prevState
-          : [...prevState, sessionID];
-      } else {
-        return prevState.filter((id) => id !== sessionID);
+    const room: LivekitRoom = livekitRoom.current;
+
+    const handleTrackSubscribed = (
+      track: RemoteTrack,
+      _publication: RemoteTrackPublication,
+      participant: RemoteParticipant
+    ) => {
+      console.log(
+        `Track subscribed: ${track.kind} from ${participant.identity}`
+      );
+      if (track.kind === Track.Kind.Video) {
+        setRemoteTracks((prev) => [
+          ...prev,
+          {
+            track: track as RemoteVideoTrack,
+            participantIdentity: participant.identity,
+          },
+        ]);
+      }
+    };
+
+    const handleLocalTrackPublished = () => {
+      // Update the local track when it's published
+      const videoTrack = room?.localParticipant?.videoTrackPublications
+        .values()
+        .next().value?.videoTrack;
+      console.log('Local track published:', videoTrack);
+      setLocalTrack(videoTrack || undefined);
+    };
+
+    // Listen for local track published event
+    room.localParticipant.on('trackPublished', handleLocalTrackPublished);
+
+    // Add event listeners
+    room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+    room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+
+    room.on(
+      RoomEvent.ParticipantConnected,
+      (participant: RemoteParticipant) => {
+        setRemoteParticipants((prevParticipants) => {
+          const newMap = new Map(prevParticipants);
+          newMap.set(participant.identity, participant);
+          return newMap;
+        });
+      }
+    );
+
+    room.on(
+      RoomEvent.ParticipantDisconnected,
+      (participant: RemoteParticipant) => {
+        console.log('Participant disconnected:', participant.identity);
+        setRemoteParticipants((prevParticipants) => {
+          const newMap = new Map(prevParticipants);
+          newMap.delete(participant.identity);
+          return newMap;
+        });
+        setRemoteTracks((prevTracks) =>
+          prevTracks.filter(
+            (track) => track.participantIdentity !== participant.identity
+          )
+        );
+        console.log('remoteParticipants: ', remoteParticipants);
+      }
+    );
+
+    room.on(RoomEvent.Disconnected, () => {
+      console.log('Disconnected from room');
+      setRemoteParticipants(new Map());
+      handleDisconnect();
+    });
+
+    room.on(RoomEvent.TrackMuted, (publication, participant) => {
+      if (publication.kind === Track.Kind.Video) {
+        console.log('Video track muted for', participant.identity);
       }
     });
-    setShouldUpdateParticipants(true);
+
+    room.on(RoomEvent.TrackUnmuted, (publication, participant) => {
+      if (publication.kind === Track.Kind.Video) {
+        console.log('Video track unmuted for', participant.identity);
+      }
+    });
+
+    return () => {
+      room.localParticipant.off('trackPublished', handleLocalTrackPublished);
+      room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+      room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+      room.disconnect();
+    };
+  }, []);
+
+  const handleDisconnect = () => {
+    console.log('disconnecting...');
   };
+
+  const handleTrackUnsubscribed = (track: RemoteTrack) => {
+    track.detach();
+  };
+
+  // Connect to LiveKit room
+  useEffect(() => {
+    const room = livekitRoom.current;
+    if (!room) return;
+
+    const connectToRoom = async () => {
+      try {
+        if (!lvkToken) {
+          console.error('Failed to get LiveKit token');
+          return;
+        }
+
+        const livekitUrl = import.meta.env.VITE_LIVEKIT_CLOUD_URL;
+        if (!livekitUrl) {
+          console.error('LiveKit URL is not set');
+          return;
+        }
+
+        // Pre-warm connection
+        room?.prepareConnection(livekitUrl, lvkToken);
+
+        // Connect to room
+        await room.connect(livekitUrl, lvkToken);
+
+        const localParticipant = room?.localParticipant;
+        await localParticipant?.setCameraEnabled(true);
+        await localParticipant?.setMicrophoneEnabled(true);
+
+        // Get any existing participants in the room
+        if (room?.remoteParticipants) {
+          const participantsMap = new Map<string, RemoteParticipant>();
+          console.log('remoteParticipants: ', room.remoteParticipants);
+          room.remoteParticipants.forEach((participant) => {
+            participantsMap.set(participant.identity, participant);
+          });
+          setRemoteParticipants(participantsMap);
+        }
+
+        setLocalTrack(
+          room?.localParticipant?.videoTrackPublications.values().next().value
+            ?.videoTrack || undefined
+        );
+      } catch (error) {
+        console.error('Error connecting to LiveKit room:', error);
+      }
+    };
+
+    connectToRoom();
+  }, [roomID, sessionID, lvkToken]);
 
   useEffect(() => {
     const handleGetRoomParticipants = async () => {
@@ -70,282 +232,35 @@ export const Room = () => {
         const participantData: Participant[] = await getRoomParticipants(
           roomID
         );
-        setParticipantList(participantData);
 
-        setUserSession((prevSessionIDs) =>
-          prevSessionIDs.includes(sessionID)
-            ? prevSessionIDs
-            : [...prevSessionIDs, sessionID]
-        );
+        setParticipantList(participantData);
       } catch (error) {
         console.log(error);
       }
     };
 
-    if (shouldUpdateParticipants || participantList.length === 0) {
-      handleGetRoomParticipants();
-    }
-  }, [
-    roomID,
-    sessionID,
-    shouldUpdateParticipants,
-    participantList.length,
-    userSession,
-  ]);
+    handleGetRoomParticipants();
+  }, [roomID, sessionID, remoteParticipants]);
 
   useEffect(() => {
-    let isMounted = true;
+    connectSession(`/ws/signalling/${roomID}`);
 
-    const setupLocalStream = async () => {
-      if (localStream) return;
-
-      try {
-        const mediaConstraints: MediaStreamConstraints = {
-          audio: mediaState.audio,
-          video: mediaState.video,
-        };
-
-        if (mediaConstraints.audio || mediaConstraints.video) {
-          const stream = await navigator.mediaDevices.getUserMedia(
-            mediaConstraints
-          );
-
-          if (isMounted) {
-            setLocalStream(stream);
-          }
-        } else {
-          console.log(
-            'Both audio and video are disabled, no localStream acquired'
-          );
-        }
-      } catch (error) {
-        console.error('Error accessing media devices:', error);
-      }
-    };
-
-    setupLocalStream();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [localStream, rtcPeerConnection, mediaState.video, mediaState.audio]);
-
-  useEffect(() => {
-    if (localStream && localVideo.current) {
-      localVideo.current.srcObject = localStream;
-    }
-  }, [localStream]);
-
-  useEffect(() => {
-    if (localStream) {
-      localStream.getVideoTracks().forEach((track) => {
-        track.enabled = mediaState.video;
-      });
-
-      localStream.getAudioTracks().forEach((track) => {
-        track.enabled = mediaState.audio;
-      });
-    }
-  }, [localStream, mediaState.audio, mediaState.video]);
-
-  // signalling websocket connection & webrtc handling
-  useEffect(() => {
-    connectSignalling(`/ws/signalling/${roomID}`);
-
-    let isCallInitiator = false;
-
-    if (isConnected) {
-      sendMessage({ type: 'connect', sessionID });
-
-      if (participantList.length === 1) {
-        isCallInitiator = true;
-      }
-    }
+    if (isConnected) sendMessage({ type: 'connect', sessionID });
 
     if (!ws) return;
+    ws.onmessage = (event: MessageEvent) => {
+      const data: SignallingMessage = JSON.parse(event.data);
+      // console.log('signalling msg: ', data);
 
-    ws.onmessage = async (event: MessageEvent) => {
-      const data = JSON.parse(event.data);
-
-      if (!data.type) {
-        return;
-      }
-
-      if (!rtcPeerConnection.current[data.sessionID]) {
-        const pc = localStream ? initializePC(localStream) : initializePC();
-        rtcPeerConnection.current[data.sessionID] = pc;
-
-        pc.ontrack = (event) => {
-          const mediaStream =
-            remoteStreams.current[data.sessionID] || new MediaStream();
-          mediaStream.addTrack(event.track);
-          remoteStreams.current[data.sessionID] = mediaStream;
-
-          const videoElement = document.getElementById(
-            `${data.sessionID}-video`
-          ) as HTMLMediaElement;
-
-          if (videoElement) {
-            videoElement.srcObject = mediaStream;
-            videoElement.play().catch(console.error);
-          }
-        };
-
-        pc.oniceconnectionstatechange = () => {
-          console.log(`ICE connection state: ${pc.iceConnectionState}`);
-          if (pc.iceConnectionState === 'failed') {
-            pc.restartIce();
-          }
-        };
-      }
-
-      if (!rtcPeerConnection.current[data.sessionID]) {
-        return;
-      }
-
-      const pc = rtcPeerConnection.current[data.sessionID];
-
-      switch (data.type) {
-        case 'session_joined':
-          updateUserSession(data.sessionID, 'add');
-
-          if (isCallInitiator) {
-            sendMessage({
-              type: 'start_call',
-              sessionID,
-            });
-          }
-          break;
-
-        case 'start_call':
-          if (data.sessionID !== sessionID) {
-            updateUserSession(data.sessionID, 'add');
-            setIsPolite(true);
-
-            if (localStream) {
-              const senders = pc.getSenders();
-              localStream.getTracks().forEach((track) => {
-                if (!senders.find((sender) => sender.track === track)) {
-                  pc.addTrack(track, localStream);
-                }
-              });
-            }
-
-            // Only create an offer if we haven't already
-            if (pc.signalingState === 'stable' && !makingOffer.current) {
-              try {
-                makingOffer.current = true;
-                await pc.setLocalDescription();
-                sendMessage({
-                  type: 'offer',
-                  sessionID,
-                  description: JSON.stringify(pc.localDescription),
-                  to: data.sessionID,
-                });
-              } catch (error) {
-                console.error('Error creating offer:', error);
-              } finally {
-                makingOffer.current = false;
-              }
-            }
-          }
-          break;
-
-        case 'offer':
-          updateUserSession(data.sessionID, 'add');
-
-          try {
-            const offerCollision =
-              makingOffer.current || pc.signalingState !== 'stable';
-            ignoreOffer.current = !isPolite && offerCollision;
-
-            if (ignoreOffer.current) {
-              return;
-            }
-
-            await pc.setRemoteDescription(
-              new RTCSessionDescription(JSON.parse(data.description))
-            );
-
-            if (pc.signalingState === 'have-remote-offer') {
-              await pc.setLocalDescription();
-
-              sendMessage({
-                type: 'answer',
-                sessionID,
-                description: JSON.stringify(pc.localDescription),
-                to: data.sessionID,
-              });
-            }
-          } catch (error) {
-            console.error('Error handling offer:', error);
-          }
-          break;
-
-        case 'answer':
-          try {
-            await pc.setRemoteDescription(
-              new RTCSessionDescription(JSON.parse(data.description))
-            );
-          } catch (err) {
-            console.error('Error setting remote description:', err);
-          }
-          break;
-
-        case 'ice':
-          if (sessionID !== data.sessionID && data.candidate) {
-            try {
-              const candidate = JSON.parse(data.candidate);
-              await pc.addIceCandidate(new RTCIceCandidate(candidate));
-            } catch (err) {
-              console.error('Error adding ICE candidate:', err);
-            }
-          }
-          break;
-
-        case 'disconnect':
-          if (data.sessionID !== sessionID) {
-            updateUserSession(data.sessionID, 'remove');
-
-            delete remoteStreams.current[data.sessionID];
-            if (rtcPeerConnection.current[data.sessionID]) {
-              disconnect();
-              delete rtcPeerConnection.current[data.sessionID];
-            }
-
-            setLocalStream(undefined);
-
-            if (rtcPeerConnection) {
-              Object.values(rtcPeerConnection.current).forEach((pc) => {
-                pc.getSenders().forEach((sender) => pc.removeTrack(sender));
-                pc.close();
-              });
-              rtcPeerConnection.current = {};
-            }
-
-            localStream?.getVideoTracks().forEach((track) => track.stop());
-          }
-          break;
-      }
+      const lvkToken = data?.token;
+      setLvkToken(lvkToken);
     };
-  }, [
-    ws,
-    isConnected,
-    sendMessage,
-    roomID,
-    sessionID,
-    localStream,
-    userSession,
-    initializePC,
-    addICECandidate,
-    disconnect,
-  ]);
+  }, [ws, isConnected, sendMessage]);
 
-  // media websocket connection
   useEffect(() => {
     const connect = async () => {
       try {
-        await connectMedia(`/ws/media/${roomID}`, sessionID);
+        connectMedia(`/ws/media/${roomID}`, sessionID);
       } catch (error) {
         console.error('Failed to establish WebSocket connection:', error);
       }
@@ -363,7 +278,6 @@ export const Room = () => {
   const [displayHostBtn, setDisplayHostBtn] = useState<boolean>(false);
   const userEventsWS = useRef<WebSocket | null>(null);
 
-  // ws connection for user events (notifications)
   useEffect(() => {
     userEventsWS.current = new WebSocket(
       `ws://localhost:8080/ws/user-events/${roomID}`
@@ -417,11 +331,6 @@ export const Room = () => {
       };
 
       toast(toastConfig);
-
-      // Update the local participant list after showing the toast
-      if (eventType === 'host_left' || eventType === 'user_left') {
-        setShouldUpdateParticipants(true);
-      }
     };
 
     return () => {
@@ -430,17 +339,13 @@ export const Room = () => {
       }
       userEventsWS.current = null;
     };
-  }, [roomID, userSession, toast, displayHostBtn]);
+  }, [roomID, toast, displayHostBtn, remoteParticipants]);
 
   const localParticipant: Participant | undefined = participantList.find(
     (p) => p.session_id == sessionID
   );
 
-  const remoteParticipant = (sessionID: string) => {
-    return participantList.find((p) => p.session_id == sessionID);
-  };
-
-  const totalVideos = userSession.length;
+  const totalVideos = remoteParticipants.size + 1;
   const isMedium = useMediaQuery('(max-width: 1024px)');
 
   const { containerClass, videoTileClass } = computeGridLayout(
@@ -458,31 +363,42 @@ export const Room = () => {
 
   const roomContainerCls = containerClass.concat(' ', actionsCls);
 
+  const remoteUserSessions = Array.from(remoteParticipants.keys()).filter(
+    (session) => session !== sessionID
+  );
+
+  const remoteParticipant = (remoteSessionID: string) => {
+    const remoteSession = remoteUserSessions.find(
+      (session) => session === remoteSessionID
+    );
+
+    return participantList.find((p) => p.session_id === remoteSession);
+  };
+
   return (
     <div className='flex flex-col w-full h-screen bg-black'>
       <div className={roomContainerCls}>
-        {userSession
-          .filter((session) => session !== sessionID)
-          .map((remoteSession, index) => {
-            return (
+        {remoteTracks.map((remoteTrack, index) => {
+          console.log('remoteTrack: ', remoteTrack);
+          return (
+            remoteTrack.track.kind === 'video' && (
               <VideoTile
-                key={remoteSession}
+                key={remoteTrack.track.sid}
                 index={index}
-                participant={remoteParticipant(remoteSession)}
-                remoteSession={remoteSession}
-                localStream={localStream}
+                participant={remoteParticipant(remoteTrack.participantIdentity)}
+                track={remoteTrack.track}
+                remoteSession={remoteTrack.participantIdentity}
                 isLocal={false}
-                mediaState={mediaState}
                 remoteMediaStates={remoteMediaStates}
                 gridCls={videoTileClass[index]}
               />
-            );
-          })}
+            )
+          );
+        })}
         <VideoTile
           key='local-video'
-          ref={localVideo}
           participant={localParticipant}
-          localStream={localStream}
+          track={localTrack as LocalVideoTrack}
           isLocal={true}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}
@@ -493,9 +409,7 @@ export const Room = () => {
         <div className='flex justify-center items-center h-64 duration-300'>
           <Toolbar
             sessionID={sessionID}
-            localStream={localStream}
-            setLocalStream={setLocalStream}
-            localVideo={localVideo}
+            room={livekitRoom.current}
             mediaState={mediaState}
             setAudioState={setAudioState}
             setVideoState={setVideoState}

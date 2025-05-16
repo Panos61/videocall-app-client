@@ -4,15 +4,16 @@ import { BASE_WS_URL } from '@/utils/constants';
 
 export interface Props {
   ws: WebSocket | null;
-  connectSignalling: (route: string) => void;
+  connectSession: (route: string) => void;
   sendMessage: (message: SignallingMessage) => void;
   disconnect: () => void;
   isConnected: boolean;
 }
 
-export const SignallingContext = createContext<Props | undefined>(undefined);
+// eslint-disable-next-line react-refresh/only-export-components
+export const SessionContext = createContext<Props | undefined>(undefined);
 
-export const SignallingProvider = ({
+export const SessionProvider = ({
   children,
 }: {
   children: React.ReactNode;
@@ -20,7 +21,7 @@ export const SignallingProvider = ({
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  const connectSignalling = (route: string) => {
+  const connectSession = (route: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       if (ws.current) {
         ws.current.close();
@@ -57,10 +58,10 @@ export const SignallingProvider = ({
   };
 
   return (
-    <SignallingContext.Provider
-      value={{ ws: ws.current, connectSignalling, sendMessage, disconnect, isConnected }}
+    <SessionContext.Provider
+      value={{ ws: ws.current, connectSession, sendMessage, disconnect, isConnected }}
     >
       {children}
-    </SignallingContext.Provider>
+    </SessionContext.Provider>
   );
 };

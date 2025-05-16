@@ -1,4 +1,5 @@
-import { forwardRef, useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
+import { LocalVideoTrack, RemoteVideoTrack } from 'livekit-client';
 import { MicIcon, MicOffIcon } from 'lucide-react';
 import type { Participant } from '@/types';
 import { Avatar } from '@/components/elements';
@@ -6,68 +7,62 @@ import { Avatar } from '@/components/elements';
 interface Props {
   index?: number;
   participant: Participant | undefined;
+  track: LocalVideoTrack | RemoteVideoTrack;
   remoteSession?: string;
-  localStream: MediaStream | undefined;
   isLocal: boolean;
-  mediaState: { audio: boolean; video: boolean };
+  mediaState?: { audio: boolean; video: boolean };
   remoteMediaStates: {
     [sessionID: string]: { audio: boolean; video: boolean };
   };
   gridCls: string;
 }
 
-const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
+const VideoTile = (props: Props) => {
   const {
     index,
     participant,
+    track,
     remoteSession,
-    localStream,
     isLocal,
     mediaState,
     remoteMediaStates,
     gridCls,
   } = props;
+
+  const videoID: string = isLocal ? 'local-video' : `${remoteSession}-video`;
+
+  const localVideoElement = useRef<HTMLVideoElement | null>(null);
+  const remoteVideoElement = useRef<HTMLVideoElement | null>(null);
+
+  const audioElement = useRef<HTMLAudioElement | null>(null);
   const videoTileRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!ref || typeof ref === 'function' || !ref.current) return;
-
-    const videoElement = ref.current;
-    const isPlaying =
-      !videoElement.paused &&
-      !videoElement.ended &&
-      videoElement.currentTime > 0 &&
-      videoElement.readyState > videoElement.HAVE_CURRENT_DATA;
-
+  const getMediaState = useCallback(() => {
     if (isLocal) {
-      if (mediaState.video && localStream) {
-        if (videoElement.srcObject !== localStream) {
-          videoElement.srcObject = localStream;
-        }
-
-        if (isPlaying) {
-          videoElement
-            .play()
-            .catch((err) => console.error('Error playing video:', err));
-        }
-      } else {
-        videoElement.srcObject = null;
-      }
+      return mediaState;
     }
-  }, [isLocal, mediaState.video, localStream, ref]);
 
-  const videoID = isLocal ? 'local-video' : `${remoteSession}-video`;
+    if (!remoteSession || !participant) return { audio: false, video: false };
+
+    return {
+      audio: remoteMediaStates[remoteSession]?.audio,
+      video: remoteMediaStates[remoteSession]?.video,
+    };
+  }, [remoteMediaStates, remoteSession, participant, isLocal, mediaState]);
+
+  const remoteAudioEnabled = getMediaState()?.audio;
+  const remoteVideoEnabled = getMediaState()?.video;
 
   const renderLocalPreview = () => {
-    if (mediaState.video) {
+    if (track && mediaState?.video) {
       return (
         <div id='video-wrapper' className='relative size-full'>
           <video
             id={videoID}
             key={index}
-            ref={ref}
+            ref={localVideoElement}
+            muted={!mediaState?.audio}
             autoPlay
-            muted={!mediaState.audio}
             className='absolute size-full object-cover'
           />
         </div>
@@ -87,14 +82,14 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
   const renderRemotePreview = () => {
     if (!remoteSession || !participant) return;
 
-    if (participant.media.video || remoteMediaStates[remoteSession]?.video) {
+    if (track && remoteVideoEnabled) {
       return (
         <video
           id={videoID}
           key={index}
-          ref={ref}
+          ref={remoteVideoElement}
+          muted={!remoteAudioEnabled}
           autoPlay
-          muted={!remoteMediaStates[remoteSession]?.audio}
           className='absolute size-full object-cover'
         />
       );
@@ -102,26 +97,57 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
 
     return (
       <div className='absolute inset-0 size-full flex items-center justify-center'>
-        <Avatar
-          src={participant.avatar_src}
-          className='size-24 object-cover'
-        />
+        <Avatar src={participant.avatar_src} className='size-24 object-cover' />
       </div>
     );
   };
 
-  const getMediaState = () => {
-    if (isLocal) {
-      return mediaState;
+  // @TODO: might remove this
+  useEffect(() => {
+    if (audioElement.current && track && mediaState?.audio) {
+      track.attach(audioElement.current);
     }
 
-    if (!remoteSession || !participant) return { audio: false, video: false };
+    const audioRef = audioElement.current;
 
-    return {
-      audio: remoteMediaStates[remoteSession]?.audio ?? participant.media.audio,
-      video: remoteMediaStates[remoteSession]?.video ?? participant.media.video,
+    return () => {
+      if (track && audioRef) {
+        track.detach(audioRef);
+      }
     };
-  };
+  }, [track, mediaState?.audio]);
+
+  useEffect(() => {
+    if (localVideoElement.current && track && mediaState?.video) {
+      track.attach(localVideoElement.current);
+    }
+
+    const localVideoRef = localVideoElement.current;
+
+    return () => {
+      if (track && localVideoRef) {
+        track.detach(localVideoRef);
+      }
+    };
+  }, [track, mediaState?.video]);
+
+  useEffect(() => {
+    if (remoteVideoElement.current && track) {
+      if (remoteVideoEnabled) {
+        track.attach(remoteVideoElement.current);
+      } else {
+        track.detach(remoteVideoElement.current);
+      }
+    }
+
+    const remoteVideoRef = remoteVideoElement.current;
+
+    return () => {
+      if (track && remoteVideoRef) {
+        track.detach(remoteVideoRef);
+      }
+    };
+  }, [track, remoteVideoEnabled]);
 
   const videoTileCls =
     'relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr';
@@ -134,7 +160,7 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
         {participant?.username}
       </div>
       <div className='absolute bottom-4 left-12 py-4 z-50'>
-        {getMediaState().audio ? (
+        {remoteAudioEnabled ? (
           <MicIcon color='#e5e7eb' className='size-20' />
         ) : (
           <MicOffIcon color='#dc2626' className='size-20' />
@@ -142,6 +168,6 @@ const VideoTile = forwardRef<HTMLVideoElement, Props>((props, ref) => {
       </div>
     </div>
   );
-});
+};
 
 export default VideoTile;
