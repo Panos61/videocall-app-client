@@ -34,9 +34,9 @@ export interface CtxProps {
   setVideoDevice: (device: DevicePreferences) => void;
 }
 
-export const MediaContext = createContext<CtxProps | undefined>(undefined);
+export const MediaControlContext = createContext<CtxProps | undefined>(undefined);
 
-export const MediaProvider = ({ children }: { children: ReactNode }) => {
+export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
   const ws = useRef<WebSocket | null>(null);
 
   const [mediaState, setMediaState] = useState({ audio: false, video: false });
@@ -218,7 +218,7 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <MediaContext.Provider
+    <MediaControlContext.Provider
       value={{
         connectMedia,
         remoteMediaStates,
@@ -233,6 +233,6 @@ export const MediaProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       {children}
-    </MediaContext.Provider>
+    </MediaControlContext.Provider>
   );
 };

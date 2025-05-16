@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { Participant } from '@/types';
-import type { DevicePreferences } from '@/context/media/MediaProvider';
+import type { DevicePreferences } from '@/context/media/MediaControlProvider';
 import {
   ChevronUp,
   VideoIcon,

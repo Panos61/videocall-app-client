@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import classNames from 'classnames';
 import { VideoIcon, MicIcon } from 'lucide-react';
 
-import type { DevicePreferences } from '@/context/media/MediaProvider';
+import type { DevicePreferences } from '@/context/media/MediaControlProvider';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/elements';
 interface Props {

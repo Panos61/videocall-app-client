@@ -102,14 +102,17 @@ const VideoTile = (props: Props) => {
     );
   };
 
+  // @TODO: might remove this
   useEffect(() => {
     if (audioElement.current && track && mediaState?.audio) {
       track.attach(audioElement.current);
     }
 
+    const audioRef = audioElement.current;
+
     return () => {
-      if (track) {
-        track.detach();
+      if (track && audioRef) {
+        track.detach(audioRef);
       }
     };
   }, [track, mediaState?.audio]);
@@ -119,9 +122,11 @@ const VideoTile = (props: Props) => {
       track.attach(localVideoElement.current);
     }
 
+    const localVideoRef = localVideoElement.current;
+
     return () => {
-      if (track) {
-        track.detach();
+      if (track && localVideoRef) {
+        track.detach(localVideoRef);
       }
     };
   }, [track, mediaState?.video]);
@@ -131,13 +136,15 @@ const VideoTile = (props: Props) => {
       if (remoteVideoEnabled) {
         track.attach(remoteVideoElement.current);
       } else {
-        track.detach();
+        track.detach(remoteVideoElement.current);
       }
     }
 
+    const remoteVideoRef = remoteVideoElement.current;
+
     return () => {
-      if (track) {
-        track.detach();
+      if (track && remoteVideoRef) {
+        track.detach(remoteVideoRef);
       }
     };
   }, [track, remoteVideoEnabled]);

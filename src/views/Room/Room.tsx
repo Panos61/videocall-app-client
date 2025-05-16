@@ -17,7 +17,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import { LogOutIcon } from 'lucide-react';
 
 import type { Participant, SignallingMessage, UserEvent } from '@/types';
-import { useMediaCtx, useSessionCtx } from '@/context';
+import { useSessionCtx, useMediaControlCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { useToast } from '@/components/ui/use-toast';
 import { computeGridLayout } from './computeGridLayout';
@@ -31,10 +31,9 @@ interface TrackInfo {
 }
 
 export const Room = () => {
-  const { ws, connectSession, isConnected, sendMessage } =
-    useSessionCtx();
-  // Media Context: websocket connection for media device control
-  // todo: rename provider
+  // Signalling Context: websocket connection for session/livekit token exchange
+  const { ws, connectSession, isConnected, sendMessage } = useSessionCtx();
+  // Media Control Context: websocket connection for media device control
   const {
     connectMedia,
     disconnectMedia,
@@ -42,7 +41,7 @@ export const Room = () => {
     remoteMediaStates,
     setAudioState,
     setVideoState,
-  } = useMediaCtx();
+  } = useMediaControlCtx();
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
@@ -122,10 +121,6 @@ export const Room = () => {
           newMap.set(participant.identity, participant);
           return newMap;
         });
-        
-        // Check camera state immediately
-        const isCameraOn = participant.isCameraEnabled;
-        setVideoState(isCameraOn, participant.identity);
       }
     );
 
@@ -156,14 +151,12 @@ export const Room = () => {
     room.on(RoomEvent.TrackMuted, (publication, participant) => {
       if (publication.kind === Track.Kind.Video) {
         console.log('Video track muted for', participant.identity);
-        setVideoState(false, participant.identity);
       }
     });
 
     room.on(RoomEvent.TrackUnmuted, (publication, participant) => {
       if (publication.kind === Track.Kind.Video) {
         console.log('Video track unmuted for', participant.identity);
-        setVideoState(true, participant.identity);
       }
     });
 

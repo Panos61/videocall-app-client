@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import Cookie from 'js-cookie';
 
 import { setSession, startCall } from '@/api';
-import { useMediaCtx } from '@/context';
+import { useMediaControlCtx } from '@/context';
 
 import { AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -18,7 +18,7 @@ interface Props {
 }
 
 const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
-  const { mediaState } = useMediaCtx();
+  const { mediaState } = useMediaControlCtx();
   const {
     register,
     watch,
