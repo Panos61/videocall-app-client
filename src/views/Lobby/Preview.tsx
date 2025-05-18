@@ -1,92 +1,24 @@
 import { useEffect, useRef } from 'react';
 import classNames from 'classnames';
+import { LocalVideoTrack } from 'livekit-client';
 import { VideoIcon, MicIcon } from 'lucide-react';
-
-import type { DevicePreferences } from '@/context/media/MediaControlProvider';
 import { Avatar } from '@/components/elements';
 interface Props {
   username: string;
   mediaState: { audio: boolean; video: boolean };
-  audioDevice: DevicePreferences | null;
-  videoDevice: DevicePreferences | null;
+  videoTrack: LocalVideoTrack;
   onGetSrc: (src: string | null) => void;
 }
 
-const Preview = ({
-  username,
-  mediaState,
-  audioDevice,
-  videoDevice,
-  onGetSrc,
-}: Props) => {
+const Preview = ({ username, mediaState, videoTrack, onGetSrc }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-
-  const switchStream = async (constraints: MediaStreamConstraints) => {
-    try {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
-      }
-
-      const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-      mediaStreamRef.current = newStream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = newStream;
-      }
-    } catch (error) {
-      console.error('Error switching media devices:', error);
-    }
-  };
+  const videoElement = videoRef.current;
 
   useEffect(() => {
-    const constraints = {
-      audio: mediaState.audio
-        ? {
-            deviceId: {
-              exact: audioDevice?.deviceId,
-            },
-          }
-        : false,
-      video: mediaState.video
-        ? {
-            deviceId: {
-              exact: videoDevice?.deviceId,
-            },
-          }
-        : false,
-    };
-
-    if (mediaState.audio || mediaState.video) {
-      switchStream(constraints);
-    } else {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
-        mediaStreamRef.current = null;
-      }
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
+    if (videoTrack && videoElement) {
+      videoElement.srcObject = videoTrack.mediaStream as MediaStream;
     }
-
-    const videoElement = videoRef.current;
-
-    return () => {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
-        mediaStreamRef.current = null;
-      }
-      if (videoElement) {
-        videoElement.srcObject = null;
-      }
-    };
-  }, [mediaState.audio, mediaState.video, audioDevice, videoDevice]);
+  }, [videoTrack, videoElement]);
 
   const renderActiveDeviceIcon = () => {
     const activeDevices = [

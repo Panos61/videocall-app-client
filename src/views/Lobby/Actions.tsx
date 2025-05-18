@@ -1,4 +1,3 @@
-import type { Participant } from '@/types';
 import {
   ChevronUp,
   VideoIcon,
@@ -6,6 +5,7 @@ import {
   MicOffIcon,
   VideoOffIcon,
 } from 'lucide-react';
+import type { Participant } from '@/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
