@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useState, useRef, useEffect } from 'react';
+import { createContext, ReactNode, useState, useRef } from 'react';
 import Cookie from 'js-cookie';
 import { BASE_WS_URL } from '@/utils/constants';
 
@@ -34,7 +34,9 @@ export interface CtxProps {
   setVideoDevice: (device: DevicePreferences) => void;
 }
 
-export const MediaControlContext = createContext<CtxProps | undefined>(undefined);
+export const MediaControlContext = createContext<CtxProps | undefined>(
+  undefined
+);
 
 export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
   const ws = useRef<WebSocket | null>(null);
@@ -147,56 +149,12 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // set current device preferences
-  useEffect(() => {
-    const getCurrentDevice = async () => {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      
-      // Try to load saved preferences first
-      const savedAudio = JSON.parse(localStorage.getItem('rs-audio-device') || '{}');
-      const savedVideo = JSON.parse(localStorage.getItem('rs-video-device') || '{}');
-
-      // Find current devices
-      const audioDevice = devices.find(
-        (device) => device.kind === 'audioinput'
-      );
-      const videoDevice = devices.find(
-        (device) => device.kind === 'videoinput'
-      );
-
-      // Use saved preferences if they exist, otherwise use default devices
-      const audioPreference = savedAudio?.deviceId ? savedAudio : {
-        deviceId: audioDevice?.deviceId,
-        label: audioDevice?.label,
-      };
-      const videoPreference = savedVideo?.deviceId ? savedVideo : {
-        deviceId: videoDevice?.deviceId,
-        label: videoDevice?.label,
-      };
-
-      setSelectedAudioDevice(audioPreference);
-      setSelectedVideoDevice(videoPreference);
-
-      localStorage.setItem(
-        'rs-audio-device',
-        JSON.stringify(audioPreference)
-      );
-      localStorage.setItem(
-        'rs-video-device',
-        JSON.stringify(videoPreference)
-      );
-    };
-
-    getCurrentDevice();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const setAudioDevice = async (device: DevicePreferences) => {
     setSelectedAudioDevice({
       deviceId: device.deviceId,
       label: device.label,
     });
-    localStorage.setItem('rs-audio-device', JSON.stringify(device));
+    // localStorage.setItem('rs-audio-device', JSON.stringify(device));
 
     if (mediaState.audio) {
       await setAudioState(false);
@@ -209,7 +167,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
       deviceId: device.deviceId,
       label: device.label,
     });
-    localStorage.setItem('rs-video-device', JSON.stringify(device));
+    // localStorage.setItem('rs-video-device', JSON.stringify(device));
 
     if (mediaState.video) {
       await setVideoState(false);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Cookie from 'js-cookie';
+import { useMediaDeviceSelect } from '@livekit/components-react';
 
 import type { Participant } from '@/types';
 import { getRoomParticipants, getMe, getSettings } from '@/api';
@@ -9,21 +10,15 @@ import { useMediaControlCtx } from '@/context';
 import Actions from './Actions';
 import Form from './Form';
 import Participants from './Participants';
+import MediaPermissions from './MediaPermissions';
 import Preview from './Preview';
 
 import LOGO from '@/assets/logo.png';
 
 export const Lobby = () => {
   const { pathname } = useLocation();
-  const {
-    mediaState,
-    setAudioState,
-    setVideoState,
-    setAudioDevice,
-    setVideoDevice,
-    audioDevice,
-    videoDevice,
-  } = useMediaControlCtx();
+  const { mediaState, setAudioState, setVideoState, audioDevice, videoDevice } =
+    useMediaControlCtx();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [meData, setMeData] = useState<Participant | undefined>();
@@ -80,6 +75,41 @@ export const Lobby = () => {
     handleGetSettings();
   }, [roomID]);
 
+  const {
+    devices: audioDevices,
+    activeDeviceId: audioActiveDeviceId,
+    setActiveMediaDevice: setAudioActiveDevice,
+  } = useMediaDeviceSelect({
+    kind: 'audioinput',
+  });
+
+  const {
+    devices: videoDevices,
+    activeDeviceId: videoActiveDeviceId,
+    setActiveMediaDevice: setVideoActiveDevice,
+  } = useMediaDeviceSelect({
+    kind: 'videoinput',
+  });
+
+  const selectedAudioDevice = audioDevices.find(
+    (device) => device.deviceId === audioActiveDeviceId
+  );
+  const selectedVideoDevice = videoDevices.find(
+    (device) => device.deviceId === videoActiveDeviceId
+  );
+
+  // Video device can be found but not set as active device
+  // set first video device as selected
+  useEffect(() => {
+    if (
+      videoDevices.length > 0 &&
+      (!videoActiveDeviceId || videoActiveDeviceId === 'default')
+    ) {
+      const defaultSelectedDevice = videoDevices[0];
+      setVideoActiveDevice(defaultSelectedDevice.deviceId);
+    }
+  }, [videoDevices, videoActiveDeviceId, setVideoActiveDevice]);
+
   return (
     <>
       <div className='grid grid-cols-4 h-screen'>
@@ -101,30 +131,18 @@ export const Lobby = () => {
                 mediaState={mediaState}
                 setAudioState={setAudioState}
                 setVideoState={setVideoState}
-                setAudioDevice={setAudioDevice}
-                setVideoDevice={setVideoDevice}
-                audioDevice={audioDevice}
-                videoDevice={videoDevice}
+                audioDevices={audioDevices}
+                videoDevices={videoDevices}
+                audioActiveDeviceId={audioActiveDeviceId}
+                videoActiveDeviceId={videoActiveDeviceId}
+                setAudioActiveDevice={setAudioActiveDevice}
+                setVideoActiveDevice={setVideoActiveDevice}
               />
               <Participants participants={participants} />
-              <div
-                className='flex flex-col gap-8 p-8 mt-76 outline outline-slate-200 rounded-4 
-                shadow-[0_4px_20px_-4px_rgba(0,0,255,0.1)]
-                transition-shadow duration-300'
-              >
-                <div className='flex items-center gap-16'>
-                  <span className='text-xs'>Audio:</span>
-                  <span className='text-xs text-muted-foreground'>
-                    {audioDevice?.label}
-                  </span>
-                </div>
-                <div className='flex items-center gap-16'>
-                  <span className='text-xs'>Video:</span>
-                  <span className='text-xs text-muted-foreground'>
-                    {videoDevice?.label}
-                  </span>
-                </div>
-              </div>
+              <MediaPermissions
+                selectedAudioDevice={selectedAudioDevice}
+                selectedVideoDevice={selectedVideoDevice}
+              />
             </div>
           </div>
         </div>
