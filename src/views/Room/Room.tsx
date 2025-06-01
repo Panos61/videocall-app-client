@@ -48,7 +48,7 @@ export const Room = () => {
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
-  >(null);
+  >('participants');
 
   const [remoteParticipants, setRemoteParticipants] = useState<
     Map<string, RemoteParticipant>
