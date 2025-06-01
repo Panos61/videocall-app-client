@@ -14,11 +14,18 @@ import MediaPermissions from './MediaPermissions';
 import Preview from './Preview';
 
 import LOGO from '@/assets/logo.png';
+import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
 
 export const Lobby = () => {
   const { pathname } = useLocation();
-  const { mediaState, setAudioState, setVideoState, audioDevice, videoDevice } =
-    useMediaControlCtx();
+  const {
+    mediaState,
+    setAudioState,
+    setVideoState,
+    // setAudioTrack,
+    setVideoTrack,
+    videoTrack,
+  } = useMediaControlCtx();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [meData, setMeData] = useState<Participant | undefined>();
@@ -109,6 +116,72 @@ export const Lobby = () => {
       setVideoActiveDevice(defaultSelectedDevice.deviceId);
     }
   }, [videoDevices, videoActiveDeviceId, setVideoActiveDevice]);
+  
+  // useEffect(() => {
+  //   const getAudioTrack = async () => {
+  //     // Stop existing track if any
+  //     if (videoTrack) {
+  //       videoTrack.stop();
+  //     }
+
+  //     try {
+  //       if (mediaState.video) {
+  //         const track = await createLocalVideoTrack({
+  //           deviceId: videoActiveDeviceId,
+  //         });
+  //         setVideoTrack(track);
+  //       }
+  //     } catch (error) {
+  //       console.error('Failed to create video track:', error);
+  //     }
+  //   };
+
+  //   // Only create track if user has video enabled
+  //   if (videoActiveDeviceId) {
+  //     getAudioTrack();
+  //   }
+
+  //   // Cleanup function
+  //   return () => {
+  //     if (videoTrack) {
+  //       videoTrack.stop();
+  //     }
+  //   };
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [videoActiveDeviceId, mediaState.video]);
+
+  useEffect(() => {
+    const getVideoTrack = async () => {
+      // Stop existing track if any
+      if (videoTrack) {
+        videoTrack.stop();
+      }
+
+      try {
+        if (mediaState.video) {
+          const track = await createLocalVideoTrack({
+            deviceId: videoActiveDeviceId,
+          });
+          setVideoTrack(track);
+        }
+      } catch (error) {
+        console.error('Failed to create video track:', error);
+      }
+    };
+
+    // Only create track if user has video enabled
+    if (videoActiveDeviceId) {
+      getVideoTrack();
+    }
+
+    // Cleanup function
+    return () => {
+      if (videoTrack) {
+        videoTrack.stop();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videoActiveDeviceId, mediaState.video]);
 
   return (
     <>
@@ -150,8 +223,7 @@ export const Lobby = () => {
           <Preview
             username={username}
             mediaState={mediaState}
-            audioDevice={audioDevice}
-            videoDevice={videoDevice}
+            videoTrack={videoTrack as LocalVideoTrack}
             onGetSrc={setAvatarSrc}
           />
         </div>
