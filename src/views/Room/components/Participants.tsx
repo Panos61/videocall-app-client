@@ -32,8 +32,8 @@ const Participants = ({
     if (!remoteSession || !participant) return { audio: false, video: false };
 
     return {
-      audio: remoteMediaStates[remoteSession]?.audio ?? participant.media.audio,
-      video: remoteMediaStates[remoteSession]?.video ?? participant.media.video,
+      audio: remoteMediaStates[remoteSession]?.audio ?? false,
+      video: remoteMediaStates[remoteSession]?.video ?? false,
     };
   };
 

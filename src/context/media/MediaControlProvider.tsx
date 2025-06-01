@@ -1,4 +1,5 @@
 import { createContext, ReactNode, useState, useRef, useEffect } from 'react';
+import { LocalVideoTrack } from 'livekit-client';
 import Cookie from 'js-cookie';
 import { BASE_WS_URL } from '@/utils/constants';
 
@@ -12,8 +13,10 @@ interface RemoteMediaState {
 }
 
 interface Message {
+  type?: string;
   sessionID: string;
-  media: MediaState;
+  token?: string;
+  media?: MediaState;
 }
 
 export interface DevicePreferences {
@@ -23,6 +26,7 @@ export interface DevicePreferences {
 
 export interface CtxProps {
   connectMedia: (roomID: string, sessionID: string) => void;
+  sendMediaUpdate: (sessionID: string, updatedState: MediaState) => void;
   disconnectMedia: () => void;
   mediaState: MediaState;
   remoteMediaStates: RemoteMediaState;
@@ -32,9 +36,14 @@ export interface CtxProps {
   videoDevice: DevicePreferences | null;
   setAudioDevice: (device: DevicePreferences) => void;
   setVideoDevice: (device: DevicePreferences) => void;
+  // setAudioTrack: (track: LocalAudioTrack) => void;
+  setVideoTrack: (track: LocalVideoTrack) => void;
+  videoTrack: LocalVideoTrack | null;
 }
 
-export const MediaControlContext = createContext<CtxProps | undefined>(undefined);
+export const MediaControlContext = createContext<CtxProps | undefined>(
+  undefined
+);
 
 export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
   const ws = useRef<WebSocket | null>(null);
@@ -48,13 +57,18 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     useState<DevicePreferences | null>(null);
   const [videoDevice, setSelectedVideoDevice] =
     useState<DevicePreferences | null>(null);
+  const [videoTrack, setLocalVideoTrack] = useState<LocalVideoTrack | null>(
+    null
+  );
 
   const connectMedia = (route: string, sessionID: string) => {
     // Clean up any existing connection
     disconnectMedia();
 
     const jwt = Cookie.get('rsCookie');
-    if (!jwt) return;
+    if (!jwt) {
+      return;
+    }
 
     try {
       const socket = new WebSocket(`${BASE_WS_URL}${route}`);
@@ -71,24 +85,33 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
             })
           );
           setIsConnected(true);
+          
+          // Send initial media state when connection is established
+          if (mediaState) {
+            sendMediaUpdate(sessionID, mediaState);
+          }
         }
       };
 
-      socket.onclose = () => {
+      socket.onclose = (event) => {
+        console.log('WebSocket closed:', event.code, event.reason);
         setIsConnected(false);
       };
 
-      socket.onerror = () => {
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
         setIsConnected(false);
       };
 
-      socket.onmessage = (event) => {
+      socket.onmessage = (event: MessageEvent) => {
         if (ws.current !== socket) return;
 
         try {
           const data = JSON.parse(event.data);
+          console.log('Received WebSocket message:', data);
 
           if (data.error) {
+            console.error('WebSocket error message:', data.error);
             return;
           }
 
@@ -109,23 +132,46 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
       setIsConnected(false);
     }
   };
+  
 
   const disconnectMedia = () => {
     if (ws.current) {
-      ws.current.close();
+      try {
+        ws.current.close(1000, 'Normal Closure');
+      } catch (error) {
+        console.error('Error closing WebSocket:', error);
+      }
       ws.current = null;
       setIsConnected(false);
       setRemoteMediaStates({});
     }
   };
 
+  useEffect(() => {
+    return () => {
+      // Cleanup when component unmounts
+      disconnectMedia();
+    };
+  }, []);
+
   const sendMediaUpdate = (sessionID: string, updatedState: MediaState) => {
-    if (isConnected && ws.current?.readyState === WebSocket.OPEN) {
-      const msg: Message = {
-        sessionID: sessionID,
-        media: updatedState,
-      };
+    if (!ws.current) {
+      return;
+    }
+
+    if (ws.current.readyState !== WebSocket.OPEN) {
+      return;
+    }
+
+    const msg: Message = {
+      sessionID: sessionID,
+      media: updatedState,
+    };
+
+    try {
       ws.current.send(JSON.stringify(msg));
+    } catch (error) {
+      console.error('Failed to send media update:', error);
     }
   };
 
@@ -147,56 +193,12 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // set current device preferences
-  useEffect(() => {
-    const getCurrentDevice = async () => {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      
-      // Try to load saved preferences first
-      const savedAudio = JSON.parse(localStorage.getItem('rs-audio-device') || '{}');
-      const savedVideo = JSON.parse(localStorage.getItem('rs-video-device') || '{}');
-
-      // Find current devices
-      const audioDevice = devices.find(
-        (device) => device.kind === 'audioinput'
-      );
-      const videoDevice = devices.find(
-        (device) => device.kind === 'videoinput'
-      );
-
-      // Use saved preferences if they exist, otherwise use default devices
-      const audioPreference = savedAudio?.deviceId ? savedAudio : {
-        deviceId: audioDevice?.deviceId,
-        label: audioDevice?.label,
-      };
-      const videoPreference = savedVideo?.deviceId ? savedVideo : {
-        deviceId: videoDevice?.deviceId,
-        label: videoDevice?.label,
-      };
-
-      setSelectedAudioDevice(audioPreference);
-      setSelectedVideoDevice(videoPreference);
-
-      localStorage.setItem(
-        'rs-audio-device',
-        JSON.stringify(audioPreference)
-      );
-      localStorage.setItem(
-        'rs-video-device',
-        JSON.stringify(videoPreference)
-      );
-    };
-
-    getCurrentDevice();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const setAudioDevice = async (device: DevicePreferences) => {
     setSelectedAudioDevice({
       deviceId: device.deviceId,
       label: device.label,
     });
-    localStorage.setItem('rs-audio-device', JSON.stringify(device));
+    // localStorage.setItem('rs-audio-device', JSON.stringify(device));
 
     if (mediaState.audio) {
       await setAudioState(false);
@@ -209,7 +211,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
       deviceId: device.deviceId,
       label: device.label,
     });
-    localStorage.setItem('rs-video-device', JSON.stringify(device));
+    // localStorage.setItem('rs-video-device', JSON.stringify(device));
 
     if (mediaState.video) {
       await setVideoState(false);
@@ -217,10 +219,19 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  // const setAudioTrack = async (_track: LocalAudioTrack) => {
+  //   // console.log('audio track', track);
+  // };
+
+  const setVideoTrack = async (track: LocalVideoTrack) => {
+    setLocalVideoTrack(track);
+  };
+
   return (
     <MediaControlContext.Provider
       value={{
         connectMedia,
+        sendMediaUpdate,
         remoteMediaStates,
         disconnectMedia,
         mediaState,
@@ -230,6 +241,9 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
         setVideoDevice,
         audioDevice,
         videoDevice,
+        // setAudioTrack,
+        setVideoTrack,
+        videoTrack,
       }}
     >
       {children}

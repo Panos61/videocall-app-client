@@ -3,7 +3,6 @@ export interface Participant {
   username: string;
   isHost: boolean;
   avatar_src: string;
-  media: { audio: boolean; video: boolean };
   jwt: string;
   session_id: string;
 }

@@ -1,6 +1,3 @@
-import { useState, useEffect } from 'react';
-import type { Participant } from '@/types';
-import type { DevicePreferences } from '@/context/media/MediaControlProvider';
 import {
   ChevronUp,
   VideoIcon,
@@ -8,6 +5,7 @@ import {
   MicOffIcon,
   VideoOffIcon,
 } from 'lucide-react';
+import type { Participant } from '@/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,48 +24,38 @@ interface Props {
   mediaState: { audio: boolean; video: boolean };
   setAudioState: (enabled: boolean) => Promise<void>;
   setVideoState: (enabled: boolean) => Promise<void>;
-  setAudioDevice: (device: DevicePreferences) => void;
-  setVideoDevice: (device: DevicePreferences) => void;
-  audioDevice: DevicePreferences | null;
-  videoDevice: DevicePreferences | null;
+  audioDevices: MediaDeviceInfo[];
+  videoDevices: MediaDeviceInfo[];
+  audioActiveDeviceId: string;
+  videoActiveDeviceId: string;
+  setAudioActiveDevice: (deviceId: string) => void;
+  setVideoActiveDevice: (deviceId: string) => void;
 }
 
 const Actions = ({
   me,
   settings,
+  audioDevices,
+  videoDevices,
+  audioActiveDeviceId,
+  videoActiveDeviceId,
+  setAudioActiveDevice,
+  setVideoActiveDevice,
   mediaState,
   setAudioState,
   setVideoState,
-  setAudioDevice,
-  setVideoDevice,
-  audioDevice,
-  videoDevice,
 }: Props) => {
-  const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
-  const [videoDevices, setVideoDevices] = useState<MediaDeviceInfo[]>([]);
-
-  // get all devices as options
-  useEffect(() => {
-    const getDevices = async () => {
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      setAudioDevices(devices.filter((device) => device.kind === 'audioinput'));
-      setVideoDevices(devices.filter((device) => device.kind === 'videoinput'));
-    };
-
-    getDevices();
-  }, []);
-
-  const handleAudioDeviceChange = async (deviceId: string, label: string) => {
-    setAudioDevice({ deviceId, label });
+  const handleAudioDeviceChange = async (deviceId: string) => {
+    setAudioActiveDevice(deviceId);
   };
 
-  const handleVideoDeviceChange = async (deviceId: string, label: string) => {
-    setVideoDevice({ deviceId, label });
+  const handleVideoDeviceChange = async (deviceId: string) => {
+    setVideoActiveDevice(deviceId);
   };
 
   const renderDropdownMenu = (isAudio: boolean) => {
     const devices = isAudio ? audioDevices : videoDevices;
-    const currentDevice = isAudio ? audioDevice : videoDevice;
+    const currentDevice = isAudio ? audioActiveDeviceId : videoActiveDeviceId;
 
     return (
       <DropdownMenuContent side='bottom' align='start'>
@@ -76,15 +64,15 @@ const Actions = ({
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {devices.map((device) => {
-          const isChecked = currentDevice?.deviceId === device.deviceId;
+          const isChecked = currentDevice === device.deviceId;
           return (
             <DropdownMenuRadioGroup
               key={device.deviceId}
-              value={currentDevice?.deviceId}
+              value={currentDevice}
               onValueChange={(deviceId) =>
                 isAudio
-                  ? handleAudioDeviceChange(deviceId, device.label)
-                  : handleVideoDeviceChange(deviceId, device.label)
+                  ? handleAudioDeviceChange(deviceId)
+                  : handleVideoDeviceChange(deviceId)
               }
             >
               <DropdownMenuRadioItem

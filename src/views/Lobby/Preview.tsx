@@ -1,129 +1,52 @@
 import { useEffect, useRef } from 'react';
 import classNames from 'classnames';
+import { LocalVideoTrack } from 'livekit-client';
 import { VideoIcon, MicIcon } from 'lucide-react';
-
-import type { DevicePreferences } from '@/context/media/MediaControlProvider';
-import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/elements';
 interface Props {
   username: string;
   mediaState: { audio: boolean; video: boolean };
-  audioDevice: DevicePreferences | null;
-  videoDevice: DevicePreferences | null;
+  videoTrack: LocalVideoTrack;
   onGetSrc: (src: string | null) => void;
 }
 
-const Preview = ({
-  username,
-  mediaState,
-  audioDevice,
-  videoDevice,
-  onGetSrc,
-}: Props) => {
+const Preview = ({ username, mediaState, videoTrack, onGetSrc }: Props) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-
-  const switchStream = async (constraints: MediaStreamConstraints) => {
-    try {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
-      }
-
-      const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-      mediaStreamRef.current = newStream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = newStream;
-      }
-    } catch (error) {
-      console.error('Error switching media devices:', error);
-    }
-  };
+  const videoElement = videoRef.current;
 
   useEffect(() => {
-    const constraints = {
-      audio: mediaState.audio
-        ? {
-            deviceId: {
-              exact: audioDevice?.deviceId,
-            },
-          }
-        : false,
-      video: mediaState.video
-        ? {
-            deviceId: {
-              exact: videoDevice?.deviceId,
-            },
-          }
-        : false,
-    };
-
-    if (mediaState.audio || mediaState.video) {
-      switchStream(constraints);
-    } else {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
-        mediaStreamRef.current = null;
-      }
-      if (videoRef.current) {
-        videoRef.current.srcObject = null;
-      }
+    if (videoTrack && videoElement) {
+      videoElement.srcObject = videoTrack.mediaStream as MediaStream;
     }
+  }, [videoTrack, videoElement]);
 
-    const videoElement = videoRef.current;
-
-    return () => {
-      if (mediaStreamRef.current) {
-        mediaStreamRef.current.getTracks().forEach((track) => {
-          track.stop();
-        });
-        mediaStreamRef.current = null;
-      }
-      if (videoElement) {
-        videoElement.srcObject = null;
-      }
-    };
-  }, [
-    mediaState.audio,
-    mediaState.video,
-    audioDevice,
-    videoDevice,
-  ]);
-
-  const renderMediaBadge = () => {
-    const activeBadges = [
+  const renderActiveDeviceIcon = () => {
+    const activeDevices = [
       mediaState.audio
         ? {
             text: 'Mic active',
-            icon: <MicIcon size='12' className='text-green-400' />,
+            icon: <MicIcon size='20' className='text-green-400' />,
           }
         : null,
       mediaState.video
         ? {
             text: 'Video active',
-            icon: <VideoIcon size='12' className='text-green-400' />,
+            icon: <VideoIcon size='20' className='text-green-400' />,
           }
         : null,
     ].filter(
-      (badge): badge is { text: string; icon: JSX.Element } => badge !== null
+      (device): device is { text: string; icon: JSX.Element } => device !== null
     );
 
     return (
-      <div className='absolute bottom-24 left-20 flex flex-col gap-8'>
-        {activeBadges.map((badge, index) => (
-          <Badge
+      <div className='absolute bottom-24 left-20 flex gap-8'>
+        {activeDevices.map((device, index) => (
+          <div
             key={index}
-            variant='outline'
-            className='border-green-500 text-green-400 animate-pulse'
+            className='flex items-center gap-4 px-4 text-xs text-green-400'
           >
-            <div className='flex items-center gap-4 px-4 text-xs'>
-              {badge.text} {badge.icon}
-            </div>
-          </Badge>
+            {device.icon}
+          </div>
         ))}
       </div>
     );
@@ -156,7 +79,7 @@ const Preview = ({
   return (
     <div className='relative flex h-full w-full rounded-3xl bg-black'>
       {renderPreview()}
-      {renderMediaBadge()}
+      {renderActiveDeviceIcon()}
     </div>
   );
 };
