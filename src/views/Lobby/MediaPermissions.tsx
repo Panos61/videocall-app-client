@@ -22,13 +22,13 @@ const MediaPermissions = ({
                 shadow-[0_4px_20px_-4px_rgba(0,0,255,0.1)]
                 transition-shadow duration-300'
     >
-      <div className='flex items-center gap-16'>
+      <div className='flex items-center gap-8'>
         <span className='text-xs'>Audio:</span>
         <span className='text-xs text-muted-foreground'>
           {renderDevice(selectedAudioDevice)}
         </span>
       </div>
-      <div className='flex items-center gap-16'>
+      <div className='flex items-center gap-8'>
         <span className='text-xs'>Video:</span>
         <span className='text-xs text-muted-foreground'>
           {renderDevice(selectedVideoDevice)}

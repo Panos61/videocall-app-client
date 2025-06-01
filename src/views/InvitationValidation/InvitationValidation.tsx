@@ -5,6 +5,7 @@ import { validateInvitation, joinRoom } from '@/api';
 import { CircleCheckBig, CircleX } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { LoadingSpinner } from '@/components/elements';
 
 export const InvitationValidation = () => {
   const location = useLocation();
@@ -29,7 +30,6 @@ export const InvitationValidation = () => {
       setIsSuccess(false);
 
       try {
-
         const validationResponse = await validateInvitation(
           invitationCode,
           roomID
@@ -58,7 +58,7 @@ export const InvitationValidation = () => {
         try {
           const joinRoomResponse = await joinRoom(roomID);
           const { isAuthorized, participant } = joinRoomResponse;
-          
+
           if (isAuthorized) {
             // await new Promise((resolve) => setTimeout(resolve, 1000));
             setIsSuccess(true);
@@ -66,9 +66,9 @@ export const InvitationValidation = () => {
             Cookie.set('rsCookie', participant.jwt);
 
             // setTimeout(() => {
-              navigate(`/room/${roomID}`, {
-                state: { roomID: roomID },
-              });
+            navigate(`/room/${roomID}`, {
+              state: { roomID: roomID },
+            });
             // }, 2000);
             toast({
               description: 'Successfully joined in! 🎉',
@@ -89,16 +89,6 @@ export const InvitationValidation = () => {
 
     handleValidateInvitation();
   }, [roomID, invitationCode, navigate, toast]);
-
-  const LoadingSpinner = () => {
-    return (
-      <div className='flex w-full items-center justify-center mt-4'>
-        <div className='flex flex-col items-center'>
-          <div className='size-28 animate-spin rounded-full border-4 border-gray-300 border-t-gray-900 ' />
-        </div>
-      </div>
-    );
-  };
 
   const renderAlert = () => {
     if (isValidating) {
@@ -131,7 +121,9 @@ export const InvitationValidation = () => {
           </div>
           <p className='text-sm text-green-600'>Your invitation is valid! 😻</p>
           <p className='text-sm'>Joining room..</p>
-          <LoadingSpinner />
+          <div className='mt-4 w-full'>
+            <LoadingSpinner />
+          </div>
         </div>
       );
     }
