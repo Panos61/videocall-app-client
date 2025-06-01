@@ -42,6 +42,8 @@ export const Room = () => {
     remoteMediaStates,
     setAudioState,
     setVideoState,
+    setVideoTrack,
+    videoTrack,
   } = useMediaControlCtx();
 
   const [activePanel, setActivePanel] = useState<
@@ -55,10 +57,6 @@ export const Room = () => {
 
   const [lvkToken, setLvkToken] = useState<SignallingMessage['token'] | null>(
     null
-  );
-
-  const [localTrack, setLocalTrack] = useState<LocalVideoTrack | undefined>(
-    undefined
   );
   const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
 
@@ -97,10 +95,14 @@ export const Room = () => {
 
     const handleLocalTrackPublished = () => {
       // Update the local track when it's published
-      const videoTrack = room?.localParticipant?.videoTrackPublications
-        .values()
-        .next().value?.videoTrack;
-      setLocalTrack(videoTrack || undefined);
+      if (!videoTrack) {
+        const newVideoTrack = room?.localParticipant?.videoTrackPublications
+          .values()
+          .next().value?.videoTrack;
+        setVideoTrack(newVideoTrack as LocalVideoTrack);
+      } else {
+        setVideoTrack(videoTrack);
+      }
     };
 
     // Listen for local track published event
@@ -195,41 +197,31 @@ export const Room = () => {
 
         // Connect to room
         await room.connect(livekitUrl, lvkToken);
-
         const localParticipant = room?.localParticipant;
 
         // Enable camera and wait for track to be published
         await localParticipant?.setCameraEnabled(true);
         await localParticipant?.setMicrophoneEnabled(true);
 
-        // Wait for the track to be published
-        await new Promise<void>((resolve) => {
-          const checkTrack = () => {
-            const videoTrack = localParticipant?.videoTrackPublications
-              .values()
-              .next().value?.videoTrack;
-            if (videoTrack) {
-              setLocalTrack(videoTrack);
-              resolve();
-            } else {
-              setTimeout(checkTrack, 100);
-            }
-          };
-          checkTrack();
-        });
-
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
           const participantsMap = new Map<string, RemoteParticipant>();
+
           room.remoteParticipants.forEach((participant) => {
             participantsMap.set(participant.identity, participant);
           });
           setRemoteParticipants(participantsMap);
         }
-        setLocalTrack(
-          room?.localParticipant?.videoTrackPublications.values().next().value
-            ?.videoTrack || undefined
-        );
+
+        if (!videoTrack) {
+          const newVideoTrack = room?.localParticipant?.videoTrackPublications
+            .values()
+            .next().value?.videoTrack as LocalVideoTrack;
+
+          setVideoTrack(newVideoTrack || null);
+        } else {
+          setVideoTrack(videoTrack);
+        }
       } catch (error) {
         console.error('Error connecting to LiveKit room:', error);
       }
@@ -258,12 +250,12 @@ export const Room = () => {
     connectSession(`/ws/signalling/${roomID}`);
 
     if (isConnected) sendMessage({ type: 'connect', sessionID });
-
     if (!ws) return;
+
     ws.onmessage = (event: MessageEvent) => {
       const data: SignallingMessage = JSON.parse(event.data);
-
       const lvkToken = data?.token;
+
       setLvkToken(lvkToken);
     };
   }, [ws, isConnected, sendMessage]);
@@ -408,7 +400,7 @@ export const Room = () => {
         <VideoTile
           key='local-video'
           participant={localParticipant}
-          track={localTrack as LocalVideoTrack}
+          track={videoTrack as LocalVideoTrack}
           isLocal={true}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}
