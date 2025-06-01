@@ -36,6 +36,7 @@ export const Room = () => {
   // Media Control Context: websocket connection for media device control
   const {
     connectMedia,
+    sendMediaUpdate,
     disconnectMedia,
     mediaState,
     remoteMediaStates,
@@ -83,9 +84,6 @@ export const Room = () => {
       _publication: RemoteTrackPublication,
       participant: RemoteParticipant
     ) => {
-      console.log(
-        `Track subscribed: ${track.kind} from ${participant.identity}`
-      );
       if (track.kind === Track.Kind.Video) {
         setRemoteTracks((prev) => [
           ...prev,
@@ -102,7 +100,6 @@ export const Room = () => {
       const videoTrack = room?.localParticipant?.videoTrackPublications
         .values()
         .next().value?.videoTrack;
-      console.log('Local track published:', videoTrack);
       setLocalTrack(videoTrack || undefined);
     };
 
@@ -116,6 +113,7 @@ export const Room = () => {
     room.on(
       RoomEvent.ParticipantConnected,
       (participant: RemoteParticipant) => {
+        sendMediaUpdate(sessionID, mediaState);
         setRemoteParticipants((prevParticipants) => {
           const newMap = new Map(prevParticipants);
           newMap.set(participant.identity, participant);
@@ -127,7 +125,6 @@ export const Room = () => {
     room.on(
       RoomEvent.ParticipantDisconnected,
       (participant: RemoteParticipant) => {
-        console.log('Participant disconnected:', participant.identity);
         setRemoteParticipants((prevParticipants) => {
           const newMap = new Map(prevParticipants);
           newMap.delete(participant.identity);
@@ -138,12 +135,11 @@ export const Room = () => {
             (track) => track.participantIdentity !== participant.identity
           )
         );
-        console.log('remoteParticipants: ', remoteParticipants);
       }
     );
 
     room.on(RoomEvent.Disconnected, () => {
-      console.log('Disconnected from room');
+      console.warn('Disconnected from room');
       setRemoteParticipants(new Map());
       handleDisconnect();
     });
@@ -169,7 +165,7 @@ export const Room = () => {
   }, []);
 
   const handleDisconnect = () => {
-    console.log('disconnecting...');
+    console.warn('disconnecting...');
   };
 
   const handleTrackUnsubscribed = (track: RemoteTrack) => {
@@ -201,19 +197,35 @@ export const Room = () => {
         await room.connect(livekitUrl, lvkToken);
 
         const localParticipant = room?.localParticipant;
+
+        // Enable camera and wait for track to be published
         await localParticipant?.setCameraEnabled(true);
         await localParticipant?.setMicrophoneEnabled(true);
+
+        // Wait for the track to be published
+        await new Promise<void>((resolve) => {
+          const checkTrack = () => {
+            const videoTrack = localParticipant?.videoTrackPublications
+              .values()
+              .next().value?.videoTrack;
+            if (videoTrack) {
+              setLocalTrack(videoTrack);
+              resolve();
+            } else {
+              setTimeout(checkTrack, 100);
+            }
+          };
+          checkTrack();
+        });
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
           const participantsMap = new Map<string, RemoteParticipant>();
-          console.log('remoteParticipants: ', room.remoteParticipants);
           room.remoteParticipants.forEach((participant) => {
             participantsMap.set(participant.identity, participant);
           });
           setRemoteParticipants(participantsMap);
         }
-
         setLocalTrack(
           room?.localParticipant?.videoTrackPublications.values().next().value
             ?.videoTrack || undefined
@@ -250,7 +262,6 @@ export const Room = () => {
     if (!ws) return;
     ws.onmessage = (event: MessageEvent) => {
       const data: SignallingMessage = JSON.parse(event.data);
-      // console.log('signalling msg: ', data);
 
       const lvkToken = data?.token;
       setLvkToken(lvkToken);
@@ -379,7 +390,6 @@ export const Room = () => {
     <div className='flex flex-col w-full h-screen bg-black'>
       <div className={roomContainerCls}>
         {remoteTracks.map((remoteTrack, index) => {
-          console.log('remoteTrack: ', remoteTrack);
           return (
             remoteTrack.track.kind === 'video' && (
               <VideoTile
