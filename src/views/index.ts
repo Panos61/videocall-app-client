@@ -1,7 +1,6 @@
-import Home from './Home';
+import Home from './Home/Home';
 import Lobby from './Lobby';
-import { Room } from './Room';
-
+import Room from './Room';
 import InvitationValidation from './InvitationValidation';
 
 export { Home, Lobby, Room, InvitationValidation };

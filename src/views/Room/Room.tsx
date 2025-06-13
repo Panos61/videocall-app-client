@@ -30,7 +30,7 @@ interface TrackInfo {
   participantIdentity: string;
 }
 
-export const Room = () => {
+const Room = () => {
   // Signalling Context: websocket connection for session/livekit token exchange
   const { ws, connectSession, isConnected, sendMessage } = useSessionCtx();
   // Media Control Context: websocket connection for media device control
@@ -407,7 +407,7 @@ export const Room = () => {
           gridCls={videoTileClass[totalVideos - 1]}
         />
       </div>
-      <div className='relative flex justify-center items-center border border-slate-900 rounded-se-sm bg-slate-950'>
+      <div className='relative flex justify-center items-center bg-black'>
         <div className='flex justify-center items-center h-64 duration-300'>
           <Toolbar
             sessionID={sessionID}
@@ -435,3 +435,5 @@ export const Room = () => {
     </div>
   );
 };
+
+export default Room;
