@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { createRoom } from '@/api';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -109,7 +110,7 @@ const Home = () => {
         transition={{ duration: 0.8 }}
         className='w-full flex gap-40 justify-center items-center'
       >
-        <div className='flex flex-col gap-12 w-[740px] text-left space-y-8 transition-all duration-500 ease-in-out'>
+        <div className='flex flex-col gap-12 w-[780px] text-left space-y-8 transition-all duration-500 ease-in-out'>
           <h1 className='text-5xl font-extrabold leading-tight text-gray-900'>
             Spin Up a Room. <span className='text-green-600'>🛸</span>
             <br />
@@ -126,11 +127,12 @@ const Home = () => {
           <div className='flex items-center gap-12'>
             <Button
               onClick={handleCreateRoom}
-              className='px-24 py-12  text-white rounded-xl shadow-md'
+              className='px-24 text-white rounded-xl'
             >
               <PlusIcon className='mr-8 size-20' />
               Create Room
             </Button>
+            <Separator orientation='vertical' className='h-28 bg-gray-300' />
             <div className='flex flex-col gap-4'>
               <div className='flex items-center gap-8'>
                 <Input
@@ -155,7 +157,7 @@ const Home = () => {
                       '_blank'
                     );
                   }}
-                  className='w-full sm:w-auto'
+                  className='w-full px-24 sm:w-auto'
                 >
                   <LogInIcon className='mr-8 size-20' />
                   Join Room
@@ -163,17 +165,7 @@ const Home = () => {
               </div>
             </div>
             <AnimatePresence>{renderInvalidInputWarning()}</AnimatePresence>
-          </div>
-          <p className='ml-4 text-xs text-gray-600'>
-            👉 Once the invitation format is valid, you can proceed to the
-            authorization page.
-          </p>
-          <div className='mt-16'>
-            <p className='text-sm text-gray-500'>
-              *Alpha launch — help shape the future of video calls, one click at
-              a time! ✨
-            </p>
-          </div>
+          </div>  
         </div>
       </motion.div>
       {/* <div className='flex gap-12 md:flex justify-center'>
