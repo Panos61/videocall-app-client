@@ -13,7 +13,6 @@ import Participants from './Participants';
 import MediaPermissions from './MediaPermissions';
 import Preview from './Preview';
 
-import LOGO from '@/assets/logo.png';
 import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
 
 export const Lobby = () => {
@@ -185,10 +184,29 @@ export const Lobby = () => {
 
   return (
     <>
-      <div className='grid grid-cols-4 h-screen'>
+      <div className='grid grid-cols-4 h-screen bg-gradient-to-br from-white via-white to-orange-300'>
         <div className='col-span-1 flex items-center justify-center'>
           <div className='flex flex-col gap-32 w-full h-screen mx-48'>
-            <img src={LOGO} alt='rooms-logo' />
+            <div className='flex items-center justify-center gap-24 mt-48'>
+              <div className='flex items-center justify-center size-64 bg-white border-[2px] border-[#00dc5ce0] rounded-xl'>
+                <div className='border border-[#635BFF] rounded-xl p-8 translate-x-8 translate-y-12'>
+                  <svg
+                    viewBox='0 0 24 24'
+                    className='size-48 text-[#635BFF] stroke-2'
+                    fill='none'
+                  >
+                    #00dc5ce0
+                    <path
+                      d='M4 4H20V14C20 15.1046 19.1046 16 18 16H9L4 21V4Z'
+                      fill='currentColor'
+                    />
+                  </svg>
+                </div>
+              </div>
+              <h1 className='text-5xl'>
+                <span className='font-mono'>Toku</span>
+              </h1>
+            </div>
             <div className='flex flex-col flex-1 justify-center'>
               <h3 className='mb-20 text-center text-xl font-semibold tracking-tight'>
                 {meData?.isHost ? 'Start Call' : 'Join Call'}
