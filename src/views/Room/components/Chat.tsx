@@ -11,7 +11,7 @@ interface Props {
 const Chat = ({ open, onClose }: Props) => {
   return (
     <Sidebar title='Conversation' open={open} onClose={onClose}>
-      <div className='h-[calc(100%-80px)] flex flex-col'>
+      <div className='h-[calc(100%-180px)] flex flex-col'>
         <div className='flex-1 flex flex-col justify-between items-center gap-4 w-full py-8 px-12 bg-white rounded-16 overflow-y-auto'>
           <div className='flex flex-col items-center gap-4 w-full '>
             <div className='flex gap-8 mt-4'>

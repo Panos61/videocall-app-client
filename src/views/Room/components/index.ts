@@ -1,6 +1,7 @@
 import Chat from './Chat';
+import Header from './Header';
 import Participants from './Participants';
 import Toolbar from './Toolbar';
 import VideoTile from './VideoTile';
 
-export { Chat, Participants, Toolbar, VideoTile };
+export { Chat, Participants, Toolbar, VideoTile, Header };
