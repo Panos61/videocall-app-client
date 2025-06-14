@@ -382,7 +382,7 @@ const Room = () => {
     <div className='flex flex-col w-full h-screen bg-black'>
       <Header />
       <div className={roomContainerCls}>
-        <div className='mt-36'>
+        <div className='mt-24'>
           {remoteTracks.map((remoteTrack, index) => {
             return (
               remoteTrack.track.kind === 'video' && (
