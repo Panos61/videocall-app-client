@@ -1,18 +1,17 @@
 import { ReactElement } from 'react';
 import classNames from 'classnames';
 import { X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
-interface SidebarProps {
+interface Props {
   title: string;
   children: ReactElement | JSX.Element;
   open: boolean;
   onClose: () => void;
 }
 
-const Sidebar = ({ title, children, open, onClose }: SidebarProps) => {
+const Sidebar = ({ title, children, open, onClose }: Props) => {
   const cls = classNames(
-    'fixed right-0 top-0 h-[85%] w-[340px] mt-20 mr-16 rounded-12 border border-slate-800 bg-slate-950 shadow-lg transform transition-all duration-300 ease-in-out',
+    'fixed right-0 h-full w-[340px] bg-zinc-900 shadow-lg transform transition-all duration-300 ease-in-out',
     {
       'translate-x-0 opacity-100 visible': open,
       'translate-x-full opacity-0 invisible': !open,
@@ -24,9 +23,7 @@ const Sidebar = ({ title, children, open, onClose }: SidebarProps) => {
       <div className='flex flex-col h-full mx-8'>
         <div className='flex items-center justify-between p-16'>
           <p className='text-white'>{title}</p>
-          <Button size='sm' onClick={onClose}>
-            <X size='20px' />
-          </Button>
+          <X size='20px' onClick={onClose} className='text-white' />
         </div>
         {children}
       </div>

@@ -23,7 +23,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { computeGridLayout } from './computeGridLayout';
 
 import { Button } from '@/components/ui/button';
-import { VideoTile, Toolbar, Participants, Chat } from './components';
+import { Chat, VideoTile, Header, Toolbar, Participants } from './components';
 
 interface TrackInfo {
   track: LocalVideoTrack | RemoteVideoTrack;
@@ -357,7 +357,7 @@ const Room = () => {
   );
 
   const actionsCls = classNames(
-    'grow relative mx-48 mt-48 mb-24 transition-all duration-300 ease-in-out',
+    'grow relative mx-48 mb-24 transition-all duration-300 ease-in-out',
     {
       'mr-[428px]': activePanel !== null,
       'mr-[48px]': activePanel === null,
@@ -380,35 +380,52 @@ const Room = () => {
 
   return (
     <div className='flex flex-col w-full h-screen bg-black'>
+      <Header />
       <div className={roomContainerCls}>
-        {remoteTracks.map((remoteTrack, index) => {
-          return (
-            remoteTrack.track.kind === 'video' && (
-              <VideoTile
-                key={remoteTrack.track.sid}
-                index={index}
-                participant={remoteParticipant(remoteTrack.participantIdentity)}
-                track={remoteTrack.track}
-                remoteSession={remoteTrack.participantIdentity}
-                isLocal={false}
-                remoteMediaStates={remoteMediaStates}
-                gridCls={videoTileClass[index]}
-              />
-            )
-          );
-        })}
-        <VideoTile
-          key='local-video'
-          participant={localParticipant}
-          track={videoTrack as LocalVideoTrack}
-          isLocal={true}
+        <div className='mt-36'>
+          {remoteTracks.map((remoteTrack, index) => {
+            return (
+              remoteTrack.track.kind === 'video' && (
+                <VideoTile
+                  key={remoteTrack.track.sid}
+                  index={index}
+                  participant={remoteParticipant(
+                    remoteTrack.participantIdentity
+                  )}
+                  track={remoteTrack.track}
+                  remoteSession={remoteTrack.participantIdentity}
+                  isLocal={false}
+                  remoteMediaStates={remoteMediaStates}
+                  gridCls={videoTileClass[index]}
+                />
+              )
+            );
+          })}
+          <VideoTile
+            key='local-video'
+            participant={localParticipant}
+            track={videoTrack as LocalVideoTrack}
+            isLocal={true}
+            mediaState={mediaState}
+            remoteMediaStates={remoteMediaStates}
+            gridCls={videoTileClass[totalVideos - 1]}
+          />
+        </div>
+        <Participants
+          open={activePanel === 'participants'}
+          participants={participantList}
+          sessionID={sessionID}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}
-          gridCls={videoTileClass[totalVideos - 1]}
+          onClose={() => setActivePanel(null)}
+        />
+        <Chat
+          open={activePanel === 'chat'}
+          onClose={() => setActivePanel(null)}
         />
       </div>
-      <div className='relative flex justify-center items-center bg-black'>
-        <div className='flex justify-center items-center h-64 duration-300'>
+      <div className='relative flex justify-center items-center border-t border-zinc-800 bg-black'>
+        <div className='flex justify-center items-center duration-300 border-b border-zinc-800'>
           <Toolbar
             sessionID={sessionID}
             room={livekitRoom.current}
@@ -420,18 +437,6 @@ const Room = () => {
           />
         </div>
       </div>
-      <Participants
-        open={activePanel === 'participants'}
-        participants={participantList}
-        sessionID={sessionID}
-        mediaState={mediaState}
-        remoteMediaStates={remoteMediaStates}
-        onClose={() => setActivePanel(null)}
-      />
-      <Chat
-        open={activePanel === 'chat'}
-        onClose={() => setActivePanel(null)}
-      />
     </div>
   );
 };

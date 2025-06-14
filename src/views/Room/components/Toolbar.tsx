@@ -79,7 +79,7 @@ const Toolbar = ({
   };
 
   return (
-    <div className='flex items-center border border-gray-100/15 rounded-xl z-20  bg-transparent'>
+    <div className='flex items-center border border-gray-100/15 rounded-xl bg-transparent'>
       <div className='flex gap-8 m-8'>
         <Button variant='secondary' size='sm' onClick={handleAudioState}>
           {mediaState.audio ? (
