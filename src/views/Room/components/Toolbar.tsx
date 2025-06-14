@@ -2,7 +2,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import { Room } from 'livekit-client';
 import { leaveRoom } from '@/api';
-import { useSessionCtx } from '@/context/session';
+import { useSessionCtx, useMediaControlCtx } from '@/context';
+
 import {
   VideoIcon,
   VideoOffIcon,
@@ -36,6 +37,7 @@ const Toolbar = ({
   setActivePanel,
 }: Props) => {
   const { sendMessage } = useSessionCtx();
+  const { videoTrack } = useMediaControlCtx();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -65,6 +67,11 @@ const Toolbar = ({
       // Reset media state in context
       setAudioState(false, sessionID);
       setVideoState(false, sessionID);
+
+      // Stop the video track from context
+      if (videoTrack) {
+        await videoTrack.stop();
+      }
 
       if (room?.localParticipant) {
         await room.localParticipant.setCameraEnabled(false);
