@@ -36,8 +36,8 @@ const Toolbar = ({
   activePanel,
   setActivePanel,
 }: Props) => {
-  const { sendMessage } = useSessionCtx();
-  const { videoTrack } = useMediaControlCtx();
+  const { sendMessage, disconnect } = useSessionCtx();
+  const { videoTrack, setVideoTrack } = useMediaControlCtx();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -54,34 +54,48 @@ const Toolbar = ({
 
   const handleVideoState = async () => {
     setVideoState(!mediaState.video, sessionID);
+
     if (room?.localParticipant) {
       await room.localParticipant.setCameraEnabled(!mediaState.video);
+
+      // Stop the video track if video is being disabled
+      if (!mediaState.video && videoTrack) {
+        await videoTrack.stop();
+      }
     }
   };
 
   const handleOnLeave = async () => {
     try {
-      sendMessage({ type: 'disconnect', sessionID });
-      await leaveRoom(roomID, jwt);
-
-      // Reset media state in context
-      setAudioState(false, sessionID);
-      setVideoState(false, sessionID);
-
-      // Stop the video track from context
-      if (videoTrack) {
-        await videoTrack.stop();
-      }
-
       if (room?.localParticipant) {
         await room.localParticipant.setCameraEnabled(false);
         await room.localParticipant.setMicrophoneEnabled(false);
       }
 
-      navigate('/');
+      if (room) {
+        await room.disconnect();
+      }
+
+      if (videoTrack) {
+        await videoTrack.stop();
+        setVideoTrack(null);
+      }
+
+      // Reset media state in context
+      setAudioState(false, sessionID);
+      setVideoState(false, sessionID);
+
+      sendMessage({ type: 'disconnect', sessionID });
+      disconnect();
+      await leaveRoom(roomID, jwt);
+
       Cookie.remove('rsCookie');
+      navigate('/');
     } catch (error) {
       console.error('Error during leave:', error);
+
+      Cookie.remove('rsCookie');
+      navigate('/');
     }
   };
 
