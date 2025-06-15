@@ -115,7 +115,7 @@ export const Lobby = () => {
       setVideoActiveDevice(defaultSelectedDevice.deviceId);
     }
   }, [videoDevices, videoActiveDeviceId, setVideoActiveDevice]);
-  
+
   // useEffect(() => {
   //   const getAudioTrack = async () => {
   //     // Stop existing track if any
@@ -162,6 +162,8 @@ export const Lobby = () => {
             deviceId: videoActiveDeviceId,
           });
           setVideoTrack(track);
+        } else {
+          setVideoTrack(null);
         }
       } catch (error) {
         console.error('Failed to create video track:', error);

@@ -37,7 +37,7 @@ export interface CtxProps {
   setAudioDevice: (device: DevicePreferences) => void;
   setVideoDevice: (device: DevicePreferences) => void;
   // setAudioTrack: (track: LocalAudioTrack) => void;
-  setVideoTrack: (track: LocalVideoTrack) => void;
+  setVideoTrack: (track: LocalVideoTrack | null) => void;
   videoTrack: LocalVideoTrack | null;
 }
 
@@ -223,7 +223,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
   //   // console.log('audio track', track);
   // };
 
-  const setVideoTrack = async (track: LocalVideoTrack) => {
+  const setVideoTrack = async (track: LocalVideoTrack | null) => {
     setLocalVideoTrack(track);
   };
 

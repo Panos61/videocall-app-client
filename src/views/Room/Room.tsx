@@ -11,6 +11,7 @@ import {
   VideoPresets,
   LocalVideoTrack,
   RemoteVideoTrack,
+  createLocalVideoTrack,
 } from 'livekit-client';
 import classNames from 'classnames';
 import { useMediaQuery } from 'usehooks-ts';
@@ -44,6 +45,7 @@ const Room = () => {
     setVideoState,
     setVideoTrack,
     videoTrack,
+    videoDevice,
   } = useMediaControlCtx();
 
   const [activePanel, setActivePanel] = useState<
@@ -55,12 +57,11 @@ const Room = () => {
   >(new Map());
   const [participantList, setParticipantList] = useState<Participant[]>([]);
 
+  const livekitRoom = useRef<LivekitRoom | null>(null);
   const [lvkToken, setLvkToken] = useState<SignallingMessage['token'] | null>(
     null
   );
   const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
-
-  const livekitRoom = useRef<LivekitRoom | null>(null);
 
   const location = useLocation();
   const { roomID, sessionID } = location.state;
@@ -94,24 +95,20 @@ const Room = () => {
     };
 
     const handleLocalTrackPublished = () => {
-      // Update the local track when it's published
-      if (!videoTrack) {
-        const newVideoTrack = room?.localParticipant?.videoTrackPublications
-          .values()
-          .next().value?.videoTrack;
+      const newVideoTrack = room?.localParticipant?.videoTrackPublications
+        .values()
+        .next().value?.videoTrack;
+
+      // Only set the video track if it's not already set
+      if (!videoTrack && newVideoTrack) {
         setVideoTrack(newVideoTrack as LocalVideoTrack);
-      } else {
-        setVideoTrack(videoTrack);
       }
     };
 
-    // Listen for local track published event
     room.localParticipant.on('trackPublished', handleLocalTrackPublished);
 
-    // Add event listeners
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
-
     room.on(
       RoomEvent.ParticipantConnected,
       (participant: RemoteParticipant) => {
@@ -164,7 +161,7 @@ const Room = () => {
       room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.disconnect();
     };
-  }, []);
+  }, [roomID, sessionID]); // Recreate room when roomID or sessionID changes
 
   const handleDisconnect = () => {
     console.warn('disconnecting...');
@@ -176,7 +173,7 @@ const Room = () => {
 
   // Connect to LiveKit room
   useEffect(() => {
-    const room = livekitRoom.current;
+    const room: LivekitRoom | null = livekitRoom.current;
     if (!room) return;
 
     const connectToRoom = async () => {
@@ -199,17 +196,17 @@ const Room = () => {
         await room.connect(livekitUrl, lvkToken);
         const localParticipant = room?.localParticipant;
 
-        // Enable camera and wait for track to be published
-        await localParticipant?.setCameraEnabled(true);
-        await localParticipant?.setMicrophoneEnabled(true);
+        // Only enable camera/mic if they were enabled in the lobby
+        await localParticipant?.setCameraEnabled(mediaState.video);
+        await localParticipant?.setMicrophoneEnabled(mediaState.audio);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
           const participantsMap = new Map<string, RemoteParticipant>();
-
           room.remoteParticipants.forEach((participant) => {
             participantsMap.set(participant.identity, participant);
           });
+
           setRemoteParticipants(participantsMap);
         }
 
@@ -229,6 +226,34 @@ const Room = () => {
 
     connectToRoom();
   }, [roomID, sessionID, lvkToken]);
+
+  // Publish new video track when mediaState.video changes
+  useEffect(() => {
+    const room: LivekitRoom | null = livekitRoom.current;
+    if (!room || !room.localParticipant) return;
+
+    const publishVideoTrack = async () => {
+      if (mediaState.video && !videoTrack) {
+        try {
+          const track = await createLocalVideoTrack({
+            deviceId: videoDevice?.deviceId,
+          });
+
+          await room.localParticipant.publishTrack(track);
+          setVideoTrack(track);
+        } catch (error) {
+          console.error('Failed to publish video track:', error);
+        }
+      } else if (!mediaState.video && videoTrack) {
+        await room.localParticipant.unpublishTrack(videoTrack);
+        await videoTrack.stop();
+
+        setVideoTrack(null);
+      }
+    };
+
+    publishVideoTrack();
+  }, [mediaState.video, videoTrack, videoDevice]);
 
   useEffect(() => {
     const handleGetRoomParticipants = async () => {
