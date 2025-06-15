@@ -161,7 +161,7 @@ const Room = () => {
       room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.disconnect();
     };
-  }, [roomID, sessionID]); // Recreate room when roomID or sessionID changes
+  }, []);
 
   const handleDisconnect = () => {
     console.warn('disconnecting...');
