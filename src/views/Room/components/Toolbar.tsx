@@ -57,11 +57,6 @@ const Toolbar = ({
 
     if (room?.localParticipant) {
       await room.localParticipant.setCameraEnabled(!mediaState.video);
-
-      // Stop the video track if video is being disabled
-      if (!mediaState.video && videoTrack) {
-        await videoTrack.stop();
-      }
     }
   };
 
@@ -77,7 +72,7 @@ const Toolbar = ({
       }
 
       if (videoTrack) {
-        await videoTrack.stop();
+        videoTrack.stop();
         setVideoTrack(null);
       }
 
