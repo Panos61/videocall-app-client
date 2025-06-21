@@ -55,12 +55,11 @@ const Room = () => {
   >(new Map());
   const [participantList, setParticipantList] = useState<Participant[]>([]);
 
+  const livekitRoom = useRef<LivekitRoom | null>(null);
   const [lvkToken, setLvkToken] = useState<SignallingMessage['token'] | null>(
     null
   );
   const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
-
-  const livekitRoom = useRef<LivekitRoom | null>(null);
 
   const location = useLocation();
   const { roomID, sessionID } = location.state;
@@ -94,7 +93,6 @@ const Room = () => {
     };
 
     const handleLocalTrackPublished = () => {
-      // Update the local track when it's published
       if (!videoTrack) {
         const newVideoTrack = room?.localParticipant?.videoTrackPublications
           .values()
@@ -105,13 +103,10 @@ const Room = () => {
       }
     };
 
-    // Listen for local track published event
     room.localParticipant.on('trackPublished', handleLocalTrackPublished);
 
-    // Add event listeners
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
-
     room.on(
       RoomEvent.ParticipantConnected,
       (participant: RemoteParticipant) => {
@@ -176,7 +171,7 @@ const Room = () => {
 
   // Connect to LiveKit room
   useEffect(() => {
-    const room = livekitRoom.current;
+    const room: LivekitRoom | null = livekitRoom.current;
     if (!room) return;
 
     const connectToRoom = async () => {
@@ -199,17 +194,17 @@ const Room = () => {
         await room.connect(livekitUrl, lvkToken);
         const localParticipant = room?.localParticipant;
 
-        // Enable camera and wait for track to be published
+        // Only enable camera/mic if they were enabled in the lobby
         await localParticipant?.setCameraEnabled(true);
         await localParticipant?.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
           const participantsMap = new Map<string, RemoteParticipant>();
-
           room.remoteParticipants.forEach((participant) => {
             participantsMap.set(participant.identity, participant);
           });
+
           setRemoteParticipants(participantsMap);
         }
 

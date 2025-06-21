@@ -2,7 +2,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import { Room } from 'livekit-client';
 import { leaveRoom } from '@/api';
-import { useSessionCtx } from '@/context/session';
+import { useSessionCtx, useMediaControlCtx } from '@/context';
+
 import {
   VideoIcon,
   VideoOffIcon,
@@ -35,7 +36,8 @@ const Toolbar = ({
   activePanel,
   setActivePanel,
 }: Props) => {
-  const { sendMessage } = useSessionCtx();
+  const { sendMessage, disconnect } = useSessionCtx();
+  const { videoTrack, setVideoTrack } = useMediaControlCtx();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -52,6 +54,7 @@ const Toolbar = ({
 
   const handleVideoState = async () => {
     setVideoState(!mediaState.video, sessionID);
+
     if (room?.localParticipant) {
       await room.localParticipant.setCameraEnabled(!mediaState.video);
     }
@@ -59,22 +62,35 @@ const Toolbar = ({
 
   const handleOnLeave = async () => {
     try {
-      sendMessage({ type: 'disconnect', sessionID });
-      await leaveRoom(roomID, jwt);
-
-      // Reset media state in context
-      setAudioState(false, sessionID);
-      setVideoState(false, sessionID);
-
       if (room?.localParticipant) {
         await room.localParticipant.setCameraEnabled(false);
         await room.localParticipant.setMicrophoneEnabled(false);
       }
 
-      navigate('/');
+      if (room) {
+        await room.disconnect();
+      }
+
+      if (videoTrack) {
+        videoTrack.stop();
+        setVideoTrack(null);
+      }
+
+      // Reset media state in context
+      setAudioState(false, sessionID);
+      setVideoState(false, sessionID);
+
+      sendMessage({ type: 'disconnect', sessionID });
+      disconnect();
+      await leaveRoom(roomID, jwt);
+
       Cookie.remove('rsCookie');
+      navigate('/');
     } catch (error) {
       console.error('Error during leave:', error);
+    } finally {
+      Cookie.remove('rsCookie');
+      navigate('/');
     }
   };
 
