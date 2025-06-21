@@ -88,7 +88,7 @@ const Toolbar = ({
       navigate('/');
     } catch (error) {
       console.error('Error during leave:', error);
-
+    } finally {
       Cookie.remove('rsCookie');
       navigate('/');
     }
