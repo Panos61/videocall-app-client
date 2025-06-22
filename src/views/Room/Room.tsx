@@ -424,6 +424,8 @@ const Room = () => {
           <Toolbar
             sessionID={sessionID}
             room={livekitRoom.current}
+            settings={'30'}
+            isHost={true}
             mediaState={mediaState}
             setAudioState={setAudioState}
             setVideoState={setVideoState}

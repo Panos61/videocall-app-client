@@ -99,24 +99,29 @@ const Toolbar = ({
 
   return (
     <div className='flex items-center border border-gray-100/15 rounded-xl bg-transparent'>
-      <div className='flex gap-8 m-8'>
-        <Button variant='secondary' size='sm' onClick={handleAudioState}>
+      <div className='flex items-center gap-8 m-8'>
+        <div
+          className='flex items-center p-12 rounded-full bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'
+          onClick={handleAudioState}
+        >
           {mediaState.audio ? (
             <MicIcon className='size-16' />
           ) : (
             <MicOffIcon color='#dc2626' className='size-16' />
           )}
-        </Button>
-        <Button variant='outline' size='sm' onClick={handleVideoState}>
+        </div>
+        <div
+          className='flex items-center p-12 rounded-full bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'
+          onClick={handleVideoState}
+        >
           {mediaState.video ? (
             <VideoIcon className='size-16' />
           ) : (
             <VideoOffIcon color='#dc2626' className='size-16' />
           )}
-        </Button>
-        <Button
-          variant='outline'
-          size='sm'
+        </div>
+        <div
+          className='flex items-center p-12 rounded-full bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'
           onClick={() =>
             setActivePanel(
               activePanel === 'participants' ? null : 'participants'
@@ -124,14 +129,13 @@ const Toolbar = ({
           }
         >
           <UsersIcon className='size-16' />
-        </Button>
-        <Button
-          variant='outline'
-          size='sm'
+        </div>
+        <div
+          className='flex items-center p-12 rounded-full bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'
           onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}
         >
           <MessageCircleIcon className='size-16' />
-        </Button>
+        </div>
         <SettingsModal settings={settings} isHost={isHost} />
         {/* <Button variant='outline' size='sm'>
           <GaugeIcon className='size-16' />

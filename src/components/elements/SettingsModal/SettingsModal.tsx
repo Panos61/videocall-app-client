@@ -85,6 +85,13 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
     }
   };
 
+  const triggerCls = classNames(
+    'flex items-center p-12 rounded-full bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer',
+    {
+      'border border-slate-200': !pathname.includes('/call'),
+    }
+  );
+
   const menuBtnCls = (isActive: boolean) =>
     classNames(
       'flex items-center w-full px-8 py-4 text-md cursor-pointer rounded-4 duration-300 ease-in-out',
@@ -97,7 +104,7 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
   return (
     <Dialog>
       <DialogTrigger>
-        <div className='flex items-center p-12 border rounded-full border-slate-200 bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'>
+        <div className={triggerCls}>
           <SettingsIcon size={16} />
         </div>
       </DialogTrigger>
