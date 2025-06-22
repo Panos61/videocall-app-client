@@ -150,11 +150,11 @@ const Home = () => {
                   disabled={!isInvitationValid}
                   onClick={() => {
                     window.open(
-                      `/room-invite?code=${invitationCode}&room=${roomID}`,
+                      `/room-invite?code=${invitationCode}&room=${roomID}&external=false`,
                       '_blank'
                     );
                   }}
-                  className='w-full px-24 sm:w-auto'
+                  className='w-full px-24'
                 >
                   <LogInIcon className='mr-8 size-20' />
                   Join Room
