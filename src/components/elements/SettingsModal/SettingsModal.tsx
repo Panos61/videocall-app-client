@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import classNames from 'classnames';
+
 import { updateSettings } from '@/api';
 
 import { SettingsIcon } from 'lucide-react';
@@ -14,23 +16,23 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from '@/components/ui/form';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Form } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
+
+import { MediaSettings } from './MediaSettings';
+import { InvitationSettings } from './InvitationSettings';
 
 interface Props {
   settings: string;
   isHost: boolean | undefined;
 }
 
+type Tab = 'media' | 'invitation';
+
 export const SettingsModal = ({ settings, isHost }: Props) => {
+  const [activeTab, setActiveTab] = useState<Tab>('media');
   const [successApply, setSuccessApply] = useState<boolean>(false);
 
   const { pathname } = useLocation();
@@ -66,51 +68,31 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
     form.reset({ invitation_expiry: settings as '30' | '90' | '180' });
   }, [settings, form, successApply]);
 
-  const renderSettingsForm = () => {
-    return (
-      <div>
-        <div className='flex gap-24 items-center mt-16 ml-4'>
-          <div className='flex flex-col w-[120px]'>
-            <span className='text-sm font-medium'>Invitation expiry: </span>
-          </div>
-          <FormField
-            control={form.control}
-            name='invitation_expiry'
-            render={({ field }) => (
-              <FormItem className='space-y-12'>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className='flex flex-col space-y-4'
-                  >
-                    <FormItem className='flex items-center space-x-12 space-y-0'>
-                      <FormControl>
-                        <RadioGroupItem value='30' />
-                      </FormControl>
-                      <FormLabel className='font-normal'>30 minutes</FormLabel>
-                    </FormItem>
-                    <FormItem className='flex items-center space-x-12 space-y-0'>
-                      <FormControl>
-                        <RadioGroupItem value='90' />
-                      </FormControl>
-                      <FormLabel className='font-normal'>90 minutes</FormLabel>
-                    </FormItem>
-                    <FormItem className='flex items-center space-x-12 space-y-0'>
-                      <FormControl>
-                        <RadioGroupItem value='180' />
-                      </FormControl>
-                      <FormLabel className='font-normal'>3 hours</FormLabel>
-                    </FormItem>
-                  </RadioGroup>
-                </FormControl>
-              </FormItem>
-            )}
+  const renderSettings = () => {
+    switch (activeTab) {
+      case 'media':
+        return <MediaSettings />;
+      case 'invitation':
+        return (
+          <InvitationSettings
+            form={form}
+            isHost={isHost}
+            settings={settings}
           />
-        </div>
-      </div>
-    );
+        );
+      default:
+        return null;
+    }
   };
+
+  const menuBtnCls = (isActive: boolean) =>
+    classNames(
+      'flex items-center w-full px-8 py-4 text-md cursor-pointer rounded-4 duration-300 ease-in-out',
+      {
+        'bg-black text-white': isActive,
+        'hover:bg-slate-100': !isActive,
+      }
+    );
 
   return (
     <Dialog>
@@ -120,11 +102,8 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
         </div>
       </DialogTrigger>
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className='w-2/3 space-y-6'
-        >
-          <DialogContent className='sm:max-w-[400px]'>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <DialogContent className='max-w-[600px]'>
             <DialogHeader>
               <DialogTitle>
                 <div className='flex items-center gap-4'>
@@ -133,18 +112,25 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
                 <Separator className='w-full mt-8' />
               </DialogTitle>
             </DialogHeader>
-            {isHost ? (
-              renderSettingsForm()
-            ) : (
-              <div className='flex flex-col gap-12 mt-12'>
-                <p className='text-sm'>Settings are locked by the host.</p>
-                <p className='text-sm italic text-slate-600'>
-                  The invitation is being updated every{' '}
-                  <span className='underline'>{settings}</span> minutes.
-                </p>
+            <DialogDescription className='flex h-[240px] mt-16'>
+              <div className='flex flex-col gap-4 w-[140px]'>
+                <div
+                  className={menuBtnCls(activeTab === 'media')}
+                  onClick={() => setActiveTab('media')}
+                >
+                  Media Devices
+                </div>
+                <div
+                  className={menuBtnCls(activeTab === 'invitation')}
+                  onClick={() => setActiveTab('invitation')}
+                >
+                  Invitation
+                </div>
               </div>
-            )}
-            <DialogFooter className='flex items-center gap-12 mt-56'>
+              <Separator orientation='vertical' className='ml-12 mr-24' />
+              {renderSettings()}
+            </DialogDescription>
+            <DialogFooter className='flex items-center gap-12 mt-16'>
               {successApply && (
                 <span className='font-bold text-xs text-green-600'>
                   Changes applied!
@@ -154,6 +140,7 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
                 size='sm'
                 type='submit'
                 disabled={!isDirty}
+                className='bg-black text-white hover:bg-gray-800'
                 onClick={() => onSubmit(form.getValues())}
               >
                 Apply changes
