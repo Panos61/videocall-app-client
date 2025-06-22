@@ -20,18 +20,18 @@ import { Input } from '@/components/ui/input';
 export const InviteModal = () => {
   const { pathname } = useLocation();
   const [copiedText, copy] = useCopyToClipboard();
-  
+
   const sseRef = useRef<EventSource | null>(null);
   const [invitation, setInvitation] = useState('');
-  const [formattedInvitation , setFormattedInvitation] = useState('');
+  const [formattedInvitation, setFormattedInvitation] = useState('');
   const [disabled, setDisabled] = useState<boolean>(false);
-  
+
   const roomID = pathname.split('/')[2];
-  
+
   const formatInvitation = (invitation: string) => {
     const formattedInvitation = invitation.replace('http://localhost:5173', '');
     setFormattedInvitation(formattedInvitation);
-  }
+  };
 
   useEffect(() => {
     const fetchInitialInvitation = async () => {
@@ -76,8 +76,8 @@ export const InviteModal = () => {
     }
 
     return (
-      <div className='flex items-center py-[9px] px-12 border rounded-sm border-slate-200 hover:bg-slate-100 duration-200'>
-        <UserPlus size={16} />
+      <div className='flex items-center p-12 border rounded-full border-slate-200 bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'>
+        <UserPlus size={20} />
       </div>
     );
   };
