@@ -98,7 +98,7 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
     <Dialog>
       <DialogTrigger>
         <div className='flex items-center p-12 border rounded-full border-slate-200 bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'>
-          <SettingsIcon size={20} />
+          <SettingsIcon size={16} />
         </div>
       </DialogTrigger>
       <Form {...form}>

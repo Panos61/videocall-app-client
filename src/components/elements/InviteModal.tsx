@@ -77,7 +77,7 @@ export const InviteModal = () => {
 
     return (
       <div className='flex items-center p-12 border rounded-full border-slate-200 bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'>
-        <UserPlus size={20} />
+        <UserPlus size={16} />
       </div>
     );
   };
