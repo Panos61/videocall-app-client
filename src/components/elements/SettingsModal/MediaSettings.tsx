@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   Select,
   SelectTrigger,
@@ -5,20 +6,67 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
+import { useMediaControlCtx } from '@/context';
+import { useMediaDeviceSelect } from '@livekit/components-react';
 
 export const MediaSettings = () => {
+  const { audioDevice, videoDevice } = useMediaControlCtx();
+
+  const {
+    devices: audioDevices,
+    activeDeviceId: audioActiveDeviceId,
+    // setActiveMediaDevice: setAudioActiveDevice,
+  } = useMediaDeviceSelect({
+    kind: 'audioinput',
+  });
+
+  const {
+    devices: videoDevices,
+    activeDeviceId: videoActiveDeviceId,
+    setActiveMediaDevice: setVideoActiveDevice,
+  } = useMediaDeviceSelect({
+    kind: 'videoinput',
+  });
+
+  const selectedAudioDevice = audioDevices.find(
+    (device) => device.deviceId === audioActiveDeviceId
+  );
+  const selectedVideoDevice = videoDevices.find(
+    (device) => device.deviceId === videoActiveDeviceId
+  );
+
+  // Video device can be found but not set as active device
+  // set first video device as selected
+  useEffect(() => {
+    if (
+      videoDevices.length > 0 &&
+      (!videoActiveDeviceId || videoActiveDeviceId === 'default')
+    ) {
+      const defaultSelectedDevice = videoDevices[0];
+      setVideoActiveDevice(defaultSelectedDevice.deviceId);
+    }
+  }, [videoDevices, videoActiveDeviceId, setVideoActiveDevice]);
+
+  const audioPlaceholder =
+    selectedAudioDevice?.label || 'Select a audio device';
+  const videoPlaceholder =
+    selectedVideoDevice?.label || 'Select a video device';
+
   const renderAudioDevices = () => {
     return (
       <Select>
-        <SelectTrigger className='w-[280px]'>
-          <SelectValue placeholder='Select a fruit' />
+        <SelectTrigger className='w-[300px]'>
+          <SelectValue
+            defaultValue={audioDevice?.deviceId}
+            placeholder={audioPlaceholder}
+          />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value='apple'>Apple</SelectItem>
-          <SelectItem value='banana'>Banana</SelectItem>
-          <SelectItem value='blueberry'>Blueberry</SelectItem>
-          <SelectItem value='grapes'>Grapes</SelectItem>
-          <SelectItem value='pineapple'>Pineapple</SelectItem>
+          {audioDevices.map((device) => (
+            <SelectItem key={device.deviceId} value={device.deviceId}>
+              {device.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     );
@@ -27,15 +75,18 @@ export const MediaSettings = () => {
   const renderVideoDevices = () => {
     return (
       <Select>
-        <SelectTrigger className='w-[280px]'>
-          <SelectValue placeholder='Select a fruit' />
+        <SelectTrigger className='w-[300px]'>
+          <SelectValue
+            defaultValue={videoDevice?.deviceId}
+            placeholder={videoPlaceholder}
+          />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value='apple'>Apple</SelectItem>
-          <SelectItem value='banana'>Banana</SelectItem>
-          <SelectItem value='blueberry'>Blueberry</SelectItem>
-          <SelectItem value='grapes'>Grapes</SelectItem>
-          <SelectItem value='pineapple'>Pineapple</SelectItem>
+          {videoDevices.map((device) => (
+            <SelectItem key={device.deviceId} value={device.deviceId}>
+              {device.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     );
