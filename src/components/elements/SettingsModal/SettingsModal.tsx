@@ -86,7 +86,7 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
   };
 
   const triggerCls = classNames(
-    'flex items-center p-12 rounded-full bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer',
+    'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer',
     {
       'border border-slate-200': !pathname.includes('/call'),
     }

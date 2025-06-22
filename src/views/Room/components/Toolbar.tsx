@@ -96,12 +96,14 @@ const Toolbar = ({
       navigate('/');
     }
   };
+  
+  const menuBtnCls = 'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer';
 
   return (
-    <div className='flex items-center border border-gray-100/15 rounded-xl bg-transparent'>
+    <div className='flex items-center bg-transparent'>
       <div className='flex items-center gap-8 m-8'>
         <div
-          className='flex items-center p-12 rounded-full bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'
+          className={menuBtnCls}
           onClick={handleAudioState}
         >
           {mediaState.audio ? (
@@ -111,7 +113,7 @@ const Toolbar = ({
           )}
         </div>
         <div
-          className='flex items-center p-12 rounded-full bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'
+          className={menuBtnCls}
           onClick={handleVideoState}
         >
           {mediaState.video ? (
@@ -121,7 +123,7 @@ const Toolbar = ({
           )}
         </div>
         <div
-          className='flex items-center p-12 rounded-full bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'
+          className={menuBtnCls}
           onClick={() =>
             setActivePanel(
               activePanel === 'participants' ? null : 'participants'
@@ -131,7 +133,7 @@ const Toolbar = ({
           <UsersIcon className='size-16' />
         </div>
         <div
-          className='flex items-center p-12 rounded-full bg-white hover:bg-slate-100 duration-300 ease-in-out cursor-pointer'
+          className={menuBtnCls}
           onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}
         >
           <MessageCircleIcon className='size-16' />
@@ -140,7 +142,7 @@ const Toolbar = ({
         {/* <Button variant='outline' size='sm'>
           <GaugeIcon className='size-16' />
         </Button> */}
-        <Button variant='destructive' size='sm' onClick={handleOnLeave}>
+        <Button variant='destructive' size='sm' onClick={handleOnLeave} className='cursor-pointer'>
           <div className='flex items-center gap-8'>
             Leave
             <PhoneOffIcon className='size-16' />

@@ -419,7 +419,7 @@ const Room = () => {
           onClose={() => setActivePanel(null)}
         />
       </div>
-      <div className='relative flex justify-center items-center border-t border-zinc-800 bg-black'>
+      <div className='relative flex justify-center items-center border-t border-zinc-800 bg-zinc-950'>
         <div className='flex justify-center items-center duration-300 border-b border-zinc-800'>
           <Toolbar
             sessionID={sessionID}
