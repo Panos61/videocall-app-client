@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import { validateInvitation, joinRoom } from '@/api';
-import { CircleCheckBig, CircleX } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CircleCheckBig, CircleX, LogIn } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { LoadingSpinner } from '@/components/elements';
 
 export const InvitationValidation = () => {
-  const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  const isExternal = searchParams.get('external') !== 'false';
 
   const { toast } = useToast();
 
@@ -17,9 +21,8 @@ export const InvitationValidation = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const queryParams = new URLSearchParams(location.search);
-  const invitationCode = queryParams.get('code');
-  const roomID = queryParams.get('room');
+  const invitationCode = searchParams.get('code');
+  const roomID = searchParams.get('room');
 
   useEffect(() => {
     if (!roomID || !invitationCode) return;
@@ -65,11 +68,13 @@ export const InvitationValidation = () => {
             setIsValidating(false);
             Cookie.set('rsCookie', participant.jwt);
 
-            // setTimeout(() => {
-            navigate(`/room/${roomID}`, {
-              state: { roomID: roomID },
-            });
-            // }, 2000);
+            if (!isExternal) {
+              // setTimeout(() => {
+              navigate(`/room/${roomID}`, {
+                state: { roomID: roomID },
+              });
+              // }, 2000);
+            }
             toast({
               description: 'Successfully joined in! 🎉',
             });
@@ -88,7 +93,7 @@ export const InvitationValidation = () => {
     };
 
     handleValidateInvitation();
-  }, [roomID, invitationCode, navigate, toast]);
+  }, [roomID, invitationCode, navigate, toast, isExternal]);
 
   const renderAlert = () => {
     if (isValidating) {
@@ -107,7 +112,7 @@ export const InvitationValidation = () => {
         <div className='flex flex-col items-center gap-8'>
           <p className='text-sm text-red-600'>{error}</p>
           <div className='animate-circle-entrance'>
-            <CircleX className='size-24 text-red-600' />
+            <CircleX className='size-32 text-red-600' />
           </div>
         </div>
       );
@@ -117,33 +122,51 @@ export const InvitationValidation = () => {
       return (
         <div className='flex flex-col items-center gap-8'>
           <div className='animate-circle-entrance'>
-            <CircleCheckBig className='size-24 text-green-600' />
+            <CircleCheckBig className='size-32 text-green-600' />
           </div>
-          <p className='text-sm text-green-600'>Your invitation is valid! 😻</p>
-          <p className='text-sm'>Joining room..</p>
-          <div className='mt-4 w-full'>
-            <LoadingSpinner />
+          <div className='flex flex-col items-center gap-4'>
+            <p className='text-sm text-green-600'>Invitation is valid!</p>
+            {isExternal && (
+              <p className='text-sm'>You can now join in the room.</p>
+            )}
           </div>
+          {!isExternal && (
+            <>
+              <p className='text-sm'>Joining room..</p>
+              <div className='mt-4 w-full'>
+                <LoadingSpinner />
+              </div>
+            </>
+          )}
         </div>
       );
     }
   };
 
   return (
-    <div className='min-h-screen bg-cover bg-fixed bg-custom-bg'>
-      <div className='mt-48 flex justify-center'>
-        <Card className='w-[500px]'>
-          <CardHeader>
-            <CardTitle className='self-center font-mono'>
-              Rooms_ invite
-            </CardTitle>
-          </CardHeader>
-          <CardContent className='flex flex-col items-center gap-8'>
-            <p className='text-sm'>Your invitation code: {invitationCode}</p>
-            {renderAlert()}
-          </CardContent>
-        </Card>
-      </div>
+    <div className='flex justify-center items-center mt-[160px]'>
+      <Card className='w-[500px]'>
+        <CardHeader className='flex flex-col items-center'>
+          <div className='flex items-center gap-8'>
+            <span className='text-2xl font-mono font-medium'>Toku</span>
+            <span className='text-xl'>Authorization</span>
+          </div>
+        </CardHeader>
+        <CardContent className='flex flex-col items-center gap-12'>
+          <p className='text-sm'>Your invitation code: {invitationCode}</p>
+          {renderAlert()}
+          {isExternal && isSuccess && (
+            <Button
+              variant='call'
+              onClick={() => navigate(`/room/${roomID}`)}
+              className='mt-4'
+            >
+              <LogIn className='size-20 mr-8 text-white' />
+              Proceed
+            </Button>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Cookie from 'js-cookie';
@@ -13,16 +13,15 @@ import { Separator } from '@/components/ui/separator';
 
 const Home = () => {
   const navigate = useNavigate();
-
   const {
     register,
     watch,
+    setValue,
     formState: { errors, isValid },
-  } = useForm({ mode: 'onChange', defaultValues: { invURL: '' } });
+  } = useForm({ mode: 'onChange', defaultValues: { invitationCode: '' } });
 
-  const invitationLink = watch('invURL');
+  const invitation = watch('invitationCode');
 
-  const [trigerValidation, setTrigerValidation] = useState(false);
   const [invitationCode, setInvitationCode] = useState<string | undefined>(
     undefined
   );
@@ -46,7 +45,7 @@ const Home = () => {
   };
 
   const renderInvalidInputWarning = () => {
-    if (errors.invURL) {
+    if (errors.invitationCode) {
       return (
         <motion.span
           initial={{ opacity: 0, height: 0 }}
@@ -62,28 +61,27 @@ const Home = () => {
     return null;
   };
 
-  const isInvitationValid: boolean = isValid && invitationLink !== '';
+  const isInvitationValid: boolean = isValid && invitation !== '';
 
-  const onInputChange = () => {
-    if (isInvitationValid) {
-      setTrigerValidation(true);
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fullUrl = e.target.value;
+
+    // Extract code and room id from URL if it's a full invitation URL
+    const codeMatch = fullUrl.match(/code=([^&]+)/);
+    const roomMatch = fullUrl.match(/room=([^&]+)/);
+
+    if (codeMatch && roomMatch) {
+      const extractedCode = codeMatch[1];
+      const extractedRoomId = roomMatch[1];
+
+      setValue('invitationCode', extractedCode);
+      setInvitationCode(extractedCode);
+      setRoomID(extractedRoomId);
     }
   };
 
-  useEffect(() => {
-    if (isValid && trigerValidation) {
-      const codeMatch = invitationLink.match(/code=([^&]+)/);
-      const roomMatch = invitationLink.match(/room=([^&]+)/);
-
-      if (codeMatch && roomMatch) {
-        setInvitationCode(codeMatch[1]);
-        setRoomID(roomMatch[1]);
-      }
-    }
-  }, [trigerValidation, isValid, invitationLink, invitationCode, roomID]);
-
   return (
-    <div className='flex flex-col gap-32 relative min-h-screen bg-gradient-to-br from-white via-white to-green-400 text-gray-900 px-4 py-12 items-center justify-center'>
+    <div className='flex flex-col gap-32 relative min-h-screen bg-gradient-to-br text-gray-900 px-4 py-12 items-center justify-center'>
       <header className='absolute top-40 left-[104px] flex items-center gap-12 text-gray-800'>
         <div className='flex items-center justify-center size-64 bg-white border-[2px] border-[#00dc5ce0] rounded-xl'>
           <div className='border border-[#635BFF] rounded-xl p-8 translate-x-8 translate-y-12'>
@@ -138,12 +136,11 @@ const Home = () => {
                 <Input
                   size={24}
                   placeholder='Enter your invitation 🔗'
-                  value={invitationLink}
-                  {...register('invURL', {
+                  value={invitation}
+                  {...register('invitationCode', {
                     pattern: {
-                      value:
-                        /^http:\/\/localhost:5173\/room-invite\?code=[\w-]+&room=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-                      message: 'The invitation format is invalid',
+                      value: /^[\w-]{16}$/,
+                      message: 'Code must be 16 characters long',
                     },
                     onChange: onInputChange,
                   })}
@@ -153,11 +150,11 @@ const Home = () => {
                   disabled={!isInvitationValid}
                   onClick={() => {
                     window.open(
-                      `/room-invite?code=${invitationCode}&room=${roomID}`,
+                      `/room-invite?code=${invitationCode}&room=${roomID}&external=false`,
                       '_blank'
                     );
                   }}
-                  className='w-full px-24 sm:w-auto'
+                  className='w-full px-24'
                 >
                   <LogInIcon className='mr-8 size-20' />
                   Join Room
@@ -165,7 +162,7 @@ const Home = () => {
               </div>
             </div>
             <AnimatePresence>{renderInvalidInputWarning()}</AnimatePresence>
-          </div>  
+          </div>
         </div>
       </motion.div>
       {/* <div className='flex gap-12 md:flex justify-center'>
