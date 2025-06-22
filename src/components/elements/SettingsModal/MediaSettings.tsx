@@ -28,13 +28,6 @@ export const MediaSettings = () => {
     kind: 'videoinput',
   });
 
-  const selectedAudioDevice = audioDevices.find(
-    (device) => device.deviceId === audioActiveDeviceId
-  );
-  const selectedVideoDevice = videoDevices.find(
-    (device) => device.deviceId === videoActiveDeviceId
-  );
-
   // Video device can be found but not set as active device
   // set first video device as selected
   useEffect(() => {
@@ -47,8 +40,15 @@ export const MediaSettings = () => {
     }
   }, [videoDevices, videoActiveDeviceId, setVideoActiveDevice]);
 
+  const selectedAudioDevice = audioDevices.find(
+    (device) => device.deviceId === audioActiveDeviceId
+  );
+  const selectedVideoDevice = videoDevices.find(
+    (device) => device.deviceId === videoActiveDeviceId
+  );
+
   const audioPlaceholder =
-    selectedAudioDevice?.label || 'Select a audio device';
+    selectedAudioDevice?.label || 'Select an audio device';
   const videoPlaceholder =
     selectedVideoDevice?.label || 'Select a video device';
 
