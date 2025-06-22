@@ -130,20 +130,18 @@ export const InvitationValidation = () => {
   };
 
   return (
-    <div className='min-h-screen bg-cover bg-fixed bg-custom-bg'>
-      <div className='mt-48 flex justify-center'>
-        <Card className='w-[500px]'>
-          <CardHeader>
-            <CardTitle className='self-center font-mono'>
-              Rooms_ invite
-            </CardTitle>
-          </CardHeader>
-          <CardContent className='flex flex-col items-center gap-8'>
-            <p className='text-sm'>Your invitation code: {invitationCode}</p>
-            {renderAlert()}
-          </CardContent>
-        </Card>
-      </div>
+    <div className='flex justify-center items-center mt-[160px]'>
+      <Card className='w-[500px]'>
+        <CardHeader>
+          <CardTitle className='self-center font-mono font-medium'>
+            Toku invite
+          </CardTitle>
+        </CardHeader>
+        <CardContent className='flex flex-col items-center gap-12'>
+          <p className='text-sm'>Your invitation code: {invitationCode}</p>
+          {renderAlert()}
+        </CardContent>
+      </Card>
     </div>
   );
 };
