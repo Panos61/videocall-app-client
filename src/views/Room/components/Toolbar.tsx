@@ -11,15 +11,16 @@ import {
   MicOffIcon,
   PhoneOffIcon,
   UsersIcon,
-  SettingsIcon,
-  GaugeIcon,
   MessageCircleIcon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { SettingsModal } from '@/components/elements';
 
 interface Props {
   sessionID: string;
   room: Room | null;
+  settings: string;
+  isHost: boolean | undefined;
   mediaState: { audio: boolean; video: boolean };
   setAudioState: (enabled: boolean, sessionID: string) => Promise<void>;
   setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
@@ -30,6 +31,8 @@ interface Props {
 const Toolbar = ({
   sessionID,
   room,
+  settings,
+  isHost,
   mediaState,
   setAudioState,
   setVideoState,
@@ -129,12 +132,10 @@ const Toolbar = ({
         >
           <MessageCircleIcon className='size-16' />
         </Button>
-        <Button variant='outline' size='sm'>
-          <SettingsIcon className='size-16' />
-        </Button>
-        <Button variant='outline' size='sm'>
+        <SettingsModal settings={settings} isHost={isHost} />
+        {/* <Button variant='outline' size='sm'>
           <GaugeIcon className='size-16' />
-        </Button>
+        </Button> */}
         <Button variant='destructive' size='sm' onClick={handleOnLeave}>
           <div className='flex items-center gap-8'>
             Leave

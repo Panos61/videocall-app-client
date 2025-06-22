@@ -46,11 +46,11 @@ export const MediaSettings = () => {
       <div>Media Devices</div>
       <div className='flex flex-col gap-8'>
         <div className='flex items-center gap-8'>
-          <span>Audio: </span>
+          <span className='text-sm'>Audio: </span>
           {renderAudioDevices()}
         </div>
         <div className='flex items-center gap-8'>
-          <span>Video: </span>
+          <span className='text-sm'>Video: </span>
           {renderVideoDevices()}
         </div>
       </div>
