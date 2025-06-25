@@ -352,10 +352,9 @@ const Room = () => {
   );
 
   const actionsCls = classNames(
-    'grow relative mx-48 mb-24 transition-all duration-300 ease-in-out',
+    'grow relative mx-16 mb-12 transition-all duration-300 ease-in-out',
     {
-      'mr-[428px]': activePanel !== null,
-      'mr-[48px]': activePanel === null,
+      'mr-[356px]': activePanel !== null,
     }
   );
 
@@ -377,7 +376,7 @@ const Room = () => {
     <div className='flex flex-col w-full h-screen bg-black'>
       <Header />
       <div className={roomContainerCls}>
-        <div className='mt-24'>
+        <div className='mt-12'>
           {remoteTracks.map((remoteTrack, index) => {
             return (
               remoteTrack.track.kind === 'video' && (
