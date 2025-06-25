@@ -20,8 +20,6 @@ import { SettingsModal } from '@/components/elements';
 interface Props {
   sessionID: string;
   room: Room | null;
-  settings: string;
-  isHost: boolean | undefined;
   mediaState: { audio: boolean; video: boolean };
   setAudioState: (enabled: boolean, sessionID: string) => Promise<void>;
   setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
@@ -32,8 +30,6 @@ interface Props {
 const Toolbar = ({
   sessionID,
   room,
-  settings,
-  isHost,
   mediaState,
   setAudioState,
   setVideoState,
@@ -134,7 +130,7 @@ const Toolbar = ({
         >
           <MessageCircleIcon size={16} />
         </div>
-        <SettingsModal settings={settings} isHost={isHost} />
+        <SettingsModal />
         <div
           className={classNames(menuBtnCls, '!bg-red-500')}
           onClick={handleOnLeave}

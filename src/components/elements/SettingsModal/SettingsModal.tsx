@@ -3,9 +3,10 @@ import { useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import Cookie from 'js-cookie';
 import classNames from 'classnames';
 
-import { updateSettings } from '@/api';
+import { getMe, getSettings, updateSettings } from '@/api';
 
 import { SettingsIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -21,35 +22,75 @@ import {
 import { Form } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 
+import type { Participant, Settings } from '@/types';
 import { MediaSettings } from './MediaSettings';
 import { InvitationSettings } from './InvitationSettings';
 
-interface Props {
-  settings: string;
-  isHost: boolean | undefined;
-}
-
 type Tab = 'media' | 'invitation';
+type InvitationExpiry = '30' | '90' | '180';
 
-export const SettingsModal = ({ settings, isHost }: Props) => {
-  const [activeTab, setActiveTab] = useState<Tab>('media');
+export const SettingsModal = () => {
+  const [activeTab, setActiveTab] = useState<Tab>('invitation');
+
+  const [meData, setMeData] = useState<Participant | null>(null);
+  const [settings, setSettings] = useState<Settings | null>(null);
   const [successApply, setSuccessApply] = useState<boolean>(false);
 
   const { pathname } = useLocation();
   const roomID = pathname.split('/')[2];
+  const jwt = Cookie.get('rsCookie');
 
   const FormSchema = z.object({
     invitation_expiry: z.enum(['30', '90', '180']),
+    invite_permission: z.boolean(),
   });
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      invitation_expiry: settings as '30' | '90' | '180',
+      invitation_expiry: '30' as InvitationExpiry,
+      invite_permission: false,
     },
   });
 
   const { isDirty } = form.formState;
+
+  useEffect(() => {
+    const fetchMe = async () => {
+      if (!jwt || !roomID) return;
+
+      try {
+        const meResponseData = await getMe(roomID, jwt);
+        setMeData(meResponseData);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchMe();
+  }, [roomID, jwt]);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (!jwt || !roomID) return;
+
+      try {
+        const settingsResponse = await getSettings(roomID);
+        console.log('settingsResponse', settingsResponse);
+        
+        if (!settingsResponse) return;
+        setSettings({
+          invitation_expiry: settingsResponse.invitation_expiry as InvitationExpiry,
+          invite_permission: settingsResponse.invite_permission ?? false,
+        });
+        console.log('settings', settingsResponse);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchSettings();
+  }, [roomID, jwt]);
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     try {
@@ -65,7 +106,12 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
   };
 
   useEffect(() => {
-    form.reset({ invitation_expiry: settings as '30' | '90' | '180' });
+    if (settings) {
+      form.reset({
+        invitation_expiry: settings.invitation_expiry,
+        invite_permission: settings.invite_permission,
+      });
+    }
   }, [settings, form, successApply]);
 
   const renderSettings = () => {
@@ -74,7 +120,13 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
         return <MediaSettings />;
       case 'invitation':
         return (
-          <InvitationSettings form={form} isHost={isHost} settings={settings} />
+          settings && (
+            <InvitationSettings
+              form={form}
+              isHost={meData?.isHost}
+              settings={settings}
+            />
+          )
         );
       default:
         return null;

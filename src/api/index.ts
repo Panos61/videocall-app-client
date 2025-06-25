@@ -204,15 +204,14 @@ export const startCall = async (
 
 export const getSettings = async (roomID: string) => {
   try {
-    const response = await cachedAxiosApi.get<Settings>(`/settings/${roomID}`, {
-      id: 'settings',
-    });
+    const response = await cachedAxiosApi.get<Settings>(`/settings/${roomID}`);
 
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 400) {
       return {
         invitation_expiry: '30',
+        invite_permission: false,
       };
     }
     console.error(error);

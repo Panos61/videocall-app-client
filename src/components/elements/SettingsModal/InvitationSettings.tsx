@@ -4,24 +4,30 @@ import { FormLabel } from '@/components/ui/form';
 import { UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 
+import type { Settings } from '@/types';
+
 const FormSchema = z.object({
   invitation_expiry: z.enum(['30', '90', '180']),
+  invite_permission: z.boolean(),
 });
 
 interface Props {
   isHost: boolean | undefined;
-  settings: string;
+  settings: Settings;
   form: UseFormReturn<z.infer<typeof FormSchema>>;
 }
 
 export const InvitationSettings = ({ isHost, settings, form }: Props) => {
-  if (!isHost) {
+  const { invitation_expiry } = settings;
+  console.log('invitation_expiry', invitation_expiry);
+
+  if (isHost) {
     return (
       <div className='flex flex-col gap-12 mt-12'>
         <p className='text-sm'>Settings are locked by the host.</p>
         <p className='text-sm italic text-slate-600'>
           The invitation is being updated every{' '}
-          <span className='underline'>{settings}</span> minutes.
+          <span className='underline'>{invitation_expiry}</span> minutes.
         </p>
       </div>
     );
