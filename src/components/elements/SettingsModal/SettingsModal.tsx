@@ -74,11 +74,7 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
         return <MediaSettings />;
       case 'invitation':
         return (
-          <InvitationSettings
-            form={form}
-            isHost={isHost}
-            settings={settings}
-          />
+          <InvitationSettings form={form} isHost={isHost} settings={settings} />
         );
       default:
         return null;
@@ -125,13 +121,13 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
                   className={menuBtnCls(activeTab === 'media')}
                   onClick={() => setActiveTab('media')}
                 >
-                  Media Devices
+                  <span className='text-sm'>Media Devices</span>
                 </div>
                 <div
                   className={menuBtnCls(activeTab === 'invitation')}
                   onClick={() => setActiveTab('invitation')}
                 >
-                  Invitation
+                  <span className='text-sm'>Invitation</span>
                 </div>
               </div>
               <Separator orientation='vertical' className='ml-12 mr-24' />

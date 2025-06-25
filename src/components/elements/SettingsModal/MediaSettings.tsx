@@ -6,12 +6,9 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
-import { useMediaControlCtx } from '@/context';
 import { useMediaDeviceSelect } from '@livekit/components-react';
 
 export const MediaSettings = () => {
-  const { audioDevice, videoDevice } = useMediaControlCtx();
-
   const {
     devices: audioDevices,
     activeDeviceId: audioActiveDeviceId,
@@ -57,7 +54,7 @@ export const MediaSettings = () => {
       <Select>
         <SelectTrigger className='w-[300px]'>
           <SelectValue
-            defaultValue={audioDevice?.deviceId}
+            defaultValue={audioActiveDeviceId}
             placeholder={audioPlaceholder}
           />
         </SelectTrigger>
@@ -77,7 +74,7 @@ export const MediaSettings = () => {
       <Select>
         <SelectTrigger className='w-[300px]'>
           <SelectValue
-            defaultValue={videoDevice?.deviceId}
+            defaultValue={videoActiveDeviceId}
             placeholder={videoPlaceholder}
           />
         </SelectTrigger>
