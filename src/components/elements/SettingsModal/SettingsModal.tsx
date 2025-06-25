@@ -104,9 +104,9 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
           <SettingsIcon size={16} />
         </div>
       </DialogTrigger>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <DialogContent className='max-w-[600px]'>
+      <DialogContent className='max-w-[600px]'>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader>
               <DialogTitle>
                 <div className='flex items-center gap-4'>
@@ -149,9 +149,9 @@ export const SettingsModal = ({ settings, isHost }: Props) => {
                 Apply changes
               </Button>
             </DialogFooter>
-          </DialogContent>
-        </form>
-      </Form>
+          </form>
+        </Form>
+      </DialogContent>
     </Dialog>
   );
 };
