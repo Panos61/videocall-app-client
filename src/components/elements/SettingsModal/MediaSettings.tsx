@@ -91,7 +91,7 @@ export const MediaSettings = () => {
 
   return (
     <div className='flex flex-col gap-12'>
-      <div>Media Devices</div>
+      <span className='text-sm font-medium'>Media Device Permissions</span>
       <div className='flex flex-col gap-8'>
         <div className='flex items-center gap-8'>
           <span className='text-sm'>Audio: </span>

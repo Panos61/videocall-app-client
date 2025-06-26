@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Cookie from 'js-cookie';
 import classNames from 'classnames';
+import { capitalize } from 'lodash';
 
 import { getMe, getSettings, updateSettings } from '@/api';
 
@@ -23,6 +24,7 @@ import { Form } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
 
 import type { Participant, Settings } from '@/types';
+import { AccessWarning } from './AccessWarning';
 import { MediaSettings } from './MediaSettings';
 import { InvitationSettings } from './InvitationSettings';
 
@@ -77,10 +79,11 @@ export const SettingsModal = () => {
       try {
         const settingsResponse = await getSettings(roomID);
         console.log('settingsResponse', settingsResponse);
-        
+
         if (!settingsResponse) return;
         setSettings({
-          invitation_expiry: settingsResponse.invitation_expiry as InvitationExpiry,
+          invitation_expiry:
+            settingsResponse.invitation_expiry as InvitationExpiry,
           invite_permission: settingsResponse.invite_permission ?? false,
         });
         console.log('settings', settingsResponse);
@@ -120,7 +123,8 @@ export const SettingsModal = () => {
         return <MediaSettings />;
       case 'invitation':
         return (
-          settings && (
+          settings &&
+          meData?.isHost && (
             <InvitationSettings
               form={form}
               isHost={meData?.isHost}
@@ -142,7 +146,7 @@ export const SettingsModal = () => {
 
   const menuBtnCls = (isActive: boolean) =>
     classNames(
-      'flex items-center w-full px-8 py-4 text-md cursor-pointer rounded-4 duration-300 ease-in-out',
+      'flex items-center w-full px-8 py-4 text-md cursor-pointer rounded-4 duration-150 ease-in-out',
       {
         'bg-black text-white': isActive,
         'hover:bg-slate-100': !isActive,
@@ -183,7 +187,19 @@ export const SettingsModal = () => {
                 </div>
               </div>
               <Separator orientation='vertical' className='ml-12 mr-24' />
-              {renderSettings()}
+              <div className='flex flex-col gap-12 flex-1'>
+                <div className='flex flex-col gap-4'>
+                  <span>{capitalize(activeTab)} settings</span>
+                  <Separator />
+                </div>
+                <div>
+                  <AccessWarning
+                    isHost={meData?.isHost}
+                    settingsPanel={activeTab}
+                  />
+                  {renderSettings()}
+                </div>
+              </div>
             </DialogDescription>
             <DialogFooter className='flex items-center gap-12 mt-16'>
               {successApply && (
