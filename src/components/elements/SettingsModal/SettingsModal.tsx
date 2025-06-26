@@ -171,7 +171,7 @@ export const SettingsModal = () => {
                 <Separator className='w-full mt-8' />
               </DialogTitle>
             </DialogHeader>
-            <DialogDescription className='flex h-[240px] mt-16'>
+            <DialogDescription className='flex h-[300px] mt-16'>
               <div className='flex flex-col gap-4 w-[140px]'>
                 <div
                   className={menuBtnCls(activeTab === 'media')}
@@ -188,7 +188,7 @@ export const SettingsModal = () => {
               </div>
               <Separator orientation='vertical' className='ml-12 mr-24' />
               <div className='flex flex-col gap-12 flex-1'>
-                <div className='flex flex-col gap-4'>
+                <div className='flex flex-col gap-4 mb-8'>
                   <span>{capitalize(activeTab)} settings</span>
                   <Separator />
                 </div>

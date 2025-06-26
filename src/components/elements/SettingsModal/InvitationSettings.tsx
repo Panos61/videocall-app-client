@@ -72,19 +72,17 @@ export const InvitationSettings = ({ isHost, settings, form }: Props) => {
   };
 
   return (
-    <div className='mt-12'>
-      <div className='flex items-center gap-20 mt-12'>
-        {isHost ? (
-          <>
-            <span className='text-sm font-medium whitespace-nowrap'>
-              Invitation expiry:{' '}
-            </span>
-            {renderForm()}
-          </>
-        ) : (
-          renderNonHostInfo()
-        )}
-      </div>
+    <div className='flex items-center gap-20'>
+      {isHost ? (
+        <>
+          <span className='text-sm font-medium whitespace-nowrap'>
+            Invitation expiry:{' '}
+          </span>
+          {renderForm()}
+        </>
+      ) : (
+        renderNonHostInfo()
+      )}
     </div>
   );
 };
