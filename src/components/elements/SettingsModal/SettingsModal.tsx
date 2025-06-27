@@ -124,7 +124,7 @@ export const SettingsModal = () => {
       case 'invitation':
         return (
           settings &&
-          meData?.isHost && (
+          meData?.isHost !== undefined && (
             <InvitationSettings
               form={form}
               isHost={meData?.isHost}
@@ -187,12 +187,12 @@ export const SettingsModal = () => {
                 </div>
               </div>
               <Separator orientation='vertical' className='ml-12 mr-24' />
-              <div className='flex flex-col gap-12 flex-1'>
-                <div className='flex flex-col gap-4 mb-8'>
+              <div className='flex flex-col flex-1 gap-20'>
+                <div className='flex flex-col gap-4'>
                   <span>{capitalize(activeTab)} settings</span>
                   <Separator />
                 </div>
-                <div>
+                <div className='flex flex-col gap-12'>
                   <AccessWarning
                     isHost={meData?.isHost}
                     settingsPanel={activeTab}
