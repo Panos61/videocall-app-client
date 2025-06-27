@@ -1,5 +1,4 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { buildMemoryStorage, setupCache } from 'axios-cache-interceptor';
 import Cookie from 'js-cookie';
 import type {
   CreateRoom,
@@ -22,20 +21,6 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-// Set up axios cache interceptor
-// https://axios-cache-interceptor.js.org/getting-started
-const cachedAxiosApi = setupCache(api, {
-  storage: buildMemoryStorage(),
-  ttl: 2 * 60 * 1000,
-  methods: ['get', 'post'],
-});
-
-export const checkCache = async (id: string) => {
-  const cache = cachedAxiosApi.storage.get(id);
-  console.log('cache', cache);
-  return cache;
-};
 
 api.interceptors.request.use(
   (config) => {
@@ -146,7 +131,10 @@ export const joinRoom = async (roomID: string) => {
   return response.data;
 };
 
-export const leaveRoom = async (roomID: string, jwtToken: string | undefined) => {
+export const leaveRoom = async (
+  roomID: string,
+  jwtToken: string | undefined
+) => {
   const response = await api.get<LeaveRoom>(`/leave-room/${roomID}`, {
     headers: {
       'Content-Type': 'application/json',
@@ -159,7 +147,7 @@ export const leaveRoom = async (roomID: string, jwtToken: string | undefined) =>
 
 export const getMe = async (roomID: string, jwt: string) => {
   try {
-    const response = await cachedAxiosApi.post(
+    const response = await api.post(
       `/get-me/${roomID}`,
       {
         id: 'me',
@@ -204,7 +192,7 @@ export const startCall = async (
 
 export const getSettings = async (roomID: string) => {
   try {
-    const response = await cachedAxiosApi.get<Settings>(`/settings/${roomID}`);
+    const response = await api.get<Settings>(`/settings/${roomID}`);
 
     return response.data;
   } catch (error) {
@@ -223,17 +211,10 @@ export const updateSettings = async (
   invitation_expiry: string
 ) => {
   try {
-    const response = await cachedAxiosApi.post<UpdateSettings>(
+    const response = await api.post<UpdateSettings>(
       `/update-settings/${roomID}`,
       {
         invitation_expiry,
-      },
-      {
-        cache: {
-          update: {
-            settings: 'delete',
-          },
-        },
       }
     );
 
