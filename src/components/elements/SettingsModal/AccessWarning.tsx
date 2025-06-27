@@ -8,7 +8,6 @@ interface Props {
 
 export const AccessWarning = ({ isHost, settingsPanel }: Props) => {
   const shouldDisplay = !isHost && settingsPanel === 'invitation';
-  console.log('shouldDisplay', shouldDisplay);
   if (!shouldDisplay) return null;
 
   return (

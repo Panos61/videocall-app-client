@@ -89,10 +89,12 @@ export const MediaSettings = () => {
     );
   };
 
+  const cardCls = 'flex flex-col gap-12 border border-slate-200 rounded-8 p-12';
+
   return (
     <div className='flex flex-col gap-12'>
-      <span className='text-sm font-medium'>Media Device Permissions</span>
-      <div className='flex flex-col gap-8'>
+      <div className={cardCls}>
+        <span className='text-sm font-medium'>Media Device Permissions</span>
         <div className='flex items-center gap-8'>
           <span className='text-sm'>Audio: </span>
           {renderAudioDevices()}
