@@ -20,8 +20,9 @@ import type { Participant, Settings } from '@/types';
 import { AccessWarning } from './AccessWarning';
 import { MediaSettings } from './MediaSettings';
 import { InvitationSettings } from './InvitationSettings';
+import { Permissions } from './Permissions';
 
-type Tab = 'media' | 'invitation';
+type Tab = 'media' | 'invitation' | 'permissions';
 type InvitationExpiry = '30' | '90' | '180';
 
 export const SettingsModal = () => {
@@ -87,6 +88,8 @@ export const SettingsModal = () => {
             />
           )
         );
+      case 'permissions':
+        return <Permissions />;
       default:
         return null;
     }
@@ -97,9 +100,11 @@ export const SettingsModal = () => {
       case 'media':
         return 'Configure your camera and microphone devices';
       case 'invitation':
-        return meData?.isHost 
+        return !meData?.isHost 
           ? 'Manage room invitation settings and permissions'
-          : 'View current invitation settings (host-only controls)';
+          : 'View current invitation settings (👉 host-only controls)';
+      case 'permissions':
+        return 'Manage various permissions for room members';
     }
   }
 
@@ -149,9 +154,15 @@ export const SettingsModal = () => {
             >
               <span className='text-sm'>Invitation</span>
             </div>
+            <div
+              className={menuBtnCls(activeTab === 'permissions')}
+              onClick={() => setActiveTab('permissions')}
+            >
+              <span className='text-sm'>Permissions</span>
+            </div>
           </div>
-          <Separator orientation='vertical' className='ml-12 mr-24' />
-          <div className='flex flex-col flex-1 gap-20'>
+          <Separator orientation='vertical' className='ml-12 mr-16' />
+          <div className='flex flex-col flex-1 gap-12'>
             <div className='flex flex-col gap-4'>
               <span className='text-sm'>{renderHeader()}</span>
               <Separator />

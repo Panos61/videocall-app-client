@@ -12,6 +12,7 @@ import Form from './Form';
 import MediaPermissions from './MediaPermissions';
 import Participants from './Participants';
 import Preview from './Preview';
+import StrictMode from './StrictMode';
 
 import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
 
@@ -213,6 +214,7 @@ export const Lobby = () => {
                 setAudioActiveDevice={setAudioActiveDevice}
                 setVideoActiveDevice={setVideoActiveDevice}
               />
+              <StrictMode />
               <Participants participants={participants} />
               <MediaPermissions
                 selectedAudioDevice={selectedAudioDevice}
