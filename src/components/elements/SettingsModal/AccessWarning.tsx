@@ -13,7 +13,7 @@ export const AccessWarning = ({ isHost, settingsPanel }: Props) => {
   return (
     <div className='flex items-center gap-8 p-8 w-fit border border-yellow-400 rounded-8 text-sm bg-yellow-50'>
       <MessageSquareWarning size={16} className='text-yellow-500' />
-      <span>{capitalize(settingsPanel)} settings are locked by the host.</span>
+      <span>{capitalize(settingsPanel)} settings are only available to the host.</span>
     </div>
   );
 };
