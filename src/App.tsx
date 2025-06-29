@@ -1,7 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import { MediaControlProvider, SessionProvider } from './context';
+import {
+  MediaControlProvider,
+  SessionProvider,
+  SettingsProvider,
+} from './context';
 import { Home, Lobby, Room, InvitationValidation } from './views';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
@@ -31,12 +35,14 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
-        <MediaControlProvider>
-          <TooltipProvider>
-            <RouterProvider router={router} />
-          </TooltipProvider>
-          <Toaster />
-        </MediaControlProvider>
+        <SettingsProvider>
+          <MediaControlProvider>
+            <TooltipProvider>
+              <RouterProvider router={router} />
+            </TooltipProvider>
+            <Toaster />
+          </MediaControlProvider>
+        </SettingsProvider>
       </SessionProvider>
     </QueryClientProvider>
   );

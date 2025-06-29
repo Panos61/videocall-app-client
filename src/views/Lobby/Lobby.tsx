@@ -5,7 +5,7 @@ import { useMediaDeviceSelect } from '@livekit/components-react';
 
 import type { Participant } from '@/types';
 import { getRoomParticipants, getMe } from '@/api';
-import { useMediaControlCtx } from '@/context';
+import { useMediaControlCtx, useSettingsCtx } from '@/context';
 
 import Actions from './Actions';
 import Form from './Form';
@@ -26,6 +26,7 @@ export const Lobby = () => {
     setVideoTrack,
     videoTrack,
   } = useMediaControlCtx();
+  const { connectSettings } = useSettingsCtx();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [meData, setMeData] = useState<Participant | undefined>();
@@ -168,6 +169,10 @@ export const Lobby = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoActiveDeviceId, mediaState.video]);
+
+  useEffect(() => {
+    connectSettings(roomID);
+  }, [roomID, connectSettings]);
 
   return (
     <>

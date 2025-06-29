@@ -3,7 +3,9 @@ import { useLocation } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import classNames from 'classnames';
 
-import { getMe, getSettings } from '@/api';
+import type { Participant } from '@/types';
+import { getMe } from '@/api';
+import { useSettingsCtx } from '@/context';
 
 import { SettingsIcon } from 'lucide-react';
 import {
@@ -16,20 +18,19 @@ import {
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 
-import type { Participant, Settings } from '@/types';
 import { AccessWarning } from './AccessWarning';
 import { MediaSettings } from './MediaSettings';
 import { InvitationSettings } from './InvitationSettings';
 import { Permissions } from './Permissions';
 
 type Tab = 'media' | 'invitation' | 'permissions';
-type InvitationExpiry = '30' | '90' | '180';
 
 export const SettingsModal = () => {
+  const { settings } = useSettingsCtx();
+
   const [activeTab, setActiveTab] = useState<Tab>('invitation');
 
   const [meData, setMeData] = useState<Participant | null>(null);
-  const [settings, setSettings] = useState<Settings | null>(null);
 
   const { pathname } = useLocation();
   const roomID = pathname.split('/')[2];
@@ -49,29 +50,29 @@ export const SettingsModal = () => {
 
     fetchMe();
   }, [roomID, jwt]);
+  
+  // useEffect(() => {
+  //   const fetchSettings = async () => {
+  //     if (!jwt || !roomID) return;
 
-  useEffect(() => {
-    const fetchSettings = async () => {
-      if (!jwt || !roomID) return;
+  //     try {
+  //       const settingsResponse = await getSettings(roomID);
+  //       console.log('settingsResponse', settingsResponse);
 
-      try {
-        const settingsResponse = await getSettings(roomID);
-        console.log('settingsResponse', settingsResponse);
+  //       if (!settingsResponse) return;
+  //       setSettings({
+  //         invitation_expiry:
+  //           settingsResponse.invitation_expiry as InvitationExpiry,
+  //         invite_permission: settingsResponse.invite_permission,
+  //       });
+  //       console.log('settings', settingsResponse);
+  //     } catch (error) {
+  //       console.error(error);
+  //     }
+  //   };
 
-        if (!settingsResponse) return;
-        setSettings({
-          invitation_expiry:
-            settingsResponse.invitation_expiry as InvitationExpiry,
-          invite_permission: settingsResponse.invite_permission,
-        });
-        console.log('settings', settingsResponse);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchSettings();
-  }, [roomID, jwt]);
+  //   fetchSettings();
+  // }, [roomID, jwt]);
 
   const renderSettings = () => {
     switch (activeTab) {
@@ -79,12 +80,14 @@ export const SettingsModal = () => {
         return <MediaSettings />;
       case 'invitation':
         return (
-          settings &&
           meData?.isHost !== undefined && (
             <InvitationSettings
               roomID={roomID}
               isHost={meData?.isHost}
-              settings={settings}
+              settings={settings || {
+                invitation_expiry: '30',
+                invite_permission: false,
+              }}
             />
           )
         );
@@ -94,19 +97,19 @@ export const SettingsModal = () => {
         return null;
     }
   };
-  
+
   const renderHeader = () => {
     switch (activeTab) {
       case 'media':
         return 'Configure your camera and microphone devices';
       case 'invitation':
-        return !meData?.isHost 
+        return !meData?.isHost
           ? 'Manage room invitation settings and permissions'
           : 'View current invitation settings (👉 host-only controls)';
       case 'permissions':
         return 'Manage various permissions for room members';
     }
-  }
+  };
 
   const triggerCls = classNames(
     'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer',
@@ -123,6 +126,8 @@ export const SettingsModal = () => {
         'hover:bg-slate-100': !isActive,
       }
     );
+
+  console.log('settings SettingsModal', settings);
 
   return (
     <Dialog>

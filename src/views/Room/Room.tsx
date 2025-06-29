@@ -17,7 +17,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import { LogOutIcon } from 'lucide-react';
 
 import type { Participant, SignallingMessage, UserEvent } from '@/types';
-import { useSessionCtx, useMediaControlCtx } from '@/context';
+import { useSessionCtx, useMediaControlCtx, useSettingsCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { useToast } from '@/components/ui/use-toast';
 import { computeGridLayout } from './computeGridLayout';
@@ -63,6 +63,10 @@ const Room = () => {
 
   const location = useLocation();
   const { roomID, sessionID } = location.state;
+
+  // Settings Context: websocket connection for settings
+  const { connectSettings, disconnect, settings } = useSettingsCtx();
+  console.log('settings Room', settings);
 
   // Setup LiveKit room & event listeners
   useEffect(() => {
@@ -270,6 +274,14 @@ const Room = () => {
       disconnectMedia();
     };
   }, [roomID, sessionID]);
+
+  useEffect(() => {
+    connectSettings(roomID);
+
+    return () => {
+      disconnect();
+    };
+  }, [roomID, connectSettings]);
 
   const { toast } = useToast();
 
