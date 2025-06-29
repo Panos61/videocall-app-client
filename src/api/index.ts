@@ -208,16 +208,17 @@ export const getSettings = async (roomID: string) => {
 
 export const updateSettings = async (
   roomID: string,
-  invitation_expiry: string
+  settings: Settings
 ) => {
   try {
     const response = await api.post<UpdateSettings>(
       `/update-settings/${roomID}`,
       {
-        invitation_expiry,
+        settings,
       }
     );
-
+    
+    console.log('api response', response.data);
     return response.data;
   } catch (error) {
     console.error(error);
