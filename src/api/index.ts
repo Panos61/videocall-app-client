@@ -202,7 +202,6 @@ export const getSettings = async (roomID: string) => {
         invite_permission: false,
       };
     }
-    console.error(error);
   }
 };
 

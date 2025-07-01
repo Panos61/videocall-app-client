@@ -50,29 +50,8 @@ export const SettingsModal = () => {
 
     fetchMe();
   }, [roomID, jwt]);
-  
-  // useEffect(() => {
-  //   const fetchSettings = async () => {
-  //     if (!jwt || !roomID) return;
 
-  //     try {
-  //       const settingsResponse = await getSettings(roomID);
-  //       console.log('settingsResponse', settingsResponse);
-
-  //       if (!settingsResponse) return;
-  //       setSettings({
-  //         invitation_expiry:
-  //           settingsResponse.invitation_expiry as InvitationExpiry,
-  //         invite_permission: settingsResponse.invite_permission,
-  //       });
-  //       console.log('settings', settingsResponse);
-  //     } catch (error) {
-  //       console.error(error);
-  //     }
-  //   };
-
-  //   fetchSettings();
-  // }, [roomID, jwt]);
+  const isHost = meData?.isHost;
 
   const renderSettings = () => {
     switch (activeTab) {
@@ -80,14 +59,16 @@ export const SettingsModal = () => {
         return <MediaSettings />;
       case 'invitation':
         return (
-          meData?.isHost !== undefined && (
+          isHost !== undefined && (
             <InvitationSettings
               roomID={roomID}
-              isHost={meData?.isHost}
-              settings={settings || {
-                invitation_expiry: '30',
-                invite_permission: false,
-              }}
+              isHost={isHost}
+              settings={
+                settings || {
+                  invitation_expiry: '30',
+                  invite_permission: false,
+                }
+              }
             />
           )
         );
@@ -103,11 +84,13 @@ export const SettingsModal = () => {
       case 'media':
         return 'Configure your camera and microphone devices';
       case 'invitation':
-        return !meData?.isHost
+        return isHost
           ? 'Manage room invitation settings and permissions'
-          : 'View current invitation settings (👉 host-only controls)';
+          : 'View current invitation settings set by the host';
       case 'permissions':
-        return 'Manage various permissions for room members';
+        return isHost
+          ? 'Manage various permissions for room members'
+          : 'View current room permissions set by the host';
     }
   };
 
@@ -126,8 +109,6 @@ export const SettingsModal = () => {
         'hover:bg-slate-100': !isActive,
       }
     );
-
-  console.log('settings SettingsModal', settings);
 
   return (
     <Dialog>
@@ -173,10 +154,7 @@ export const SettingsModal = () => {
               <Separator />
             </div>
             <div className='flex flex-col gap-12'>
-              <AccessWarning
-                isHost={meData?.isHost}
-                settingsPanel={activeTab}
-              />
+              <AccessWarning isHost={isHost} settingsPanel={activeTab} />
               {renderSettings()}
             </div>
           </div>

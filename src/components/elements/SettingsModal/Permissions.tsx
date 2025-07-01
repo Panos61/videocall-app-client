@@ -27,12 +27,12 @@ export const Permissions = () => {
       </div>
       <div className={cardCls}>
         <div className='flex items-center gap-4'>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <InfoIcon size={16} className='text-purple-500' />
-              </TooltipTrigger>
-              <TooltipContent side='left'>
-                When enabled, all members can share their screen.
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <InfoIcon size={16} className='text-purple-500' />
+            </TooltipTrigger>
+            <TooltipContent side='left'>
+              When enabled, all members can share their screen.
             </TooltipContent>
           </Tooltip>
           <span className='text-sm font-medium'>
