@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import Cookie from 'js-cookie';
+import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
 import { useMediaDeviceSelect } from '@livekit/components-react';
+import Cookie from 'js-cookie';
 
 import type { Participant } from '@/types';
 import { getRoomParticipants, getMe } from '@/api';
@@ -13,8 +14,6 @@ import MediaPermissions from './MediaPermissions';
 import Participants from './Participants';
 import Preview from './Preview';
 import StrictMode from './StrictMode';
-
-import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
 
 export const Lobby = () => {
   const { pathname } = useLocation();
@@ -35,6 +34,12 @@ export const Lobby = () => {
 
   const jwt = Cookie.get('rsCookie');
   const roomID = pathname.split('/')[2];
+
+  useEffect(() => {
+    if (roomID) {
+      connectSettings(roomID);
+    }
+  }, [roomID, connectSettings]);
 
   useEffect(() => {
     const handleGetRoomParticipants = async () => {
@@ -169,10 +174,6 @@ export const Lobby = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoActiveDeviceId, mediaState.video]);
-
-  useEffect(() => {
-    connectSettings(roomID);
-  }, [roomID, connectSettings]);
 
   return (
     <>

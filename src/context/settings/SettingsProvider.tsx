@@ -1,5 +1,7 @@
-import { createContext, useRef, useState } from 'react';
+import { createContext, useRef, useState, useCallback } from 'react';
+
 import type { Settings } from '@/types';
+import { getSettings } from '@/api';
 import { BASE_WS_URL } from '@/utils/constants';
 
 export interface Props {
@@ -19,26 +21,33 @@ export const SettingsProvider = ({
   const ws = useRef<WebSocket | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
 
-  const connectSettings = (roomID: string) => {
-    if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
-      if (ws.current) {
-        ws.current.close();
-      }
-
-      ws.current = new WebSocket(
-        `${BASE_WS_URL}/ws/settings-broadcast/${roomID}`
-      );
-
-      ws.current.onmessage = (event: MessageEvent) => {
-        if (!ws.current) return;
-
-        const data: Settings = JSON.parse(event.data);
-        setSettings(data);
-
-        console.log('settings', data);
-      };
+  const connectSettings = useCallback(async (roomID: string) => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      return;
     }
-  };
+
+    try {
+      const initialSettingsData = await getSettings(roomID);
+      setSettings(initialSettingsData as Settings);
+    } catch (error) {
+      console.error('Error fetching initial settings', error);
+    }
+
+    if (ws.current) {
+      ws.current.close();
+    }
+
+    ws.current = new WebSocket(
+      `${BASE_WS_URL}/ws/settings-broadcast/${roomID}`
+    );
+
+    ws.current.onmessage = (event: MessageEvent) => {
+      if (!ws.current) return;
+
+      const data: Settings = JSON.parse(event.data);
+      setSettings(data);
+    };
+  }, []);
 
   const disconnect = () => {
     ws.current?.close();
