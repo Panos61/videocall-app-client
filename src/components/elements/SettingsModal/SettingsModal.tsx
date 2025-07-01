@@ -14,7 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogDescription,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 
@@ -126,7 +125,7 @@ export const SettingsModal = () => {
             <Separator className='w-full mt-8' />
           </DialogTitle>
         </DialogHeader>
-        <DialogDescription className='flex h-[300px] mt-16'>
+        <div className='flex h-[300px] mt-16'>
           <div className='flex flex-col gap-4 w-[140px]'>
             <div
               className={menuBtnCls(activeTab === 'media')}
@@ -158,7 +157,7 @@ export const SettingsModal = () => {
               {renderSettings()}
             </div>
           </div>
-        </DialogDescription>
+        </div>
       </DialogContent>
     </Dialog>
   );
