@@ -1,6 +1,8 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import { Room } from 'livekit-client';
+import classNames from 'classnames';
+
 import { leaveRoom } from '@/api';
 import { useSessionCtx, useMediaControlCtx } from '@/context';
 
@@ -11,11 +13,9 @@ import {
   MicOffIcon,
   PhoneOffIcon,
   UsersIcon,
-  SettingsIcon,
-  GaugeIcon,
   MessageCircleIcon,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { SettingsModal } from '@/components/elements';
 
 interface Props {
   sessionID: string;
@@ -94,53 +94,49 @@ const Toolbar = ({
     }
   };
 
+  const menuBtnCls =
+    'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer';
+
   return (
-    <div className='flex items-center border border-gray-100/15 rounded-xl bg-transparent'>
-      <div className='flex gap-8 m-8'>
-        <Button variant='secondary' size='sm' onClick={handleAudioState}>
+    <div className='flex items-center bg-transparent'>
+      <div className='flex items-center gap-8 m-8'>
+        <div className={menuBtnCls} onClick={handleAudioState}>
           {mediaState.audio ? (
-            <MicIcon className='size-16' />
+            <MicIcon size={16} />
           ) : (
-            <MicOffIcon color='#dc2626' className='size-16' />
+            <MicOffIcon color='#dc2626' size={16} />
           )}
-        </Button>
-        <Button variant='outline' size='sm' onClick={handleVideoState}>
+        </div>
+        <div className={menuBtnCls} onClick={handleVideoState}>
           {mediaState.video ? (
-            <VideoIcon className='size-16' />
+            <VideoIcon size={16} />
           ) : (
-            <VideoOffIcon color='#dc2626' className='size-16' />
+            <VideoOffIcon color='#dc2626' size={16} />
           )}
-        </Button>
-        <Button
-          variant='outline'
-          size='sm'
+        </div>
+        <div
+          className={menuBtnCls}
           onClick={() =>
             setActivePanel(
               activePanel === 'participants' ? null : 'participants'
             )
           }
         >
-          <UsersIcon className='size-16' />
-        </Button>
-        <Button
-          variant='outline'
-          size='sm'
+          <UsersIcon size={16} />
+        </div>
+        <div
+          className={menuBtnCls}
           onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}
         >
-          <MessageCircleIcon className='size-16' />
-        </Button>
-        <Button variant='outline' size='sm'>
-          <SettingsIcon className='size-16' />
-        </Button>
-        <Button variant='outline' size='sm'>
-          <GaugeIcon className='size-16' />
-        </Button>
-        <Button variant='destructive' size='sm' onClick={handleOnLeave}>
-          <div className='flex items-center gap-8'>
-            Leave
-            <PhoneOffIcon className='size-16' />
-          </div>
-        </Button>
+          <MessageCircleIcon size={16} />
+        </div>
+        <SettingsModal />
+        <div
+          className={classNames(menuBtnCls, '!bg-red-500')}
+          onClick={handleOnLeave}
+        >
+          <PhoneOffIcon size={16} color='white' />
+        </div>
       </div>
     </div>
   );

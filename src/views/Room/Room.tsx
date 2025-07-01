@@ -17,7 +17,7 @@ import { useMediaQuery } from 'usehooks-ts';
 import { LogOutIcon } from 'lucide-react';
 
 import type { Participant, SignallingMessage, UserEvent } from '@/types';
-import { useSessionCtx, useMediaControlCtx } from '@/context';
+import { useSessionCtx, useMediaControlCtx, useSettingsCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { useToast } from '@/components/ui/use-toast';
 import { computeGridLayout } from './computeGridLayout';
@@ -63,6 +63,10 @@ const Room = () => {
 
   const location = useLocation();
   const { roomID, sessionID } = location.state;
+
+  // Settings Context: websocket connection for settings
+  const { connectSettings, disconnect, settings } = useSettingsCtx();
+  console.log('settings Room', settings);
 
   // Setup LiveKit room & event listeners
   useEffect(() => {
@@ -271,6 +275,14 @@ const Room = () => {
     };
   }, [roomID, sessionID]);
 
+  useEffect(() => {
+    connectSettings(roomID);
+
+    return () => {
+      disconnect();
+    };
+  }, [roomID, connectSettings]);
+
   const { toast } = useToast();
 
   const [displayHostBtn, setDisplayHostBtn] = useState<boolean>(false);
@@ -352,10 +364,9 @@ const Room = () => {
   );
 
   const actionsCls = classNames(
-    'grow relative mx-48 mb-24 transition-all duration-300 ease-in-out',
+    'grow relative mx-16 mb-12 transition-all duration-300 ease-in-out',
     {
-      'mr-[428px]': activePanel !== null,
-      'mr-[48px]': activePanel === null,
+      'mr-[356px]': activePanel !== null,
     }
   );
 
@@ -377,7 +388,7 @@ const Room = () => {
     <div className='flex flex-col w-full h-screen bg-black'>
       <Header />
       <div className={roomContainerCls}>
-        <div className='mt-24'>
+        <div className='mt-12'>
           {remoteTracks.map((remoteTrack, index) => {
             return (
               remoteTrack.track.kind === 'video' && (
@@ -419,7 +430,7 @@ const Room = () => {
           onClose={() => setActivePanel(null)}
         />
       </div>
-      <div className='relative flex justify-center items-center border-t border-zinc-800 bg-black'>
+      <div className='relative flex justify-center items-center border-t border-zinc-800 bg-zinc-950'>
         <div className='flex justify-center items-center duration-300 border-b border-zinc-800'>
           <Toolbar
             sessionID={sessionID}

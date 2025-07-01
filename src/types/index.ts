@@ -41,8 +41,10 @@ export interface Media {
   video: boolean;
 }
 
+type InvitationExpiry = '30' | '90' | '180';
 export interface Settings {
-  invitation_expiry: string;
+  invitation_expiry: InvitationExpiry;
+  invite_permission: boolean;
 }
 
 export interface UpdateSettings {

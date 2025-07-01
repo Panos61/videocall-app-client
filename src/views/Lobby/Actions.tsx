@@ -5,7 +5,6 @@ import {
   MicOffIcon,
   VideoOffIcon,
 } from 'lucide-react';
-import type { Participant } from '@/types';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,8 +18,6 @@ import { Separator } from '@/components/ui/separator';
 import { InviteModal, SettingsModal } from '@/components/elements';
 
 interface Props {
-  me: Participant | undefined;
-  settings: string;
   mediaState: { audio: boolean; video: boolean };
   setAudioState: (enabled: boolean) => Promise<void>;
   setVideoState: (enabled: boolean) => Promise<void>;
@@ -33,8 +30,6 @@ interface Props {
 }
 
 const Actions = ({
-  me,
-  settings,
   audioDevices,
   videoDevices,
   audioActiveDeviceId,
@@ -142,7 +137,7 @@ const Actions = ({
       <Separator orientation='vertical' className='h-6 bg-gray-200' />
       <div className='flex items-center gap-8'>
         <InviteModal />
-        <SettingsModal settings={settings} isHost={me?.isHost} />
+        <SettingsModal />
       </div>
     </div>
   );

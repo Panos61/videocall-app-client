@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import Cookie from 'js-cookie';
+import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
 import { useMediaDeviceSelect } from '@livekit/components-react';
+import Cookie from 'js-cookie';
 
 import type { Participant } from '@/types';
-import { getRoomParticipants, getMe, getSettings } from '@/api';
-import { useMediaControlCtx } from '@/context';
+import { getRoomParticipants, getMe } from '@/api';
+import { useMediaControlCtx, useSettingsCtx } from '@/context';
 
 import Actions from './Actions';
 import Form from './Form';
-import Participants from './Participants';
 import MediaPermissions from './MediaPermissions';
+import Participants from './Participants';
 import Preview from './Preview';
-
-import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
+import StrictMode from './StrictMode';
 
 export const Lobby = () => {
   const { pathname } = useLocation();
@@ -25,15 +25,21 @@ export const Lobby = () => {
     setVideoTrack,
     videoTrack,
   } = useMediaControlCtx();
+  const { connectSettings } = useSettingsCtx();
 
   const [participants, setParticipants] = useState<Participant[]>([]);
   const [meData, setMeData] = useState<Participant | undefined>();
-  const [settings, setSettings] = useState('30');
   const [username, setUsername] = useState('');
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
   const jwt = Cookie.get('rsCookie');
   const roomID = pathname.split('/')[2];
+
+  useEffect(() => {
+    if (roomID) {
+      connectSettings(roomID);
+    }
+  }, [roomID, connectSettings]);
 
   useEffect(() => {
     const handleGetRoomParticipants = async () => {
@@ -65,21 +71,6 @@ export const Lobby = () => {
 
     fetchMe();
   }, [roomID, jwt]);
-
-  useEffect(() => {
-    const handleGetSettings = async () => {
-      try {
-        const response = await getSettings(roomID);
-        if (response) {
-          setSettings(response.invitation_expiry);
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    handleGetSettings();
-  }, [roomID]);
 
   const {
     devices: audioDevices,
@@ -219,8 +210,6 @@ export const Lobby = () => {
                 avatarSrc={avatarSrc}
               />
               <Actions
-                me={meData}
-                settings={settings}
                 mediaState={mediaState}
                 setAudioState={setAudioState}
                 setVideoState={setVideoState}
@@ -231,6 +220,7 @@ export const Lobby = () => {
                 setAudioActiveDevice={setAudioActiveDevice}
                 setVideoActiveDevice={setVideoActiveDevice}
               />
+              <StrictMode />
               <Participants participants={participants} />
               <MediaPermissions
                 selectedAudioDevice={selectedAudioDevice}
