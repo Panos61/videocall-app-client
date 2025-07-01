@@ -9,11 +9,8 @@ import { InfoIcon } from 'lucide-react';
 
 const StrictMode = () => {
   return (
-    <div className='flex flex-col items-center self-center gap-8 p-8 mt-20 w-[156px] border border-slate-200 rounded-8'>
+    <div className='flex items-center self-center gap-8 p-8 mt-20 border border-slate-200 rounded-8'>
       <div className='flex items-center gap-4'>
-        <span className='text-sm text-gray-600 font-medium whitespace-nowrap'>
-        🔒 Strict mode
-        </span>
         <Tooltip>
           <TooltipTrigger asChild>
             <InfoIcon size={16} className='text-purple-500' />
@@ -26,6 +23,9 @@ const StrictMode = () => {
             adjust these settings <span className='font-bold'>anytime</span>.
           </TooltipContent>
         </Tooltip>
+        <span className='text-sm text-gray-600 font-medium whitespace-nowrap'>
+          Strict mode🔒 
+        </span>
       </div>
       <div className='flex items-center gap-4'>
         <Switch id='strict-mode' />
