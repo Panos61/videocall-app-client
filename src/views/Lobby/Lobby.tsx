@@ -175,6 +175,8 @@ export const Lobby = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoActiveDeviceId, mediaState.video]);
 
+  const isHost = meData?.isHost;
+
   return (
     <>
       <div className='grid grid-cols-4 h-screen bg-gradient-to-br from-white via-white to-orange-300'>
@@ -202,10 +204,10 @@ export const Lobby = () => {
             </div>
             <div className='flex flex-col flex-1 justify-center'>
               <h3 className='mb-20 text-center text-xl font-semibold tracking-tight'>
-                {meData?.isHost ? 'Start Call' : 'Join Call'}
+                {isHost ? 'Start Call' : 'Join Call'}
               </h3>
               <Form
-                isHost={meData?.isHost}
+                isHost={isHost}
                 setUsername={setUsername}
                 avatarSrc={avatarSrc}
               />
@@ -220,7 +222,7 @@ export const Lobby = () => {
                 setAudioActiveDevice={setAudioActiveDevice}
                 setVideoActiveDevice={setVideoActiveDevice}
               />
-              <StrictMode />
+              <StrictMode roomID={roomID} isHost={isHost} />
               <Participants participants={participants} />
               <MediaPermissions
                 selectedAudioDevice={selectedAudioDevice}

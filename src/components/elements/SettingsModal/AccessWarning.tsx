@@ -10,6 +10,7 @@ export const AccessWarning = ({ isHost, settingsPanel }: Props) => {
   const shouldDisplay =
     !isHost &&
     (settingsPanel === 'invitation' || settingsPanel === 'permissions');
+
   if (!shouldDisplay) return null;
 
   return (

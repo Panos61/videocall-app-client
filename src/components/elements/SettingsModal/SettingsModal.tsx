@@ -109,6 +109,8 @@ export const SettingsModal = () => {
       }
     );
 
+  const isStrictMode = settings?.strict_mode || false;
+
   return (
     <Dialog>
       <DialogTrigger>
@@ -119,13 +121,20 @@ export const SettingsModal = () => {
       <DialogContent className='max-w-[600px]'>
         <DialogHeader>
           <DialogTitle>
-            <div className='flex items-center gap-4'>
-              Settings <SettingsIcon className='size-16' />
+            <div className='flex items-center gap-28'>
+              <div className='flex items-center gap-4'>
+                Settings <SettingsIcon className='size-16' />
+              </div>
+              {isStrictMode && (
+                <div className='text-xs text-yellow-500'>
+                  <span>Strict mode is enabled.</span>
+                </div>
+              )}
             </div>
             <Separator className='w-full mt-8' />
           </DialogTitle>
         </DialogHeader>
-        <div className='flex h-[300px] mt-16'>
+        <div className='flex h-[340px] mt-16'>
           <div className='flex flex-col gap-4 w-[140px]'>
             <div
               className={menuBtnCls(activeTab === 'media')}
