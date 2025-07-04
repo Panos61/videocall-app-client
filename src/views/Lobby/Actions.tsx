@@ -86,7 +86,7 @@ const Actions = ({
   };
 
   const micBtnCls = classNames(
-    'size-40 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105',
+    'size-40 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105',
     {
       'bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200':
         mediaState.audio,
@@ -96,7 +96,7 @@ const Actions = ({
   );
 
   const videoBtnCls = classNames(
-    'size-40 rounded-full flex items-center justify-center transition-all duration-200 hover:scale-105',
+    'size-40 rounded-full flex items-center justify-center cursor-pointer transition-all duration-200 hover:scale-105',
     {
       'bg-gray-100 border border-gray-200 text-gray-700 hover:bg-gray-200':
         mediaState.video,
