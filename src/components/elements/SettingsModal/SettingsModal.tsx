@@ -109,6 +109,8 @@ export const SettingsModal = () => {
       }
     );
 
+  const isStrictMode = settings?.strict_mode || false;
+
   return (
     <Dialog>
       <DialogTrigger>
@@ -153,7 +155,11 @@ export const SettingsModal = () => {
               <Separator />
             </div>
             <div className='flex flex-col gap-12'>
-              <AccessWarning isHost={isHost} settingsPanel={activeTab} />
+              <AccessWarning
+                isHost={isHost}
+                isStrictMode={isStrictMode}
+                settingsPanel={activeTab}
+              />
               {renderSettings()}
             </div>
           </div>
