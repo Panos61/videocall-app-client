@@ -94,7 +94,7 @@ export const SettingsModal = () => {
   };
 
   const triggerCls = classNames(
-    'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer',
+    'flex items-center p-12 rounded-full bg-gray-100 hover:bg-gray-200 duration-300 ease-in-out cursor-pointer hover:scale-105',
     {
       'border border-slate-200': !pathname.includes('/call'),
     }
