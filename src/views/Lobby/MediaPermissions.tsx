@@ -18,7 +18,7 @@ const MediaPermissions = ({
 
   return (
     <div
-      className='flex flex-col gap-8 p-8 mt-76 outline outline-slate-200 rounded-4 
+      className='flex flex-col gap-8 p-8 mt-40 outline outline-slate-200 rounded-4 
                 shadow-[0_4px_20px_-4px_rgba(0,0,255,0.1)]
                 transition-shadow duration-300'
     >

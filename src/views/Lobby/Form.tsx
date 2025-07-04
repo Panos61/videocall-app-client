@@ -9,7 +9,6 @@ import { useMediaControlCtx } from '@/context';
 import { AlertCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Props {
   isHost: boolean | undefined;
@@ -50,17 +49,21 @@ const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
     }
   };
 
-  const renderInvalidInputWarning = () => {
+  const renderUsernameWarning = () => {
     if (errors.username) {
       return (
-        <Alert variant='destructive' className='p-8 mt-8'>
-          <div className='flex items-center gap-8'>
-            <AlertCircle className='size-16' />
-            <AlertDescription className='text-xs'>
-              {errors.username.message}
-            </AlertDescription>
-          </div>
-        </Alert>
+        <div className='flex items-center gap-4 mt-8'>
+          <AlertCircle className='size-16 text-red-500' />
+          <span className='text-xs text-red-500'>
+            {errors.username.message}
+          </span>
+        </div>
+      );
+    } else {
+      return (
+        <p className='text-xs text-muted-foreground'>
+          This will be your display name.
+        </p>
       );
     }
   };
@@ -85,10 +88,7 @@ const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
             },
           })}
         />
-        <p className='mt-8 ml-12 text-xs text-muted-foreground'>
-          This will be your display name.
-        </p>
-        {renderInvalidInputWarning()}
+        <div className='mt-8 ml-12'>{renderUsernameWarning()}</div>
       </div>
       <Button
         variant='call'
