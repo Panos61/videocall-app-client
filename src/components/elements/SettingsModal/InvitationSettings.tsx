@@ -71,8 +71,6 @@ export const InvitationSettings = ({ roomID, isHost, settings }: Props) => {
         ? false
         : settings.strict_mode;
 
-    console.log('effectiveStrictMode', effectiveStrictMode);
-
     updateSettingsMutation.mutate({
       ...allFormValues,
       strict_mode: effectiveStrictMode,
