@@ -53,8 +53,8 @@ export const InvitationSettings = ({ roomID, isHost, settings }: Props) => {
   });
 
   const handleSettingChange = (
-    field: keyof Settings,
-    value: Settings[keyof Settings]
+    field: 'invitation_expiry' | 'invite_permission',
+    value: InvitationExpiry | boolean
   ) => {
     form.setValue(field, value);
     const allFormValues = form.getValues();

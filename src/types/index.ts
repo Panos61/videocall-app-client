@@ -43,6 +43,7 @@ export interface Media {
 
 type InvitationExpiry = '30' | '90' | '180';
 export interface Settings {
+  strict_mode?: boolean;
   invitation_expiry: InvitationExpiry;
   invite_permission: boolean;
 }
