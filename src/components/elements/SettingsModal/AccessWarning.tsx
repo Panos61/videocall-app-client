@@ -12,20 +12,21 @@ export const AccessWarning = ({
   isStrictMode,
   settingsPanel,
 }: Props) => {
-  const shouldDisplay =
+  const displayAccessWarning =
     !isHost &&
     (settingsPanel === 'invitation' || settingsPanel === 'permissions');
-    
-  if (!shouldDisplay) return null;
 
   return (
     <div className='flex flex-col gap-8'>
-      <div className='flex items-center gap-8 p-8 w-fit border border-yellow-400 rounded-8 text-xs bg-yellow-50'>
-        <MessageSquareWarning size={16} className='text-yellow-500' />
-        <span>
-          {capitalize(settingsPanel)} settings can only be changed by the host.
-        </span>
-      </div>
+      {displayAccessWarning && (
+        <div className='flex items-center gap-8 p-8 w-fit border border-yellow-400 rounded-8 text-xs bg-yellow-50'>
+          <MessageSquareWarning size={16} className='text-yellow-500' />
+          <span>
+            {capitalize(settingsPanel)} settings can only be changed by the
+            host.
+          </span>
+        </div>
+      )}
       {isStrictMode && (
         <div className='flex items-center gap-8 p-8 w-fit border border-yellow-400 rounded-8 text-xs bg-yellow-50'>
           <MessageSquareWarning size={16} className='text-yellow-500' />
