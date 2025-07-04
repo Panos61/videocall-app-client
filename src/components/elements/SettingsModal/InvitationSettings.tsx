@@ -28,27 +28,33 @@ interface Props {
 type InvitationExpiry = '30' | '90' | '180';
 
 export const InvitationSettings = ({ roomID, isHost, settings }: Props) => {
-  const { invitation_expiry, invite_permission } = settings;
+  const { strict_mode, invitation_expiry, invite_permission } = settings;
 
   const FormSchema = z.object({
     invitation_expiry: z.enum(['30', '90', '180']),
     invite_permission: z.boolean(),
   });
 
+  const invitePermissionStatus = strict_mode
+    ? false
+    : invite_permission || false;
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       invitation_expiry: invitation_expiry || '30',
-      invite_permission: invite_permission || false,
+      invite_permission: invitePermissionStatus,
     },
   });
 
   const updateSettingsMutation = useMutation({
     mutationFn: (updatedSettings: Settings) => {
-      return updateSettings(roomID, updatedSettings);
-    },
-    onSuccess: () => {
-      console.log('Settings updated successfully');
+      return updateSettings(roomID, {
+        ...settings,
+        invitation_expiry: updatedSettings.invitation_expiry,
+        invite_permission: updatedSettings.invite_permission,
+        strict_mode: updatedSettings.strict_mode,
+      });
     },
   });
 
@@ -59,7 +65,18 @@ export const InvitationSettings = ({ roomID, isHost, settings }: Props) => {
     form.setValue(field, value);
     const allFormValues = form.getValues();
 
-    updateSettingsMutation.mutate(allFormValues);
+    // If enabling invite_permission while strict_mode is true, disable strict_mode
+    const effectiveStrictMode =
+      field === 'invite_permission' && value === true && strict_mode
+        ? false
+        : settings.strict_mode;
+
+    console.log('effectiveStrictMode', effectiveStrictMode);
+
+    updateSettingsMutation.mutate({
+      ...allFormValues,
+      strict_mode: effectiveStrictMode,
+    });
   };
 
   const cardCls = classNames(
@@ -153,40 +170,44 @@ export const InvitationSettings = ({ roomID, isHost, settings }: Props) => {
           </div>
           <div className='flex items-center gap-8 ml-20'>
             {isHost ? (
-              <>
-                <FormField
-                  control={form.control}
-                  name='invite_permission'
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Switch
-                          id='invite_permission'
-                          checked={field.value}
-                          onCheckedChange={(value: boolean) => {
-                            handleSettingChange('invite_permission', value);
-                          }}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <Label
-                  htmlFor='invite_permission'
-                  className='mb-4 text-sm font-medium'
-                >
-                  {form.watch('invite_permission') ? 'Allow' : 'Disallow'}
-                </Label>
-              </>
+              <div className='flex flex-col gap-4'>
+                <div className='flex items-center gap-4'>
+                  <FormField
+                    control={form.control}
+                    name='invite_permission'
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Switch
+                            id='invite_permission'
+                            checked={field.value}
+                            onCheckedChange={(value: boolean) => {
+                              handleSettingChange('invite_permission', value);
+                            }}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <Label
+                    htmlFor='invite_permission'
+                    className='mb-4 text-sm font-medium'
+                  >
+                    {form.watch('invite_permission') ? 'Allow' : 'Disallow'}
+                  </Label>
+                </div>
+                {strict_mode && (
+                  <p className='text-xs text-yellow-500'>
+                    Enabling this setting will disable strict mode.
+                  </p>
+                )}
+              </div>
             ) : (
-              <Label
-                htmlFor='invite_permission'
-                className='mb-4 text-sm text-slate-600 font-medium italic'
-              >
+              <p className='mb-4 text-sm text-slate-600 font-medium italic'>
                 {invite_permission
                   ? 'Anyone can invite'
                   : 'Only host can invite'}
-              </Label>
+              </p>
             )}
           </div>
         </div>

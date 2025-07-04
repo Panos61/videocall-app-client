@@ -198,6 +198,7 @@ export const getSettings = async (roomID: string) => {
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 400) {
       return {
+        strict_mode: false,
         invitation_expiry: '30',
         invite_permission: false,
       };
@@ -217,7 +218,6 @@ export const updateSettings = async (
       }
     );
     
-    console.log('api response', response.data);
     return response.data;
   } catch (error) {
     console.error(error);

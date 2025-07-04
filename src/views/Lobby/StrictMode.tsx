@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
@@ -29,20 +30,25 @@ const FormSchema = z.object({
 
 const StrictMode = ({ roomID, isHost }: Props) => {
   const { settings } = useSettingsCtx();
+  const strictMode = settings?.strict_mode || false;
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      strict_mode: settings?.strict_mode || false,
+      strict_mode: strictMode,
     },
   });
 
+  useEffect(() => {
+    form.setValue('strict_mode', strictMode);
+  }, [strictMode, form]);
+
   const updateStrictMode = useMutation({
     mutationFn: (updatedSettings: Settings) => {
-      return updateSettings(roomID, updatedSettings);
-    },
-    onSuccess: () => {
-      console.log('Settings updated successfully');
+      return updateSettings(roomID, {
+        ...settings,
+        strict_mode: updatedSettings.strict_mode,
+      } as Settings);
     },
   });
 
