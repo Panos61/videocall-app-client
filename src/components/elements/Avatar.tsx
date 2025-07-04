@@ -44,12 +44,36 @@ export const Avatar = forwardRef<HTMLDivElement, Props>(
     const [displayValue, setDisplayValue] = useState<string | undefined>('');
     const [bgColor, setBgColor] = useState<string | undefined>('bg-green-500');
 
+    // Get shadow style based on current background color
+    const getShadowStyle = () => {
+      const colorMap: Record<string, string> = {
+        'bg-green-500': '0 0 80px 8px rgba(34, 197, 94, 0.6)',
+        'bg-red-800': '0 0 80px 8px rgba(153, 27, 27, 0.6)',
+        'bg-amber-300': '0 0 80px 8px rgba(252, 211, 77, 0.6)',
+        'bg-blue-500': '0 0 80px 8px rgba(59, 130, 246, 0.6)',
+        'bg-orange-500': '0 0 80px 8px rgba(249, 115, 22, 0.6)',
+        'bg-blue-800': '0 0 80px 8px rgba(30, 64, 175, 0.6)',
+        'bg-yellow-400': '0 0 80px 8px rgba(250, 204, 21, 0.6)',
+        'bg-cyan-500': '0 0 80px 8px rgba(6, 182, 212, 0.6)',
+        'bg-lime-300': '0 0 80px 8px rgba(190, 242, 100, 0.6)',
+        'bg-teal-500': '0 0 80px 8px rgba(20, 184, 166, 0.6)',
+        'bg-fuchsia-700': '0 0 80px 8px rgba(162, 28, 175, 0.6)',
+        'bg-rose-500': '0 0 80px 8px rgba(244, 63, 94, 0.6)',
+        'bg-emerald-500': '0 0 80px 8px rgba(16, 185, 129, 0.6)',
+      };
+      return (
+        colorMap[bgColor || 'bg-green-500'] ||
+        '0 0 80px 8px rgba(34, 197, 94, 0.6)'
+      );
+    };
+
     const cls = classNames(
       'flex items-center justify-center rounded-full',
       {
         'size-[208px]': size == 'lg',
         'size-[36px]': size == 'md',
         'size-[28px]': size == 'sm',
+        'shadow-lg': size == 'lg' || size == 'md',
       },
       bgColor,
       className
@@ -124,7 +148,16 @@ export const Avatar = forwardRef<HTMLDivElement, Props>(
     return (
       <div>
         {(src || editingMode) && (
-          <div id={uuid} ref={ref} className={cls}>
+          <div
+            id={uuid}
+            ref={ref}
+            className={cls}
+            style={{
+              boxShadow: size == 'lg' ? getShadowStyle() : 'none',
+              filter:
+                size == 'lg' ? 'drop-shadow(0 0 10px currentColor)' : 'none',
+            }}
+          >
             <div className={textCls}>{displayValue}</div>
           </div>
         )}
