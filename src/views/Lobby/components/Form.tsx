@@ -7,8 +7,8 @@ import { setSession, startCall } from '@/api';
 import { useMediaControlCtx } from '@/context';
 
 import { AlertCircle } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface Props {
   isHost: boolean | undefined;

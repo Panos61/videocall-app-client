@@ -8,12 +8,15 @@ import type { Participant } from '@/types';
 import { getRoomParticipants, getMe } from '@/api';
 import { useMediaControlCtx, useSettingsCtx } from '@/context';
 
-import Actions from './Actions';
-import Form from './Form';
-import MediaPermissions from './MediaPermissions';
-import Participants from './Participants';
-import Preview from './Preview';
-import StrictMode from './StrictMode';
+import {
+  Actions,
+  Form,
+  Info,
+  MediaPermissions,
+  Participants,
+  Preview,
+  StrictMode,
+} from './components';
 
 export const Lobby = () => {
   const { pathname } = useLocation();
@@ -222,6 +225,7 @@ export const Lobby = () => {
                 setAudioActiveDevice={setAudioActiveDevice}
                 setVideoActiveDevice={setVideoActiveDevice}
               />
+              <Info isHost={isHost} />
               <StrictMode roomID={roomID} isHost={isHost} />
               <Participants participants={participants} />
               <MediaPermissions
