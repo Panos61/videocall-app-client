@@ -8,7 +8,6 @@ import type {
   SetInvitation,
   Settings,
   UpdateSettings,
-  Media,
 } from '@/types';
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -170,14 +169,12 @@ export const startCall = async (
   username: string,
   avatar_src: string | null | undefined,
   jwtToken: string | undefined,
-  mediaState: Media
 ) => {
   const response = await api.post(
     `/start-call/${roomID}`,
     {
       username,
       avatar_src,
-      media: mediaState,
     },
     {
       headers: {
@@ -186,7 +183,7 @@ export const startCall = async (
       },
     }
   );
-
+  console.log('response.data', response.data);
   return response.data;
 };
 

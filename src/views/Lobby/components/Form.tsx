@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import Cookie from 'js-cookie';
 
 import { setSession, startCall } from '@/api';
-import { useMediaControlCtx } from '@/context';
 
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,6 @@ interface Props {
 }
 
 const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
-  const { mediaState } = useMediaControlCtx();
   const {
     register,
     watch,
@@ -39,7 +37,7 @@ const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
   const handleStartCall = async () => {
     try {
       const sessionID: string = await setSession(roomID, jwt);
-      await startCall(roomID, username, avatarSrc, jwt, mediaState);
+      await startCall(roomID, username, avatarSrc, jwt);
 
       navigate(`/room/${roomID}/call`, {
         state: { roomID: roomID, sessionID: sessionID },

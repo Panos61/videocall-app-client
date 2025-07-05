@@ -1,11 +1,14 @@
+import { formatDistanceToNow } from 'date-fns';
 import { Crown } from 'lucide-react';
 
 interface Props {
   isHost: boolean | undefined;
+  host: string;
+  createdAt: string;
 }
 
-const Info = ({ isHost }: Props) => {
-  if (isHost) {
+const Info = ({ isHost, host, createdAt }: Props) => {
+  if (!isHost) {
     return (
       <div className='flex items-center justify-center gap-4 mt-28'>
         <Crown size={12} className='text-yellow-600' />
@@ -20,7 +23,7 @@ const Info = ({ isHost }: Props) => {
     <div className='flex items-center justify-center gap-4 mt-28'>
       <Crown size={12} className='text-yellow-600' />
       <span className='text-xs text-gray-600'>
-        Panos created this room, 3 minutes ago.
+        {host} created this room, {formatDistanceToNow(new Date(createdAt))} ago.
       </span>
     </div>
   );

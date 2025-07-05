@@ -11,7 +11,7 @@ import { useMediaControlCtx, useSettingsCtx } from '@/context';
 import {
   Actions,
   Form,
-  Info,
+  RoomInfo,
   MediaPermissions,
   Participants,
   Preview,
@@ -225,7 +225,11 @@ export const Lobby = () => {
                 setAudioActiveDevice={setAudioActiveDevice}
                 setVideoActiveDevice={setVideoActiveDevice}
               />
-              <Info isHost={isHost} />
+              <RoomInfo
+                isHost={isHost}
+                host='Panos'
+                createdAt={new Date().toISOString()}
+              />
               <StrictMode roomID={roomID} isHost={isHost} />
               <Participants participants={participants} />
               <MediaPermissions
