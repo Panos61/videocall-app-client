@@ -1,6 +1,7 @@
 import type { Participant } from '@/types';
-import { Separator } from '@/components/ui/separator';
 import { Crown } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import ParticipantsModal from './ParticipantsModal';
 
 interface Props {
   participants: Participant[];
@@ -13,9 +14,7 @@ const Participants = ({ participants }: Props) => {
     <div className='flex flex-col gap-4 border border-gray-200 rounded-8 p-12 mt-12'>
       <div className='flex justify-between'>
         <span className='font-medium'>Participants</span>
-        <div className='text-sm font-light text-blue-600 hover:text-blue-700 duration-150 cursor-pointer'>
-          View All
-        </div>
+        <ParticipantsModal participants={participants} />
       </div>
       <div className='flex flex-col gap-8'>
         <div className='flex flex-col gap-4'>
