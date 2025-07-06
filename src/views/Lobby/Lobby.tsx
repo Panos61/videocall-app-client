@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+// import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
 import { useMediaDeviceSelect } from '@livekit/components-react';
 import Cookie from 'js-cookie';
 
 import type { Participant } from '@/types';
-import { getRoomParticipants, getMe } from '@/api';
+import { getMe } from '@/api';
 import { useMediaControlCtx, useSettingsCtx } from '@/context';
 
 import {
@@ -30,8 +31,8 @@ export const Lobby = () => {
   } = useMediaControlCtx();
   const { connectSettings } = useSettingsCtx();
 
-  const [participants, setParticipants] = useState<Participant[]>([]);
   const [meData, setMeData] = useState<Participant | undefined>();
+  const [guests, setGuests] = useState<Participant[]>([]);
   const [username, setUsername] = useState('');
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
@@ -44,20 +45,25 @@ export const Lobby = () => {
     }
   }, [roomID, connectSettings]);
 
-  useEffect(() => {
-    const handleGetRoomParticipants = async () => {
-      try {
-        const participantData: Participant[] = await getRoomParticipants(
-          roomID
-        );
+  const guestsWS = useRef<WebSocket | null>(null);
 
-        setParticipants(participantData);
-      } catch (error) {
-        console.log(error);
-      }
+  useEffect(() => {
+    guestsWS.current = new WebSocket(`ws://localhost:8080/ws/guests/${roomID}`);
+
+    if (!guestsWS.current) return;
+
+    guestsWS.current.onmessage = async (event: MessageEvent) => {
+      const data: Participant[] = JSON.parse(event.data);
+      setGuests(data);
+      console.log('data', data);
     };
 
-    handleGetRoomParticipants();
+    return () => {
+      if (guestsWS.current?.readyState === WebSocket.OPEN) {
+        guestsWS.current.close(1000, 'Component unmounting');
+      }
+      guestsWS.current = null;
+    };
   }, [roomID]);
 
   useEffect(() => {
@@ -201,9 +207,7 @@ export const Lobby = () => {
                   </svg>
                 </div>
               </div>
-              <h1 className='text-5xl'>
-                <span className='font-mono'>Toku</span>
-              </h1>
+              <h1 className='text-5xl font-mono'>Toku</h1>
             </div>
             <div className='flex flex-col flex-1 justify-center'>
               <h3 className='mb-20 text-center text-xl font-semibold tracking-tight'>
@@ -231,7 +235,7 @@ export const Lobby = () => {
                 createdAt={new Date().toISOString()}
               />
               <StrictMode roomID={roomID} isHost={isHost} />
-              <Participants participants={participants} />
+              <Participants guests={guests} />
               <MediaPermissions
                 selectedAudioDevice={selectedAudioDevice}
                 selectedVideoDevice={selectedVideoDevice}
