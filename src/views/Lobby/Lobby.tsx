@@ -8,6 +8,7 @@ import Cookie from 'js-cookie';
 import type { Participant } from '@/types';
 import { getMe } from '@/api';
 import { useMediaControlCtx, useSettingsCtx } from '@/context';
+import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import {
   Actions,
@@ -46,6 +47,20 @@ export const Lobby = () => {
   }, [roomID, connectSettings]);
 
   const guestsWS = useRef<WebSocket | null>(null);
+
+  useNavigationBlocker({
+    message:
+      'Are you sure you want to leave the lobby? You will be disconnected from the room.',
+    onBeforeLeave: () => {
+      if (videoTrack) {
+        videoTrack.stop();
+      }
+
+      if (guestsWS.current?.readyState === WebSocket.OPEN) {
+        guestsWS.current.close(1000, 'Component unmounting');
+      }
+    },
+  });
 
   useEffect(() => {
     guestsWS.current = new WebSocket(`ws://localhost:8080/ws/guests/${roomID}`);
