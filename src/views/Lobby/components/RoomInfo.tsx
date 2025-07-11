@@ -8,9 +8,9 @@ interface Props {
 }
 
 const Info = ({ isHost, host, createdAt }: Props) => {
-  if (!isHost) {
+  if (isHost) {
     return (
-      <div className='flex items-center justify-center gap-4 mt-28'>
+      <div className='flex items-center justify-center gap-4 mt-24'>
         <Crown size={12} className='text-yellow-600' />
         <span className='text-xs text-gray-600'>
           You are the host of this call.
@@ -20,10 +20,11 @@ const Info = ({ isHost, host, createdAt }: Props) => {
   }
 
   return (
-    <div className='flex items-center justify-center gap-4 mt-28'>
+    <div className='flex items-center justify-center gap-4 mt-24'>
       <Crown size={12} className='text-yellow-600' />
       <span className='text-xs text-gray-600'>
-        {host} created this room, {formatDistanceToNow(new Date(createdAt))} ago.
+        {host} created this room, {formatDistanceToNow(new Date(createdAt))}{' '}
+        ago.
       </span>
     </div>
   );
