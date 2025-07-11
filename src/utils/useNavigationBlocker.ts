@@ -5,24 +5,35 @@ interface UseNavigationBlockerOptions {
   message: string;
   onBeforeLeave?: () => void;
   shouldBlock?: boolean;
+  allowedPaths: string[];
 }
 
 export const useNavigationBlocker = ({
   message,
   onBeforeLeave,
   shouldBlock = true,
+  allowedPaths = [],
 }: UseNavigationBlockerOptions) => {
   // Block navigation when user tries to leave
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      shouldBlock && currentLocation.pathname !== nextLocation.pathname
-  );
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => {
+    if (!shouldBlock) return false;
+
+    // Don't block if navigating to an allowed path
+    const isAllowedPath = allowedPaths.some((path) =>
+      nextLocation.pathname.includes(path)
+    );
+
+    if (isAllowedPath) return false;
+
+    // Block if navigating away from current path (but not to allowed paths)
+    return currentLocation.pathname !== nextLocation.pathname;
+  });
 
   // Handle the confirmation dialog
   useEffect(() => {
     if (blocker.state === 'blocked') {
       const shouldLeave = window.confirm(message);
-      
+
       if (shouldLeave) {
         // Run cleanup function if provided
         onBeforeLeave?.();
