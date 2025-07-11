@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { useMutation } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import classNames from 'classnames';
+import { capitalize } from 'lodash';
 
 import type { Settings } from '@/types';
 import { updateSettings } from '@/api';
@@ -17,7 +18,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { InfoIcon } from 'lucide-react';
+import { InfoIcon, LockIcon } from 'lucide-react';
 
 interface Props {
   roomID: string;
@@ -62,10 +63,13 @@ const StrictMode = ({ roomID, isHost }: Props) => {
   const renderForm = () => {
     return (
       <>
-        <span className='text-sm text-gray-600 font-medium whitespace-nowrap'>
-          🔒 Strict mode
-        </span>
-        <div className='flex items-center gap-4'>
+        <div className='flex items-center gap-8'>
+          <Label
+            htmlFor='strict_mode'
+            className='text-sm text-gray-400 font-light whitespace-nowrap'
+          >
+            {form.watch('strict_mode') ? 'Enabled' : 'Disabled'}
+          </Label>
           <Form {...form}>
             <FormField
               control={form.control}
@@ -85,12 +89,6 @@ const StrictMode = ({ roomID, isHost }: Props) => {
                 </FormItem>
               )}
             />
-            <Label
-              htmlFor='strict_mode'
-              className='text-xs text-gray-600 font-medium whitespace-nowrap'
-            >
-              {form.watch('strict_mode') ? 'Enabled' : 'Disabled'}
-            </Label>
           </Form>
         </div>
       </>
@@ -99,12 +97,8 @@ const StrictMode = ({ roomID, isHost }: Props) => {
 
   const renderNonHostText = () => {
     return (
-      <span className='text-sm text-gray-600 font-medium whitespace-nowrap'>
-        🔒 Strict mode is{' '}
-        <span className='font-bold'>
-          {settings?.strict_mode ? 'enabled' : 'disabled'}
-        </span>{' '}
-        by the host.
+      <span className='text-sm text-gray-400 font-light whitespace-nowrap'>
+        {capitalize(settings?.strict_mode ? 'enabled' : 'disabled')} by the host
       </span>
     );
   };
@@ -135,7 +129,7 @@ const StrictMode = ({ roomID, isHost }: Props) => {
   };
 
   const cardCls = classNames(
-    'flex items-center self-center w-auto gap-8 p-8 mt-20 border rounded-8',
+    'flex flex-col justify-between gap-8 w-full p-12 mt-20 border rounded-8',
     {
       'border-slate-200': isHost,
       'border-yellow-400': !isHost && settings?.strict_mode,
@@ -144,15 +138,26 @@ const StrictMode = ({ roomID, isHost }: Props) => {
 
   return (
     <div className={cardCls}>
-      <div className='flex items-center gap-4'>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <InfoIcon size={16} className='text-purple-500' />
-          </TooltipTrigger>
-          <TooltipContent side='top'>{renderTooltipText()}</TooltipContent>
-        </Tooltip>
+      <div className='flex items-center justify-between h-20'>
+        <div className='flex items-center gap-8'>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <InfoIcon size={16} className='text-purple-500' />
+            </TooltipTrigger>
+            <TooltipContent side='top'>{renderTooltipText()}</TooltipContent>
+          </Tooltip>
+          <div className='flex items-center gap-4'>
+            <LockIcon size={16} className='text-yellow-600' />
+            <span className='text-sm text-gray-600 font-medium whitespace-nowrap'>
+              Strict mode
+            </span>
+          </div>
+        </div>
+        {isHost ? renderForm() : renderNonHostText()}
       </div>
-      {isHost ? renderForm() : renderNonHostText()}
+      <span className='text-xs text-gray-500 font-light'>
+        Strict mode restricts participant actions to host-only permissions.
+      </span>
     </div>
   );
 };

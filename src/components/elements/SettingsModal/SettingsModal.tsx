@@ -7,7 +7,7 @@ import type { Participant } from '@/types';
 import { getMe } from '@/api';
 import { useSettingsCtx } from '@/context';
 
-import { SettingsIcon } from 'lucide-react';
+import { Lock, SettingsIcon } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -94,7 +94,7 @@ export const SettingsModal = () => {
   };
 
   const triggerCls = classNames(
-    'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer',
+    'flex items-center p-12 rounded-full bg-gray-100 hover:bg-gray-200 duration-300 ease-in-out cursor-pointer hover:scale-105',
     {
       'border border-slate-200': !pathname.includes('/call'),
     }
@@ -126,7 +126,8 @@ export const SettingsModal = () => {
                 Settings <SettingsIcon className='size-16' />
               </div>
               {isStrictMode && (
-                <div className='text-xs text-yellow-500'>
+                <div className='flex items-center gap-4 text-xs text-yellow-500'>
+                  <Lock size={12} className='text-yellow-500' />
                   <span>Strict mode is enabled.</span>
                 </div>
               )}

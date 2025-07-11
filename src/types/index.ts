@@ -24,6 +24,7 @@ export interface CreateRoom {
   id: string;
   invKey: string;
   participants: Participant;
+  createdAt: string;
 }
 
 export interface JoinRoom {
