@@ -37,6 +37,13 @@ export interface LeaveRoom {
   leftRoom: boolean;
 }
 
+export interface CallState {
+  roomID: string;
+  is_active: boolean;
+  started_by: string;
+  started_at: string;
+}
+
 export interface Media {
   audio: boolean;
   video: boolean;
