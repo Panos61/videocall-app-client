@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Cookie from 'js-cookie';
 
-import { setSession, startCall } from '@/api';
+import { setParticipantCallData, setSession, startCall } from '@/api';
 
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,9 +13,10 @@ interface Props {
   isHost: boolean | undefined;
   setUsername: (username: string) => void;
   avatarSrc: string | null | undefined;
+  isCallActive: boolean;
 }
 
-const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
+const Form = ({ isHost, setUsername, avatarSrc, isCallActive }: Props) => {
   const {
     register,
     watch,
@@ -31,13 +32,17 @@ const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
-  const roomID: string = pathname.split('/')[2];
-  const jwt: string | undefined = Cookie.get('rsCookie');
+  const roomID = pathname.split('/')[2];
+  const jwt = Cookie.get('rsCookie');
 
   const handleStartCall = async () => {
     try {
       const sessionID: string = await setSession(roomID, jwt);
-      await startCall(roomID, username, avatarSrc, jwt);
+      await setParticipantCallData(roomID, username, avatarSrc, jwt);
+
+      if (isHost) {
+        await startCall(roomID);
+      }
 
       navigate(`/room/${roomID}/call`, {
         state: { roomID: roomID, sessionID: sessionID },
@@ -66,6 +71,8 @@ const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
     }
   };
 
+  const isDisabled = !isValid || (!isCallActive && !isHost);
+
   return (
     <>
       <div className='mb-16'>
@@ -91,11 +98,18 @@ const Form = ({ isHost, setUsername, avatarSrc }: Props) => {
       <Button
         variant='call'
         className='w-full'
-        disabled={!isValid}
+        disabled={isDisabled}
         onClick={handleStartCall}
       >
         {isHost ? 'Start Call' : 'Join Call'}
       </Button>
+      {!isCallActive && !isHost && (
+        <div className='flex justify-center mt-8'>
+          <span className='text-xs text-muted-foreground text-center'>
+            Please wait for the host to start the call.
+          </span>
+        </div>
+      )}
     </>
   );
 };

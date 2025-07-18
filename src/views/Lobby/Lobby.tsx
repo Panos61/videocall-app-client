@@ -1,19 +1,18 @@
 import { useState, useEffect, useRef } from 'react';
-// import { useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
 import { useMediaDeviceSelect } from '@livekit/components-react';
 import Cookie from 'js-cookie';
 
-import type { Participant } from '@/types';
-import { getMe } from '@/api';
+import type { CallState, Participant } from '@/types';
+import { getCallState, getMe } from '@/api';
 import { useMediaControlCtx, useSettingsCtx } from '@/context';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
-
 import {
   Actions,
   Form,
-  RoomInfo,
+  Info,
   MediaPermissions,
   Participants,
   Preview,
@@ -32,10 +31,14 @@ export const Lobby = () => {
   } = useMediaControlCtx();
   const { connectSettings } = useSettingsCtx();
 
-  const [meData, setMeData] = useState<Participant | undefined>();
   const [guests, setGuests] = useState<Participant[]>([]);
   const [username, setUsername] = useState('');
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
+
+  const [callState, setCallState] = useState<CallState | null>({
+    is_active: false,
+    started_at: '',
+  });
 
   const jwt = Cookie.get('rsCookie');
   const roomID = pathname.split('/')[2];
@@ -65,13 +68,11 @@ export const Lobby = () => {
 
   useEffect(() => {
     guestsWS.current = new WebSocket(`ws://localhost:8080/ws/guests/${roomID}`);
-
     if (!guestsWS.current) return;
 
     guestsWS.current.onmessage = async (event: MessageEvent) => {
       const data: Participant[] = JSON.parse(event.data);
       setGuests(data);
-      console.log('data', data);
     };
 
     return () => {
@@ -82,20 +83,47 @@ export const Lobby = () => {
     };
   }, [roomID]);
 
-  useEffect(() => {
-    const fetchMe = async () => {
-      if (!jwt || !roomID) return;
+  const callStateWS = useRef<WebSocket | null>(null);
 
-      try {
-        const meResponseData = await getMe(roomID, jwt);
-        setMeData(meResponseData);
-      } catch (error) {
-        console.error(error);
-      }
+  useEffect(() => {
+    callStateWS.current = new WebSocket(
+      `ws://localhost:8080/ws/call/${roomID}`
+    );
+    if (!callStateWS.current) return;
+
+    callStateWS.current.onmessage = async (event: MessageEvent) => {
+      const data: CallState = JSON.parse(event.data);
+      setCallState(data);
     };
 
-    fetchMe();
-  }, [roomID, jwt]);
+    return () => {
+      if (callStateWS.current?.readyState === WebSocket.OPEN) {
+        callStateWS.current.close(1000, 'Component unmounting');
+      }
+      callStateWS.current = null;
+    };
+  }, [roomID]);
+
+  const { data: meData } = useQuery({
+    queryKey: ['me', roomID],
+    queryFn: () => getMe(roomID, jwt as string),
+    enabled: !!roomID && !!jwt,
+  });
+
+  const isHost: boolean = meData?.isHost ?? false;
+
+  const { data: callStateData } = useQuery({
+    queryKey: ['callState', roomID],
+    queryFn: () => getCallState(roomID),
+    enabled: !!meData && !isHost,
+  });
+
+  // HTTP query takes precedence for late joiners, WebSocket for real-time updates
+  const isCallActive: boolean =
+    callStateData?.is_active || callState?.is_active || false;
+  const callStartedAt: string = isCallActive
+    ? callStateData?.started_at || callState?.started_at || ''
+    : '';
 
   const {
     devices: audioDevices,
@@ -191,7 +219,6 @@ export const Lobby = () => {
       getVideoTrack();
     }
 
-    // Cleanup function
     return () => {
       if (videoTrack) {
         videoTrack.stop();
@@ -199,8 +226,6 @@ export const Lobby = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoActiveDeviceId, mediaState.video]);
-
-  const isHost = meData?.isHost;
 
   return (
     <>
@@ -233,6 +258,7 @@ export const Lobby = () => {
                 isHost={isHost}
                 setUsername={setUsername}
                 avatarSrc={avatarSrc}
+                isCallActive={isCallActive}
               />
               <Actions
                 mediaState={mediaState}
@@ -245,10 +271,12 @@ export const Lobby = () => {
                 setAudioActiveDevice={setAudioActiveDevice}
                 setVideoActiveDevice={setVideoActiveDevice}
               />
-              <RoomInfo
+              <Info
                 isHost={isHost}
                 host='Panos'
                 createdAt={new Date().toISOString()}
+                isCallActive={isCallActive}
+                callStartedAt={callStartedAt}
               />
               <StrictMode roomID={roomID} isHost={isHost} />
               <Participants guests={guests} />
