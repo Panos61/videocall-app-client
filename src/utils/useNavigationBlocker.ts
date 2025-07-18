@@ -29,13 +29,11 @@ export const useNavigationBlocker = ({
     return currentLocation.pathname !== nextLocation.pathname;
   });
 
-  // Handle the confirmation dialog
   useEffect(() => {
     if (blocker.state === 'blocked') {
       const shouldLeave = window.confirm(message);
 
       if (shouldLeave) {
-        // Run cleanup function if provided
         onBeforeLeave?.();
         blocker.proceed();
       } else {

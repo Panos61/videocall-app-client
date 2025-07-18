@@ -38,9 +38,9 @@ export interface LeaveRoom {
 }
 
 export interface CallState {
-  roomID: string;
+  roomID?: string;
   is_active: boolean;
-  started_by: string;
+  started_by?: string;
   started_at: string;
 }
 
