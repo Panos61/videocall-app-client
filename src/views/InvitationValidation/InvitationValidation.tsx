@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Cookie from 'js-cookie';
-import { validateInvitation, joinRoom } from '@/api';
-import { CircleCheckBig, CircleX, LogIn } from 'lucide-react';
 
+import { validateInvitation, joinRoom } from '@/api';
+
+import { CircleCheckBig, CircleX, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { useToast } from '@/components/ui/use-toast';
 import { LoadingSpinner } from '@/components/elements';
+import { useToast } from '@/components/ui/use-toast';
 
 export const InvitationValidation = () => {
   const navigate = useNavigate();

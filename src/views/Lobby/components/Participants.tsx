@@ -8,8 +8,6 @@ interface Props {
 }
 
 const Participants = ({ guests }: Props) => {
-  console.log(guests);
-
   const renderGuests = () => {
     if (guests.length === 0) return null;
 

@@ -15,8 +15,6 @@ interface Props {
 }
 
 const ParticipantsModal = ({ participants }: Props) => {
-  console.log(participants);
-
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -28,7 +26,7 @@ const ParticipantsModal = ({ participants }: Props) => {
         <DialogHeader>
           <DialogTitle>
             <div className='flex items-center gap-4'>
-              Participants <Users className='size-16' />
+              Participants <Users className='size-16' /> {participants.length}
             </div>
           </DialogTitle>
         </DialogHeader>

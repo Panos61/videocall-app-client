@@ -65,8 +65,7 @@ const Room = () => {
   const { roomID, sessionID } = location.state;
 
   // Settings Context: websocket connection for settings
-  const { connectSettings, disconnect, settings } = useSettingsCtx();
-  console.log('settings Room', settings);
+  const { connectSettings, disconnect } = useSettingsCtx();
 
   // Setup LiveKit room & event listeners
   useEffect(() => {

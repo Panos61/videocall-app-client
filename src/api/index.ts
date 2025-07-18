@@ -1,13 +1,15 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookie from 'js-cookie';
 import type {
+  CallState,
   CreateRoom,
-  ValidateInvitation,
   JoinRoom,
   LeaveRoom,
-  SetInvitation,
+  Participant,
   Settings,
+  SetInvitation,
   UpdateSettings,
+  ValidateInvitation,
 } from '@/types';
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -91,31 +93,6 @@ export const createRoom = async () => {
   return response.data;
 };
 
-export const validateInvitation = async (code: string, room_id: string) => {
-  try {
-    const response = await axios.post<ValidateInvitation>(
-      `http://localhost:8080/validate-invitation`,
-      {
-        code,
-        room_id,
-      },
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-
-    return {
-      isValid: response.data.isValid,
-      isExpired: response.data.isExpired,
-      roomID: response.data.roomID,
-    };
-  } catch (error) {
-    return {
-      isValid: false,
-      isExpired: false,
-      roomID: null,
-    };
-  }
-};
-
 export const joinRoom = async (roomID: string) => {
   const response = await api.post<JoinRoom>(
     `/join-room/${roomID}`,
@@ -127,6 +104,11 @@ export const joinRoom = async (roomID: string) => {
     }
   );
 
+  return response.data;
+};
+
+export const startCall = async (roomID: string): Promise<CallState> => {
+  const response = await api.post(`/start-call/${roomID}`);
   return response.data;
 };
 
@@ -144,34 +126,38 @@ export const leaveRoom = async (
   return response.data;
 };
 
-export const getMe = async (roomID: string, jwt: string) => {
-  try {
-    const response = await api.post(
-      `/get-me/${roomID}`,
-      {
-        id: 'me',
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${jwt}`,
-        },
-      }
-    );
-
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
+export const getCallState = async (roomID: string): Promise<CallState> => {
+  const response = await api.get<CallState>(`/call/${roomID}`);
+  return response.data;
 };
 
-export const startCall = async (
+export const getMe = async (
+  roomID: string,
+  jwt: string
+): Promise<Participant> => {
+  const response = await api.post<Participant>(`/get-me/${roomID}`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  return response.data;
+};
+
+// gets only the createdAt field
+export const getRoomInfo = async (roomID: string): Promise<string> => {
+  const response = await api.get<string>(`/room-info/${roomID}`);
+  return response.data;
+};
+
+export const setParticipantCallData = async (
   roomID: string,
   username: string,
   avatar_src: string | null | undefined,
-  jwtToken: string | undefined,
-) => {
-  const response = await api.post(
-    `/start-call/${roomID}`,
+  jwtToken: string | undefined
+): Promise<Participant> => {
+  const response = await api.post<Participant>(
+    `/set-participant-call-data/${roomID}`,
     {
       username,
       avatar_src,
@@ -183,7 +169,6 @@ export const startCall = async (
       },
     }
   );
-  console.log('response.data', response.data);
   return response.data;
 };
 
@@ -203,10 +188,7 @@ export const getSettings = async (roomID: string) => {
   }
 };
 
-export const updateSettings = async (
-  roomID: string,
-  settings: Settings
-) => {
+export const updateSettings = async (roomID: string, settings: Settings) => {
   try {
     const response = await api.post<UpdateSettings>(
       `/update-settings/${roomID}`,
@@ -214,7 +196,7 @@ export const updateSettings = async (
         settings,
       }
     );
-    
+
     return response.data;
   } catch (error) {
     console.error(error);
@@ -247,6 +229,31 @@ export const setSession = async (roomID: string, jwt: string | undefined) => {
   );
 
   return response.data;
+};
+
+export const validateInvitation = async (code: string, room_id: string) => {
+  try {
+    const response = await axios.post<ValidateInvitation>(
+      `http://localhost:8080/validate-invitation`,
+      {
+        code,
+        room_id,
+      },
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+
+    return {
+      isValid: response.data.isValid,
+      isExpired: response.data.isExpired,
+      roomID: response.data.roomID,
+    };
+  } catch (error) {
+    return {
+      isValid: false,
+      isExpired: false,
+      roomID: null,
+    };
+  }
 };
 
 export const getInvitation = async (roomID: string) => {
