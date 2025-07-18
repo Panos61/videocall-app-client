@@ -6,7 +6,7 @@ import { useMediaDeviceSelect } from '@livekit/components-react';
 import Cookie from 'js-cookie';
 
 import type { CallState, Participant } from '@/types';
-import { getCallState, getMe } from '@/api';
+import { getCallState, getMe, getRoomInfo } from '@/api';
 import { useMediaControlCtx, useSettingsCtx } from '@/context';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 import {
@@ -35,7 +35,7 @@ export const Lobby = () => {
   const [username, setUsername] = useState('');
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
-  const [callState, setCallState] = useState<CallState | null>({
+  const [wsCallState, setWsCallState] = useState<CallState | null>({
     is_active: false,
     started_at: '',
   });
@@ -93,7 +93,7 @@ export const Lobby = () => {
 
     callStateWS.current.onmessage = async (event: MessageEvent) => {
       const data: CallState = JSON.parse(event.data);
-      setCallState(data);
+      setWsCallState(data);
     };
 
     return () => {
@@ -104,12 +104,19 @@ export const Lobby = () => {
     };
   }, [roomID]);
 
+  const { data: roomInfoData } = useQuery({
+    queryKey: ['roomInfo', roomID],
+    queryFn: () => getRoomInfo(roomID),
+    enabled: !!roomID,
+  });
+
   const { data: meData } = useQuery({
     queryKey: ['me', roomID],
     queryFn: () => getMe(roomID, jwt as string),
     enabled: !!roomID && !!jwt,
   });
 
+  const roomCreatedAt: string = roomInfoData || new Date().toISOString();
   const isHost: boolean = meData?.isHost ?? false;
 
   const { data: callStateData } = useQuery({
@@ -120,9 +127,9 @@ export const Lobby = () => {
 
   // HTTP query takes precedence for late joiners, WebSocket for real-time updates
   const isCallActive: boolean =
-    callStateData?.is_active || callState?.is_active || false;
+    callStateData?.is_active || wsCallState?.is_active || false;
   const callStartedAt: string = isCallActive
-    ? callStateData?.started_at || callState?.started_at || ''
+    ? callStateData?.started_at || wsCallState?.started_at || ''
     : '';
 
   const {
@@ -274,7 +281,7 @@ export const Lobby = () => {
               <Info
                 isHost={isHost}
                 host='Panos'
-                createdAt={new Date().toISOString()}
+                createdAt={roomCreatedAt}
                 isCallActive={isCallActive}
                 callStartedAt={callStartedAt}
               />

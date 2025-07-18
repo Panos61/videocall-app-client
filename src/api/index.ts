@@ -144,6 +144,12 @@ export const getMe = async (
   return response.data;
 };
 
+// gets only the createdAt field
+export const getRoomInfo = async (roomID: string): Promise<string> => {
+  const response = await api.get<string>(`/room-info/${roomID}`);
+  return response.data;
+};
+
 export const setParticipantCallData = async (
   roomID: string,
   username: string,
