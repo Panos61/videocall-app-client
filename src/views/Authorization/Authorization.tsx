@@ -10,7 +10,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/elements';
 import { useToast } from '@/components/ui/use-toast';
 
-export const InvitationValidation = () => {
+export const Authorization = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
