@@ -6,7 +6,7 @@ import { useMediaDeviceSelect } from '@livekit/components-react';
 import Cookie from 'js-cookie';
 
 import type { CallState, Participant } from '@/types';
-import { getCallState, getMe, getRoomInfo } from '@/api';
+import { getCallState, getMe, getRoomInfo, purgeData } from '@/api';
 import { useMediaControlCtx, useSettingsCtx } from '@/context';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 import {
@@ -62,6 +62,8 @@ export const Lobby = () => {
       if (guestsWS.current?.readyState === WebSocket.OPEN) {
         guestsWS.current.close(1000, 'Component unmounting');
       }
+
+      purgeData(roomID);
     },
     allowedPaths: ['/call'],
   });

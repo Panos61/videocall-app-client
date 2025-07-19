@@ -126,6 +126,11 @@ export const leaveRoom = async (
   return response.data;
 };
 
+export const purgeData = async (roomID: string): Promise<boolean> => {
+  const response = await api.delete<boolean>(`/purge-data/${roomID}`);
+  return response.data;
+};
+
 export const getCallState = async (roomID: string): Promise<CallState> => {
   const response = await api.get<CallState>(`/call/${roomID}`);
   return response.data;
