@@ -30,7 +30,6 @@ export interface CreateRoom {
 export interface JoinRoom {
   roomID: string;
   participant: Participant;
-  isAuthorized: boolean;
 }
 
 export interface LeaveRoom {
@@ -61,11 +60,7 @@ export interface UpdateSettings {
   expirationSet: boolean;
 }
 
-export interface SetInvitation {
-  invitation: string;
-}
-
-export interface ValidateInvitation {
+export interface Authorization {
   roomID: string;
   isValid: boolean;
   isExpired: boolean;
