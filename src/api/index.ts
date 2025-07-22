@@ -4,7 +4,6 @@ import type {
   CallState,
   CreateRoom,
   JoinRoom,
-  LeaveRoom,
   Participant,
   Settings,
   UpdateSettings,
@@ -105,8 +104,8 @@ export const startCall = async (roomID: string): Promise<CallState> => {
 export const leaveRoom = async (
   roomID: string,
   jwtToken: string | undefined
-) => {
-  const response = await api.get<LeaveRoom>(`/leave-room/${roomID}`, {
+): Promise<boolean> => {
+  const response = await api.get<boolean>(`/leave-room/${roomID}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${jwtToken}`,
@@ -211,8 +210,11 @@ export const getRoomParticipants = async (roomID: string) => {
   return response.data.roomParticipants;
 };
 
-export const setSession = async (roomID: string, jwt: string | undefined) => {
-  const response = await api.post(
+export const setSession = async (
+  roomID: string,
+  jwt: string | undefined
+): Promise<string> => {
+  const response = await api.post<string>(
     `/set-session/${roomID}`,
     {},
     {
