@@ -44,7 +44,7 @@ export const InviteModal = () => {
     if (invitationCode) {
       const invitationURL = buildInvitation(invitationCode, roomID);
       setInvitationURL(invitationURL);
-      
+
       const formattedInvitation = invitationURL.replace(
         'http://localhost:5173',
         ''
@@ -55,14 +55,20 @@ export const InviteModal = () => {
 
   useEffect(() => {
     if (!sseRef.current) {
-      sseRef.current = connectSSE(roomID, (newInvitation: string) => {
-        const invitationURL = buildInvitation(newInvitation, roomID);
-        const formattedInvitation = invitationURL.replace(
-          'http://localhost:5173',
-          ''
-        );
+      sseRef.current = connectSSE(roomID, (newCode: string) => {
+        setInvitationURL((prev) => {
+          if (prev !== newCode) {
+            const newInvitationURL = buildInvitation(newCode, roomID);
+            const formattedInvitation = newInvitationURL.replace(
+              'http://localhost:5173',
+              ''
+            );
+            setFormattedInvitation(formattedInvitation);
 
-        setFormattedInvitation(formattedInvitation);
+            return newInvitationURL;
+          }
+          return prev;
+        });
       });
     }
 

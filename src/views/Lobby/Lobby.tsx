@@ -21,6 +21,7 @@ import {
 
 export const Lobby = () => {
   const { pathname } = useLocation();
+
   const {
     mediaState,
     setAudioState,
