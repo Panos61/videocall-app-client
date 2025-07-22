@@ -7,10 +7,6 @@ export interface Participant {
   session_id: string;
 }
 
-export interface SetSession {
-  sessionID: string;
-}
-
 export interface SignallingMessage {
   type: string;
   sessionID: string;
@@ -30,11 +26,6 @@ export interface CreateRoom {
 export interface JoinRoom {
   roomID: string;
   participant: Participant;
-  isAuthorized: boolean;
-}
-
-export interface LeaveRoom {
-  leftRoom: boolean;
 }
 
 export interface CallState {
@@ -61,14 +52,9 @@ export interface UpdateSettings {
   expirationSet: boolean;
 }
 
-export interface SetInvitation {
-  invitation: string;
-}
-
-export interface ValidateInvitation {
-  roomID: string;
+export interface Authorization {
   isValid: boolean;
-  isExpired: boolean;
+  hasExpired: boolean;
 }
 
 export interface UserEvent {

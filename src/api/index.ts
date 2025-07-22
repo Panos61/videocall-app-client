@@ -4,12 +4,10 @@ import type {
   CallState,
   CreateRoom,
   JoinRoom,
-  LeaveRoom,
   Participant,
   Settings,
-  SetInvitation,
   UpdateSettings,
-  ValidateInvitation,
+  Authorization,
 } from '@/types';
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -93,17 +91,8 @@ export const createRoom = async () => {
   return response.data;
 };
 
-export const joinRoom = async (roomID: string) => {
-  const response = await api.post<JoinRoom>(
-    `/join-room/${roomID}`,
-
-    {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
-
+export const joinRoom = async (roomID: string | null): Promise<JoinRoom> => {
+  const response = await api.post<JoinRoom>(`/join-room/${roomID}`);
   return response.data;
 };
 
@@ -115,8 +104,8 @@ export const startCall = async (roomID: string): Promise<CallState> => {
 export const leaveRoom = async (
   roomID: string,
   jwtToken: string | undefined
-) => {
-  const response = await api.get<LeaveRoom>(`/leave-room/${roomID}`, {
+): Promise<boolean> => {
+  const response = await api.get<boolean>(`/leave-room/${roomID}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${jwtToken}`,
@@ -221,8 +210,11 @@ export const getRoomParticipants = async (roomID: string) => {
   return response.data.roomParticipants;
 };
 
-export const setSession = async (roomID: string, jwt: string | undefined) => {
-  const response = await api.post(
+export const setSession = async (
+  roomID: string,
+  jwt: string | undefined
+): Promise<string> => {
+  const response = await api.post<string>(
     `/set-session/${roomID}`,
     {},
     {
@@ -236,35 +228,21 @@ export const setSession = async (roomID: string, jwt: string | undefined) => {
   return response.data;
 };
 
-export const validateInvitation = async (code: string, room_id: string) => {
-  try {
-    const response = await axios.post<ValidateInvitation>(
-      `http://localhost:8080/validate-invitation`,
-      {
-        code,
-        room_id,
-      },
-      { headers: { 'Content-Type': 'application/json' } }
-    );
+export const validateInvitation = async (
+  code: string | null,
+  room_id: string | null
+): Promise<Authorization> => {
+  const response = await api.post<Authorization>(`/authorization`, {
+    code,
+    room_id,
+  });
 
-    return {
-      isValid: response.data.isValid,
-      isExpired: response.data.isExpired,
-      roomID: response.data.roomID,
-    };
-  } catch (error) {
-    return {
-      isValid: false,
-      isExpired: false,
-      roomID: null,
-    };
-  }
+  return response.data;
 };
 
-export const getInvitation = async (roomID: string) => {
-  const response = await axios.get<SetInvitation>(
-    `http://localhost:8080/room-invitation/${roomID}`,
-    { headers: { 'Content-Type': 'application/json' } }
+export const getInvitationCode = async (roomID: string): Promise<string> => {
+  const response = await axios.get<{ invitation: string }>(
+    `http://localhost:8080/invitation-code/${roomID}`
   );
 
   return response.data.invitation;

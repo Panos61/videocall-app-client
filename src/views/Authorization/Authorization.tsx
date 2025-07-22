@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Cookie from 'js-cookie';
 
@@ -10,7 +11,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/elements';
 import { useToast } from '@/components/ui/use-toast';
 
-export const InvitationValidation = () => {
+export const Authorization = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -18,86 +19,75 @@ export const InvitationValidation = () => {
 
   const { toast } = useToast();
 
-  const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const invitationCode = searchParams.get('code');
   const roomID = searchParams.get('room');
 
-  useEffect(() => {
-    if (!roomID || !invitationCode) return;
+  const {
+    data: authorizationData,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['authorization', invitationCode, roomID],
+    queryFn: () => validateInvitation(invitationCode, roomID),
+  });
 
-    const handleValidateInvitation = async () => {
-      setIsValidating(true);
-      setError(null);
-      setIsSuccess(false);
+  const { mutate: joinRoomMutation, isPending: isJoiningRoom } = useMutation({
+    mutationFn: () => joinRoom(roomID),
+    onSuccess: (data) => {
+      setIsSuccess(true);
+      Cookie.set('rsCookie', data.participant.jwt);
 
-      try {
-        const validationResponse = await validateInvitation(
-          invitationCode,
-          roomID
-        );
-
-        if (!validationResponse) {
-          setIsValidating(false);
-          setError(
-            'An error occurred while validating your invitation. Try again.'
-          );
-          return;
-        }
-
-        if (!validationResponse.isValid) {
-          setIsValidating(false);
-          setError('Your invitation is invalid. Please contact the host.');
-          return;
-        }
-
-        if (validationResponse.isExpired) {
-          setIsValidating(false);
-          setError('Your invitation has expired. Please contact the host.');
-          return;
-        }
-
-        try {
-          const joinRoomResponse = await joinRoom(roomID);
-          const { isAuthorized, participant } = joinRoomResponse;
-
-          if (isAuthorized) {
-            // await new Promise((resolve) => setTimeout(resolve, 1000));
-            setIsSuccess(true);
-            setIsValidating(false);
-            Cookie.set('rsCookie', participant.jwt);
-
-            if (!isExternal) {
-              // setTimeout(() => {
-              navigate(`/room/${roomID}`, {
-                state: { roomID: roomID },
-              });
-              // }, 2000);
-            }
-            toast({
-              description: 'Successfully joined in! 🎉',
-            });
-          } else {
-            setIsValidating(false);
-            setError('Failed to join room. Something went wrong..');
-          }
-        } catch (joinError) {
-          setIsValidating(false);
-          setError('Failed to join the room. Please try again.');
-        }
-      } catch (err) {
-        setIsValidating(false);
-        setError('An error occurred while validating your invitation.');
+      if (!isExternal) {
+        navigate(`/room/${roomID}`, {
+          state: { roomID: roomID },
+          replace: true,
+        });
       }
-    };
 
-    handleValidateInvitation();
-  }, [roomID, invitationCode, navigate, toast, isExternal]);
+      toast({
+        description: 'Successfully joined in! 🎉',
+      });
+    },
+    onError: () => {
+      setIsSuccess(false);
+      setError('Failed to join room. Something went wrong..');
+    },
+  });
+
+  const { isValid, hasExpired } = authorizationData || {
+    isValid: false,
+    hasExpired: false,
+  };
+
+  useEffect(() => {
+    if (!isValid) {
+      setIsSuccess(false);
+      setError('Your invitation format is invalid. Please contact the host.');
+    }
+
+    if (hasExpired) {
+      setIsSuccess(false);
+      setError(
+        'Your invitation has expired or does not exist. Please contact the host.'
+      );
+    }
+
+    if (isError) {
+      setIsSuccess(false);
+      setError('An error occurred while validating your invitation.');
+    }
+
+    if (!hasExpired && isValid && !isError) {
+      setError(null);
+      setIsSuccess(true);
+    }
+  }, [isValid, hasExpired, isError]);
 
   const renderAlert = () => {
-    if (isValidating) {
+    if (isLoading) {
       return (
         <div className='flex flex-col items-center gap-8'>
           <p className='text-sm animate-pulse text-orange-400'>
@@ -108,7 +98,7 @@ export const InvitationValidation = () => {
       );
     }
 
-    if (error) {
+    if (error || isError) {
       return (
         <div className='flex flex-col items-center gap-8'>
           <p className='text-sm text-red-600'>{error}</p>
@@ -131,7 +121,7 @@ export const InvitationValidation = () => {
               <p className='text-sm'>You can now join in the room.</p>
             )}
           </div>
-          {!isExternal && (
+          {!isExternal && !isJoiningRoom && (
             <>
               <p className='text-sm'>Joining room..</p>
               <div className='mt-4 w-full'>
@@ -142,6 +132,11 @@ export const InvitationValidation = () => {
         </div>
       );
     }
+  };
+
+  const handleProceed = async () => {
+    joinRoomMutation();
+    navigate(`/room/${roomID}`, { replace: true });
   };
 
   return (
@@ -156,15 +151,21 @@ export const InvitationValidation = () => {
         <CardContent className='flex flex-col items-center gap-12'>
           <p className='text-sm'>Your invitation code: {invitationCode}</p>
           {renderAlert()}
-          {isExternal && isSuccess && (
-            <Button
-              variant='call'
-              onClick={() => navigate(`/room/${roomID}`)}
-              className='mt-4'
-            >
-              <LogIn className='size-20 mr-8 text-white' />
-              Proceed
-            </Button>
+          {isExternal && isSuccess && !isLoading && (
+            <div className='flex flex-col items-center gap-12'>
+              <Button
+                variant='call'
+                className='mt-12'
+                onClick={() => handleProceed()}
+              >
+                <LogIn className='size-20 mr-8 text-white' />
+                Proceed
+              </Button>
+              <p className='text-xs'>
+                By joining a room, you agree to our Terms of Service and Privacy
+                Statement.
+              </p>
+            </div>
           )}
         </CardContent>
       </Card>

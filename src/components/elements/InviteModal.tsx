@@ -1,10 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { useCopyToClipboard } from 'usehooks-ts';
+
+import { getInvitationCode } from '@/api';
 import { connectSSE } from '@/api/sse';
-import { getInvitation } from '@/api';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -22,36 +24,48 @@ export const InviteModal = () => {
   const [copiedText, copy] = useCopyToClipboard();
 
   const sseRef = useRef<EventSource | null>(null);
-  const [invitation, setInvitation] = useState('');
+
   const [formattedInvitation, setFormattedInvitation] = useState('');
+  const [invitationURL, setInvitationURL] = useState('');
   const [disabled, setDisabled] = useState<boolean>(false);
 
   const roomID = pathname.split('/')[2];
 
-  const formatInvitation = (invitation: string) => {
-    const formattedInvitation = invitation.replace('http://localhost:5173', '');
-    setFormattedInvitation(formattedInvitation);
+  const { data: invitationCode } = useQuery({
+    queryKey: ['invitationCode', roomID],
+    queryFn: () => getInvitationCode(roomID),
+  });
+
+  const buildInvitation = (invitation: string | undefined, roomID: string) => {
+    return `http://localhost:5173/room-invite?code=${invitation}&room=${roomID}`;
   };
 
   useEffect(() => {
-    const fetchInitialInvitation = async () => {
-      try {
-        const initialInvitation = await getInvitation(roomID);
-        setInvitation(initialInvitation);
-        formatInvitation(initialInvitation);
-      } catch (error) {
-        console.error('Error fetching initial invitation:', error);
-      }
-    };
+    if (invitationCode) {
+      const invitationURL = buildInvitation(invitationCode, roomID);
+      setInvitationURL(invitationURL);
 
-    fetchInitialInvitation();
+      const formattedInvitation = invitationURL.replace(
+        'http://localhost:5173',
+        ''
+      );
+      setFormattedInvitation(formattedInvitation);
+    }
+  }, [invitationCode]);
 
+  useEffect(() => {
     if (!sseRef.current) {
-      sseRef.current = connectSSE(roomID, (newInvitation: string) => {
-        setInvitation((prev) => {
-          if (prev !== newInvitation) {
-            formatInvitation(newInvitation);
-            return newInvitation;
+      sseRef.current = connectSSE(roomID, (newCode: string) => {
+        setInvitationURL((prev) => {
+          if (prev !== newCode) {
+            const newInvitationURL = buildInvitation(newCode, roomID);
+            const formattedInvitation = newInvitationURL.replace(
+              'http://localhost:5173',
+              ''
+            );
+            setFormattedInvitation(formattedInvitation);
+
+            return newInvitationURL;
           }
           return prev;
         });
@@ -106,7 +120,7 @@ export const InviteModal = () => {
             type='submit'
             variant='ghost'
             disabled={disabled}
-            onClick={handleCopy(invitation)}
+            onClick={handleCopy(invitationURL)}
           >
             {copiedText && disabled ? 'Copied' : 'Copy'}
           </Button>
