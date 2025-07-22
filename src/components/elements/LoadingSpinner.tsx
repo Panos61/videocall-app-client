@@ -1,12 +1,12 @@
 import classNames from 'classnames';
 
-interface Props {
+interface Props extends React.HTMLAttributes<HTMLDivElement> {
   size?: 'sm' | 'md' | 'lg';
 }
 
 export const LoadingSpinner = ({ size = 'md' }: Props) => {
   const internalCls = classNames(
-    'rounded-full border-violet-200 border-t-gray-900 animate-spin',
+    'rounded-full border-violet-300 border-t-violet-700 animate-spin',
     {
       'size-16 border-[2px]': size === 'sm',
       'size-28 border-4': size === 'md',
