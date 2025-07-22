@@ -40,7 +40,7 @@ const Info = ({
         <div className='flex items-center justify-center gap-4'>
           <PhoneCall size={12} className='text-green-600' />
           <span className='text-xs text-gray-600'>
-            Call started {formatDistanceToNow(new Date(callStartedAt))} ago.
+            Call started, {formatDistanceToNow(new Date(callStartedAt))} ago.
           </span>
         </div>
       )}

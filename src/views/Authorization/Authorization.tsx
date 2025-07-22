@@ -43,6 +43,7 @@ export const Authorization = () => {
       if (!isExternal) {
         navigate(`/room/${roomID}`, {
           state: { roomID: roomID },
+          replace: true,
         });
       }
 
@@ -56,22 +57,22 @@ export const Authorization = () => {
     },
   });
 
-  console.log('authorizationData', authorizationData);
-
-  const { isValid, isExpired } = authorizationData || {
+  const { isValid, hasExpired } = authorizationData || {
     isValid: false,
-    isExpired: false,
+    hasExpired: false,
   };
 
   useEffect(() => {
     if (!isValid) {
       setIsSuccess(false);
-      setError('Your invitation is invalid. Please contact the host.');
+      setError('Your invitation format is invalid. Please contact the host.');
     }
 
-    if (isExpired) {
+    if (hasExpired) {
       setIsSuccess(false);
-      setError('Your invitation has expired. Please contact the host.');
+      setError(
+        'Your invitation has expired or does not exist. Please contact the host.'
+      );
     }
 
     if (isError) {
@@ -79,12 +80,11 @@ export const Authorization = () => {
       setError('An error occurred while validating your invitation.');
     }
 
-    if (isValid && !isExpired) {
+    if (!hasExpired && isValid && !isError) {
       setError(null);
       setIsSuccess(true);
-      joinRoomMutation();
     }
-  }, [isValid, isExpired, isError, joinRoomMutation]);
+  }, [isValid, hasExpired, isError]);
 
   const renderAlert = () => {
     if (isLoading) {
@@ -134,6 +134,11 @@ export const Authorization = () => {
     }
   };
 
+  const handleProceed = async () => {
+    joinRoomMutation();
+    navigate(`/room/${roomID}`, { replace: true });
+  };
+
   return (
     <div className='flex justify-center items-center mt-[160px]'>
       <Card className='w-[500px]'>
@@ -146,12 +151,12 @@ export const Authorization = () => {
         <CardContent className='flex flex-col items-center gap-12'>
           <p className='text-sm'>Your invitation code: {invitationCode}</p>
           {renderAlert()}
-          {isExternal && isSuccess && (
+          {isExternal && isSuccess && !isLoading && (
             <div className='flex flex-col items-center gap-12'>
               <Button
                 variant='call'
-                onClick={() => navigate(`/room/${roomID}`)}
                 className='mt-12'
+                onClick={() => handleProceed()}
               >
                 <LogIn className='size-20 mr-8 text-white' />
                 Proceed
