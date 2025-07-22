@@ -1,8 +1,10 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { LocalVideoTrack, RemoteVideoTrack } from 'livekit-client';
+import classNames from 'classnames';
 import { MicIcon, MicOffIcon } from 'lucide-react';
+
 import type { Participant } from '@/types';
-import { Avatar } from '@/components/elements';
+import { Avatar, LoadingSpinner } from '@/components/elements';
 
 interface Props {
   index?: number;
@@ -28,15 +30,53 @@ const VideoTile = ({
   const videoID: string = isLocal ? 'local-video' : `${remoteSession}-video`;
   const localVideoElement = useRef<HTMLVideoElement | null>(null);
   const remoteVideoElement = useRef<HTMLVideoElement | null>(null);
+  const tileContainerRef = useRef<HTMLDivElement | null>(null);
 
   const audioElement = useRef<HTMLAudioElement | null>(null);
 
   const [isVideoMounted, setIsVideoMounted] = useState(false);
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(isLocal);
 
   const setVideoRef = useCallback((element: HTMLVideoElement | null) => {
     remoteVideoElement.current = element;
     setIsVideoMounted(!!element);
   }, []);
+
+  // Intersection Observer for lazy loading
+  useEffect(() => {
+    if (isLocal) return;
+
+    const currentRef = tileContainerRef.current;
+    if (!currentRef) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsIntersecting(entry.isIntersecting);
+        console.log(
+          `Intersection for ${participant?.username}: ${entry.isIntersecting}`
+        );
+
+        if (entry.isIntersecting && !shouldLoadVideo) {
+          setTimeout(() => {
+            setShouldLoadVideo(true);
+          }, 1000);
+          console.log(
+            `Loading video for ${participant?.username || remoteSession}`
+          );
+        }
+      },
+      {
+        threshold: 0.1,
+      }
+    );
+
+    observer.observe(currentRef);
+
+    return () => {
+      observer.unobserve(currentRef);
+    };
+  }, [isLocal, shouldLoadVideo, participant?.username, remoteSession]);
 
   const renderLocalPreview = () => {
     if (track && mediaState?.video) {
@@ -64,10 +104,25 @@ const VideoTile = ({
     );
   };
 
+  console.log(
+    `${participant?.username || 'unknown'} - isIntersecting:`,
+    isIntersecting,
+    'shouldLoadVideo:',
+    shouldLoadVideo
+  );
+
   const renderRemotePreview = () => {
     if (!remoteSession || !participant) return;
 
     if (track && remoteMediaStates[remoteSession]?.video) {
+      if (!shouldLoadVideo) {
+        return (
+          <div className='absolute inset-0 size-full flex items-center justify-center'>
+            <LoadingSpinner size='lg'/>
+          </div>
+        );
+      }
+
       return (
         <video
           id={videoID}
@@ -80,14 +135,30 @@ const VideoTile = ({
       );
     }
 
+    const loadingCls = classNames(
+      'absolute inset-0 size-full  flex items-center justify-center duration-1000',
+      {
+        'bg-zinc-800': !shouldLoadVideo,
+        'bg-zinc-900': shouldLoadVideo,
+      }
+    );
+
     return (
-      <div className='absolute inset-0 size-full flex items-center justify-center'>
-        <Avatar src={participant.avatar_src} className='size-24 object-cover' />
+      <div className={loadingCls}>
+        <div className='flex flex-col items-center gap-4'>
+          {!shouldLoadVideo && <LoadingSpinner size='lg' />}
+          {shouldLoadVideo && (
+            <Avatar
+              src={participant.avatar_src}
+              className='size-24 object-cover'
+            />
+          )}
+        </div>
       </div>
     );
   };
 
-  // @TODO: might remove this
+  // todo: might remove this
   useEffect(() => {
     if (audioElement.current && track && mediaState?.audio) {
       track.attach(audioElement.current);
@@ -150,7 +221,10 @@ const VideoTile = ({
   };
 
   return (
-    <div className='relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr'>
+    <div
+      ref={tileContainerRef}
+      className='relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr transition-all duration-1000 ease-out'
+    >
       {isLocal ? renderLocalPreview() : renderRemotePreview()}
       <div className='absolute bottom-4 right-12 px-12 py-4 rounded-md text-sm text-white bg-black bg-opacity-45 z-50'>
         {participant?.username}
