@@ -362,15 +362,6 @@ const Room = () => {
     isMedium
   );
 
-  const actionsCls = classNames(
-    'grow relative mx-16 mb-12 transition-all duration-300 ease-in-out',
-    {
-      'mr-[356px]': activePanel !== null,
-    }
-  );
-
-  const roomContainerCls = containerClass.concat(' ', actionsCls);
-
   const remoteUserSessions = Array.from(remoteParticipants.keys()).filter(
     (session) => session !== sessionID
   );
@@ -383,38 +374,49 @@ const Room = () => {
     return participantList.find((p) => p.session_id === remoteSession);
   };
 
+  const actionsCls = classNames(
+    'mx-16 mb-12 h-full transition-all duration-300 ease-in-out',
+    {
+      'mr-[356px]': activePanel !== null,
+    }
+  );
+
+  const roomContainerCls = containerClass.concat(' ', actionsCls);
+
   return (
-    <div className='flex flex-col w-full h-screen bg-black'>
+    <div className='h-screen bg-black flex flex-col'>
       <Header />
-      <div className={roomContainerCls}>
-        <div className='mt-12'>
-          {remoteTracks.map((remoteTrack, index) => {
-            return (
-              remoteTrack.track.kind === 'video' && (
-                <VideoTile
-                  key={remoteTrack.track.sid}
-                  index={index}
-                  participant={remoteParticipant(
-                    remoteTrack.participantIdentity
-                  )}
-                  track={remoteTrack.track}
-                  remoteSession={remoteTrack.participantIdentity}
-                  isLocal={false}
-                  remoteMediaStates={remoteMediaStates}
-                  gridCls={videoTileClass[index]}
-                />
-              )
-            );
-          })}
-          <VideoTile
-            key='local-video'
-            participant={localParticipant}
-            track={videoTrack as LocalVideoTrack}
-            isLocal={true}
-            mediaState={mediaState}
-            remoteMediaStates={remoteMediaStates}
-            gridCls={videoTileClass[totalVideos - 1]}
-          />
+      <div className='flex-1 relative overflow-hidden'>
+        <div className={roomContainerCls}>
+          <div className='h-full p-4 overflow-auto'>
+            {remoteTracks.map((remoteTrack, index) => {
+              return (
+                remoteTrack.track.kind === 'video' && (
+                  <VideoTile
+                    key={remoteTrack.track.sid}
+                    index={index}
+                    participant={remoteParticipant(
+                      remoteTrack.participantIdentity
+                    )}
+                    track={remoteTrack.track}
+                    remoteSession={remoteTrack.participantIdentity}
+                    isLocal={false}
+                    remoteMediaStates={remoteMediaStates}
+                    gridCls={videoTileClass[index]}
+                  />
+                )
+              );
+            })}
+            <VideoTile
+              key='local-video'
+              participant={localParticipant}
+              track={videoTrack as LocalVideoTrack}
+              isLocal={true}
+              mediaState={mediaState}
+              remoteMediaStates={remoteMediaStates}
+              gridCls={videoTileClass[totalVideos - 1]}
+            />
+          </div>
         </div>
         <Participants
           open={activePanel === 'participants'}
@@ -429,7 +431,7 @@ const Room = () => {
           onClose={() => setActivePanel(null)}
         />
       </div>
-      <div className='relative flex justify-center items-center outline outline-zinc-800 bg-zinc-950'>
+      <div className='flex-shrink-0 flex justify-center items-center border-t border-zinc-800 bg-zinc-950'>
         <Toolbar
           sessionID={sessionID}
           room={livekitRoom.current}

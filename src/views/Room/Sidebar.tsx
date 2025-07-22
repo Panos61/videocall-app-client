@@ -11,7 +11,7 @@ interface Props {
 
 const Sidebar = ({ title, children, open, onClose }: Props) => {
   const cls = classNames(
-    'fixed right-0 h-full w-[340px] bg-zinc-950 shadow-lg transform transition-all duration-300 ease-in-out',
+    'absolute top-0 right-0 bottom-0 w-[340px] bg-zinc-950 shadow-lg transform transition-all duration-300 ease-in-out',
     {
       'translate-x-0 opacity-100 visible': open,
       'translate-x-full opacity-0 invisible': !open,
