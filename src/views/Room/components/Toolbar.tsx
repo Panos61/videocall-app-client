@@ -98,7 +98,7 @@ const Toolbar = ({
     'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer';
 
   return (
-    <div className='flex items-center bg-transparent'>
+    <div className='flex items-center h-60'>
       <div className='flex items-center gap-8 m-8'>
         <div className={menuBtnCls} onClick={handleAudioState}>
           {mediaState.audio ? (
