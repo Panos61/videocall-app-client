@@ -35,8 +35,8 @@ const VideoTile = ({
   const audioElement = useRef<HTMLAudioElement | null>(null);
 
   const [isVideoMounted, setIsVideoMounted] = useState(false);
-  const [isIntersecting, setIsIntersecting] = useState(false);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(isLocal);
+  const isIntersectingRef = useRef(false);
 
   const setVideoRef = useCallback((element: HTMLVideoElement | null) => {
     remoteVideoElement.current = element;
@@ -52,18 +52,12 @@ const VideoTile = ({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setIsIntersecting(entry.isIntersecting);
-        console.log(
-          `Intersection for ${participant?.username}: ${entry.isIntersecting}`
-        );
+        isIntersectingRef.current = entry.isIntersecting;
 
         if (entry.isIntersecting && !shouldLoadVideo) {
           setTimeout(() => {
             setShouldLoadVideo(true);
           }, 1000);
-          console.log(
-            `Loading video for ${participant?.username || remoteSession}`
-          );
         }
       },
       {
@@ -104,21 +98,14 @@ const VideoTile = ({
     );
   };
 
-  console.log(
-    `${participant?.username || 'unknown'} - isIntersecting:`,
-    isIntersecting,
-    'shouldLoadVideo:',
-    shouldLoadVideo
-  );
-
   const renderRemotePreview = () => {
     if (!remoteSession || !participant) return;
 
-    if (track && remoteMediaStates[remoteSession]?.video) {
+    if (shouldLoadVideo && track && remoteMediaStates[remoteSession]?.video) {
       if (!shouldLoadVideo) {
         return (
-          <div className='absolute inset-0 size-full flex items-center justify-center'>
-            <LoadingSpinner size='lg'/>
+          <div className='absolute inset-0 flex items-center justify-center size-full'>
+            <LoadingSpinner size='lg' />
           </div>
         );
       }
