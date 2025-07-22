@@ -13,14 +13,12 @@ import {
   RemoteVideoTrack,
 } from 'livekit-client';
 import classNames from 'classnames';
-import { useMediaQuery } from 'usehooks-ts';
 import { LogOutIcon } from 'lucide-react';
 
 import type { Participant, SignallingMessage, UserEvent } from '@/types';
 import { useSessionCtx, useMediaControlCtx, useSettingsCtx } from '@/context';
 import { getRoomParticipants } from '@/api';
 import { useToast } from '@/components/ui/use-toast';
-import { computeGridLayout } from './computeGridLayout';
 
 import { Button } from '@/components/ui/button';
 import { Chat, VideoTile, Header, Toolbar, Participants } from './components';
@@ -355,12 +353,6 @@ const Room = () => {
   );
 
   const totalVideos = remoteParticipants.size + 1;
-  const isMedium = useMediaQuery('(max-width: 1024px)');
-
-  const { containerClass, videoTileClass } = computeGridLayout(
-    totalVideos,
-    isMedium
-  );
 
   const remoteUserSessions = Array.from(remoteParticipants.keys()).filter(
     (session) => session !== sessionID
@@ -374,21 +366,25 @@ const Room = () => {
     return participantList.find((p) => p.session_id === remoteSession);
   };
 
-  const actionsCls = classNames(
+  const videoContainerCls = classNames(
     'mx-16 mb-12 h-full transition-all duration-300 ease-in-out',
     {
       'mr-[356px]': activePanel !== null,
     }
   );
 
-  const roomContainerCls = containerClass.concat(' ', actionsCls);
+  const gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: `repeat(${Math.ceil(Math.sqrt(totalVideos))}, 1fr)`,
+    gap: '8px',
+  };
 
   return (
     <div className='h-screen bg-black flex flex-col'>
       <Header />
       <div className='flex-1 relative overflow-hidden'>
-        <div className={roomContainerCls}>
-          <div className='h-full p-4 overflow-auto'>
+        <div className={videoContainerCls}>
+          <div className='h-full p-8 overflow-auto' style={gridStyle}>
             {remoteTracks.map((remoteTrack, index) => {
               return (
                 remoteTrack.track.kind === 'video' && (
@@ -402,7 +398,6 @@ const Room = () => {
                     remoteSession={remoteTrack.participantIdentity}
                     isLocal={false}
                     remoteMediaStates={remoteMediaStates}
-                    gridCls={videoTileClass[index]}
                   />
                 )
               );
@@ -414,7 +409,6 @@ const Room = () => {
               isLocal={true}
               mediaState={mediaState}
               remoteMediaStates={remoteMediaStates}
-              gridCls={videoTileClass[totalVideos - 1]}
             />
           </div>
         </div>

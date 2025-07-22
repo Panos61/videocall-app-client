@@ -14,7 +14,6 @@ interface Props {
   remoteMediaStates: {
     [sessionID: string]: { audio: boolean; video: boolean };
   };
-  gridCls: string;
 }
 
 const VideoTile = ({
@@ -25,7 +24,6 @@ const VideoTile = ({
   isLocal,
   mediaState,
   remoteMediaStates,
-  gridCls,
 }: Props) => {
   const videoID: string = isLocal ? 'local-video' : `${remoteSession}-video`;
   const localVideoElement = useRef<HTMLVideoElement | null>(null);
@@ -120,7 +118,7 @@ const VideoTile = ({
 
   useEffect(() => {
     const remoteVideoRef = remoteVideoElement.current;
-    
+
     if (remoteSession) {
       const remoteVideoEnabled = remoteMediaStates[remoteSession]?.video;
       if (remoteVideoRef) {
@@ -151,12 +149,8 @@ const VideoTile = ({
     };
   };
 
-  const videoTileCls =
-    'relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr';
-  const cls = videoTileCls.concat(' ', gridCls);
-
   return (
-    <div className={cls}>
+    <div className='relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr'>
       {isLocal ? renderLocalPreview() : renderRemotePreview()}
       <div className='absolute bottom-4 right-12 px-12 py-4 rounded-md text-sm text-white bg-black bg-opacity-45 z-50'>
         {participant?.username}
