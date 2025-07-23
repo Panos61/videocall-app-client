@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import {
   Room as LivekitRoom,
@@ -108,6 +109,7 @@ const Room = () => {
 
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+
     room.on(
       RoomEvent.ParticipantConnected,
       (participant: RemoteParticipant) => {
@@ -117,9 +119,10 @@ const Room = () => {
           newMap.set(participant.identity, participant);
           return newMap;
         });
+
+        refetchParticipants();
       }
     );
-
     room.on(
       RoomEvent.ParticipantDisconnected,
       (participant: RemoteParticipant) => {
@@ -133,14 +136,12 @@ const Room = () => {
             (track) => track.participantIdentity !== participant.identity
           )
         );
+
+        setTimeout(() => {
+          refetchParticipants();
+        }, 200);
       }
     );
-
-    room.on(RoomEvent.Disconnected, () => {
-      console.warn('Disconnected from room');
-      setRemoteParticipants(new Map());
-      handleDisconnect();
-    });
 
     room.on(RoomEvent.TrackMuted, (publication, participant) => {
       if (publication.kind === Track.Kind.Video) {
@@ -154,6 +155,16 @@ const Room = () => {
       }
     });
 
+    room.on(RoomEvent.Disconnected, () => {
+      setRemoteParticipants(new Map());
+      setRemoteTracks([]);
+      setParticipantList([]);
+      setLvkToken(null);
+      setVideoTrack(null);
+      setAudioState(false);
+      setVideoState(false);
+    });
+
     return () => {
       room.localParticipant.off('trackPublished', handleLocalTrackPublished);
       room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
@@ -161,10 +172,6 @@ const Room = () => {
       room.disconnect();
     };
   }, []);
-
-  const handleDisconnect = () => {
-    console.warn('disconnecting...');
-  };
 
   const handleTrackUnsubscribed = (track: RemoteTrack) => {
     track.detach();
@@ -226,21 +233,16 @@ const Room = () => {
     connectToRoom();
   }, [roomID, sessionID, lvkToken]);
 
+  const { data: participants, refetch: refetchParticipants } = useQuery({
+    queryKey: ['call-participants', roomID],
+    queryFn: () => getRoomParticipants(roomID),
+  });
+
   useEffect(() => {
-    const handleGetRoomParticipants = async () => {
-      try {
-        const participantData: Participant[] = await getRoomParticipants(
-          roomID
-        );
-
-        setParticipantList(participantData);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    handleGetRoomParticipants();
-  }, [roomID, sessionID, remoteParticipants]);
+    if (participants) {
+      setParticipantList(participants);
+    }
+  }, [participants, sessionID, remoteParticipants]);
 
   useEffect(() => {
     connectSession(`/ws/signalling/${roomID}`);
@@ -352,11 +354,9 @@ const Room = () => {
     (p) => p.session_id == sessionID
   );
 
-  const totalVideos = remoteParticipants.size + 1;
-
-  const remoteUserSessions = Array.from(remoteParticipants.keys()).filter(
-    (session) => session !== sessionID
-  );
+  const remoteUserSessions: string[] = Array.from(
+    remoteParticipants.keys()
+  ).filter((session) => session !== sessionID);
 
   const remoteParticipant = (remoteSessionID: string) => {
     const remoteSession = remoteUserSessions.find(
@@ -367,12 +367,13 @@ const Room = () => {
   };
 
   const videoContainerCls = classNames(
-    'mx-16 mb-12 h-full transition-all duration-300 ease-in-out',
+    'mx-4 mb-12 h-full transition-all duration-300 ease-in-out',
     {
-      'mr-[356px]': activePanel !== null,
+      'mr-[348px]': activePanel !== null,
     }
   );
 
+  const totalVideos = remoteParticipants.size + 1;
   const gridStyle = {
     display: 'grid',
     gridTemplateColumns: `repeat(${Math.ceil(Math.sqrt(totalVideos))}, 1fr)`,
