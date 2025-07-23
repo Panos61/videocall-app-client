@@ -52,7 +52,7 @@ const Room = () => {
   const [remoteParticipants, setRemoteParticipants] = useState<
     Map<string, RemoteParticipant>
   >(new Map());
-  const [participantList, setParticipantList] = useState<Participant[]>([]);
+  const [participants, setParticipants] = useState<Participant[]>([]);
 
   const livekitRoom = useRef<LivekitRoom | null>(null);
   const [lvkToken, setLvkToken] = useState<SignallingMessage['token'] | null>(
@@ -158,7 +158,7 @@ const Room = () => {
     room.on(RoomEvent.Disconnected, () => {
       setRemoteParticipants(new Map());
       setRemoteTracks([]);
-      setParticipantList([]);
+      setParticipants([]);
       setLvkToken(null);
       setVideoTrack(null);
       setAudioState(false);
@@ -233,16 +233,16 @@ const Room = () => {
     connectToRoom();
   }, [roomID, sessionID, lvkToken]);
 
-  const { data: participants, refetch: refetchParticipants } = useQuery({
+  const { data: participantsData, refetch: refetchParticipants } = useQuery({
     queryKey: ['call-participants', roomID],
     queryFn: () => getRoomParticipants(roomID),
   });
 
   useEffect(() => {
-    if (participants) {
-      setParticipantList(participants);
+    if (participantsData) {
+      setParticipants(participantsData);
     }
-  }, [participants, sessionID, remoteParticipants]);
+  }, [participantsData, sessionID, remoteParticipants]);
 
   useEffect(() => {
     connectSession(`/ws/signalling/${roomID}`);
@@ -350,7 +350,7 @@ const Room = () => {
     };
   }, [roomID, toast, displayHostBtn, remoteParticipants]);
 
-  const localParticipant: Participant | undefined = participantList.find(
+  const localParticipant: Participant | undefined = participants.find(
     (p) => p.session_id == sessionID
   );
 
@@ -363,7 +363,7 @@ const Room = () => {
       (session) => session === remoteSessionID
     );
 
-    return participantList.find((p) => p.session_id === remoteSession);
+    return participants.find((p) => p.session_id === remoteSession);
   };
 
   const videoContainerCls = classNames(
@@ -415,7 +415,7 @@ const Room = () => {
         </div>
         <Participants
           open={activePanel === 'participants'}
-          participants={participantList}
+          participants={participants}
           sessionID={sessionID}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}
