@@ -367,9 +367,9 @@ const Room = () => {
   };
 
   const videoContainerCls = classNames(
-    'mx-16 mb-12 h-full transition-all duration-300 ease-in-out',
+    'mx-4 mb-12 h-full transition-all duration-300 ease-in-out',
     {
-      'mr-[356px]': activePanel !== null,
+      'mr-[348px]': activePanel !== null,
     }
   );
 
