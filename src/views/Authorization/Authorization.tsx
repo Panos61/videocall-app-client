@@ -11,7 +11,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/elements';
 import { useToast } from '@/components/ui/use-toast';
 
-export const Authorization = () => {
+const Authorization = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -126,7 +126,7 @@ export const Authorization = () => {
     }
   };
 
-  const handleProceed = async () => {
+  const handleJoin = async () => {
     joinRoomMutation();
     navigate(`/room/${roomID}`, { replace: true });
   };
@@ -148,7 +148,7 @@ export const Authorization = () => {
               <Button
                 variant='call'
                 className='mt-12'
-                onClick={() => handleProceed()}
+                onClick={() => handleJoin()}
               >
                 <LogIn className='size-20 mr-8 text-white' />
                 {isJoiningRoom ? 'Joining...' : 'Join Room'}
@@ -164,3 +164,5 @@ export const Authorization = () => {
     </div>
   );
 };
+
+export default Authorization;

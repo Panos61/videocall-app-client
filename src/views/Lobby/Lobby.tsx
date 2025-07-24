@@ -19,7 +19,7 @@ import {
   StrictMode,
 } from './components';
 
-export const Lobby = () => {
+const Lobby = () => {
   const { pathname } = useLocation();
 
   const {
@@ -309,3 +309,5 @@ export const Lobby = () => {
     </>
   );
 };
+
+export default Lobby;
