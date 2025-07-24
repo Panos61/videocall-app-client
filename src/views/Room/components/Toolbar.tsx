@@ -95,7 +95,7 @@ const Toolbar = ({
   };
 
   const menuBtnCls =
-    'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer';
+    'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer hover:scale-105';
 
   return (
     <div className='flex items-center h-60'>
