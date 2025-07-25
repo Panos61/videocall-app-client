@@ -6,7 +6,7 @@ import {
   SessionProvider,
   SettingsProvider,
 } from './context';
-import { Home, Lobby, Room, Authorization } from './views';
+import { Home, Authorization, Lobby, Room, PostCall } from './views';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -19,6 +19,10 @@ const App = () => {
       element: <Home />,
     },
     {
+      path: '/room-invite',
+      element: <Authorization />,
+    },
+    {
       path: '/room/:id',
       element: <Lobby />,
     },
@@ -27,8 +31,8 @@ const App = () => {
       element: <Room />,
     },
     {
-      path: '/room-invite',
-      element: <Authorization />,
+      path: '/room/:id/post-call',
+      element: <PostCall />,
     },
   ]);
 

@@ -84,13 +84,11 @@ const Toolbar = ({
       disconnect();
       await leaveRoom(roomID, jwt);
 
-      Cookie.remove('rsCookie');
-      navigate('/');
+      navigate(`/room/${roomID}/post-call`, { state: { roomID }, replace: true });
     } catch (error) {
       console.error('Error during leave:', error);
     } finally {
-      Cookie.remove('rsCookie');
-      navigate('/');
+      navigate(`/room/${roomID}/post-call`, { state: { roomID }, replace: true });
     }
   };
 
