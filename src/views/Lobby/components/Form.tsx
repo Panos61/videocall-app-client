@@ -11,23 +11,37 @@ import { Input } from '@/components/ui/input';
 
 interface Props {
   isHost: boolean | undefined;
+  username: string;
   setUsername: (username: string) => void;
   avatarSrc: string | null | undefined;
   isCallActive: boolean;
 }
 
-const Form = ({ isHost, setUsername, avatarSrc, isCallActive }: Props) => {
+const Form = ({
+  isHost,
+  username,
+  setUsername,
+  avatarSrc,
+  isCallActive,
+}: Props) => {
   const {
     register,
     watch,
     formState: { errors, isValid },
-  } = useForm({ mode: 'onChange', defaultValues: { username: '' } });
+    reset,
+  } = useForm({ mode: 'onChange', defaultValues: { username: username || '' } });
 
-  const username = watch('username');
+  const formUsername = watch('username');
 
+  // Sync form when prop changes
   useEffect(() => {
-    setUsername(username);
-  }, [username, setUsername]);
+    reset({ username: username || '' });
+  }, [username, reset]);
+
+  // Notify parent when form value changes
+  useEffect(() => {
+    setUsername(formUsername);
+  }, [formUsername, setUsername]);
 
   const { pathname } = useLocation();
   const navigate = useNavigate();
@@ -38,7 +52,7 @@ const Form = ({ isHost, setUsername, avatarSrc, isCallActive }: Props) => {
   const handleStartCall = async () => {
     try {
       const sessionID: string = await setSession(roomID, jwt);
-      await setParticipantCallData(roomID, username, avatarSrc, jwt);
+      await setParticipantCallData(roomID, formUsername, avatarSrc, jwt);
 
       if (isHost) {
         await startCall(roomID);

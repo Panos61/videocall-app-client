@@ -1,6 +1,8 @@
+import { useMutation } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
 
+import { exitRoom } from '@/api';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -15,10 +17,17 @@ const PostCall = () => {
   const navigate = useNavigate();
   const { roomID } = useLocation().state;
 
-  const handleOnExit = () => {
-    Cookie.remove('rsCookie');
-    navigate('/', { replace: true });
-  };
+  const { mutate: exitRoomMutation, isPending } = useMutation({
+    mutationFn: () => exitRoom(roomID),
+    onSuccess: () => {
+      navigate('/', { replace: true });
+      Cookie.remove('rsCookie');
+    },
+    onError: () => {
+      navigate('/', { replace: true });
+      Cookie.remove('rsCookie');
+    },
+  });
 
   return (
     <div className='flex flex-col items-center gap-52 mt-72'>
@@ -32,9 +41,9 @@ const PostCall = () => {
             <LogOutIcon size={20} className='mr-8' />
             Stay in lobby
           </Button>
-          <Button onClick={handleOnExit}>
+          <Button onClick={() => exitRoomMutation()} disabled={isPending}>
             <HomeIcon size={20} className='mr-8' />
-            Return to home screen
+            {isPending ? 'Exiting...' : 'Return to home screen'}
           </Button>
         </div>
       </div>

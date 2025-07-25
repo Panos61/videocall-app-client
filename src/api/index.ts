@@ -101,11 +101,11 @@ export const startCall = async (roomID: string): Promise<CallState> => {
   return response.data;
 };
 
-export const leaveRoom = async (
+export const leaveCall = async (
   roomID: string,
   jwtToken: string | undefined
 ): Promise<boolean> => {
-  const response = await api.get<boolean>(`/leave-room/${roomID}`, {
+  const response = await api.get<boolean>(`/leave-call/${roomID}`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${jwtToken}`,
@@ -115,8 +115,8 @@ export const leaveRoom = async (
   return response.data;
 };
 
-export const purgeData = async (roomID: string): Promise<boolean> => {
-  const response = await api.delete<boolean>(`/purge-data/${roomID}`);
+export const exitRoom = async (roomID: string): Promise<boolean> => {
+  const response = await api.delete<boolean>(`/exit-room/${roomID}`);
   return response.data;
 };
 
