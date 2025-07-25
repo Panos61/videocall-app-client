@@ -6,7 +6,7 @@ import { useMediaDeviceSelect } from '@livekit/components-react';
 import Cookie from 'js-cookie';
 
 import type { CallState, Participant } from '@/types';
-import { getCallState, getMe, getRoomInfo, purgeData } from '@/api';
+import { getCallState, getMe, getRoomInfo, exitRoom } from '@/api';
 import { useMediaControlCtx, useSettingsCtx } from '@/context';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 import {
@@ -19,7 +19,7 @@ import {
   StrictMode,
 } from './components';
 
-export const Lobby = () => {
+const Lobby = () => {
   const { pathname } = useLocation();
 
   const {
@@ -33,7 +33,7 @@ export const Lobby = () => {
   const { connectSettings } = useSettingsCtx();
 
   const [guests, setGuests] = useState<Participant[]>([]);
-  const [username, setUsername] = useState('');
+  const [formUsername, setFormUsername] = useState<string>('');
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
   const [wsCallState, setWsCallState] = useState<CallState | null>({
@@ -64,7 +64,7 @@ export const Lobby = () => {
         guestsWS.current.close(1000, 'Component unmounting');
       }
 
-      purgeData(roomID);
+      exitRoom(roomID);
     },
     allowedPaths: ['/call'],
   });
@@ -120,7 +120,8 @@ export const Lobby = () => {
   });
 
   const roomCreatedAt: string = roomInfoData || new Date().toISOString();
-  const isHost: boolean = meData?.isHost ?? false;
+  const isHost = meData?.isHost ?? false;
+  const username = meData?.username || formUsername;
 
   const { data: callStateData } = useQuery({
     queryKey: ['callState', roomID],
@@ -266,7 +267,8 @@ export const Lobby = () => {
               </h3>
               <Form
                 isHost={isHost}
-                setUsername={setUsername}
+                username={username}
+                setUsername={setFormUsername}
                 avatarSrc={avatarSrc}
                 isCallActive={isCallActive}
               />
@@ -299,7 +301,7 @@ export const Lobby = () => {
         </div>
         <div className='col-span-3 flex items-center mr-48 mt-48 mb-24'>
           <Preview
-            username={username}
+            username={formUsername}
             mediaState={mediaState}
             videoTrack={videoTrack as LocalVideoTrack}
             onGetSrc={setAvatarSrc}
@@ -309,3 +311,5 @@ export const Lobby = () => {
     </>
   );
 };
+
+export default Lobby;

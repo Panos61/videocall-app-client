@@ -1,6 +1,7 @@
 import Home from './Home/Home';
+import Authorization from './Authorization';
 import Lobby from './Lobby';
 import Room from './Room';
-import Authorization from './Authorization';
+import PostCall from './PostCall';
 
-export { Home, Lobby, Room, Authorization };
+export {Authorization, Home, Lobby, Room, PostCall };

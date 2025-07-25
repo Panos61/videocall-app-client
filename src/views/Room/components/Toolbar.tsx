@@ -3,7 +3,7 @@ import Cookie from 'js-cookie';
 import { Room } from 'livekit-client';
 import classNames from 'classnames';
 
-import { leaveRoom } from '@/api';
+import { leaveCall } from '@/api';
 import { useSessionCtx, useMediaControlCtx } from '@/context';
 
 import {
@@ -82,15 +82,13 @@ const Toolbar = ({
 
       sendMessage({ type: 'disconnect', sessionID });
       disconnect();
-      await leaveRoom(roomID, jwt);
+      await leaveCall(roomID, jwt);
 
-      Cookie.remove('rsCookie');
-      navigate('/');
+      navigate(`/room/${roomID}/post-call`, { state: { roomID }, replace: true });
     } catch (error) {
       console.error('Error during leave:', error);
     } finally {
-      Cookie.remove('rsCookie');
-      navigate('/');
+      navigate(`/room/${roomID}/post-call`, { state: { roomID }, replace: true });
     }
   };
 

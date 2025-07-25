@@ -11,7 +11,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { LoadingSpinner } from '@/components/elements';
 import { useToast } from '@/components/ui/use-toast';
 
-export const Authorization = () => {
+const Authorization = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -121,20 +121,12 @@ export const Authorization = () => {
               <p className='text-sm'>You can now join in the room.</p>
             )}
           </div>
-          {!isExternal && !isJoiningRoom && (
-            <>
-              <p className='text-sm'>Joining room..</p>
-              <div className='mt-4 w-full'>
-                <LoadingSpinner />
-              </div>
-            </>
-          )}
         </div>
       );
     }
   };
 
-  const handleProceed = async () => {
+  const handleJoin = async () => {
     joinRoomMutation();
     navigate(`/room/${roomID}`, { replace: true });
   };
@@ -151,15 +143,15 @@ export const Authorization = () => {
         <CardContent className='flex flex-col items-center gap-12'>
           <p className='text-sm'>Your invitation code: {invitationCode}</p>
           {renderAlert()}
-          {isExternal && isSuccess && !isLoading && (
+          {isSuccess && !isLoading && (
             <div className='flex flex-col items-center gap-12'>
               <Button
                 variant='call'
                 className='mt-12'
-                onClick={() => handleProceed()}
+                onClick={() => handleJoin()}
               >
                 <LogIn className='size-20 mr-8 text-white' />
-                Proceed
+                {isJoiningRoom ? 'Joining...' : 'Join Room'}
               </Button>
               <p className='text-xs'>
                 By joining a room, you agree to our Terms of Service and Privacy
@@ -172,3 +164,5 @@ export const Authorization = () => {
     </div>
   );
 };
+
+export default Authorization;
