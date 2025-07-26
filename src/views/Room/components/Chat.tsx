@@ -1,7 +1,10 @@
-import { SendHorizonalIcon } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { useHover } from 'usehooks-ts';
+
 import { Switch } from '@/components/ui/switch';
-import Sidebar from '../Sidebar';
 import { Separator } from '@/components/ui/separator';
+import { SendHorizonalIcon, SmilePlus } from 'lucide-react';
+import Sidebar from '../Sidebar';
 
 interface Props {
   open: boolean;
@@ -9,9 +12,33 @@ interface Props {
 }
 
 const Chat = ({ open, onClose }: Props) => {
+  const [messages, setMessages] = useState<string[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const hoverRef = useRef(null);
+  const isHover = useHover(hoverRef);
+
+  const sendMessage = () => {
+    if (inputValue.trim()) {
+      setMessages([...messages, inputValue.trim()]);
+      setInputValue('');
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
   return (
     <Sidebar title='Conversation' open={open} onClose={onClose}>
-      <div className='h-[calc(100%-180px)] flex flex-col'>
+      <div className='h-[calc(100%-100px)] flex flex-col'>
         <div className='flex-1 flex flex-col justify-between items-center gap-4 w-full py-8 px-12 bg-white rounded-16 overflow-y-auto'>
           <div className='flex flex-col items-center gap-4 w-full '>
             <div className='flex gap-8 mt-4'>
@@ -20,14 +47,53 @@ const Chat = ({ open, onClose }: Props) => {
               </p>
               <Switch />
             </div>
-            <Separator className='mt-4'/>
+            <Separator className='mt-4' />
+          </div>
+          <div className='flex-1 py-4 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-white'>
+            <div className='flex flex-col gap-8'>
+              {messages.map((message, index) => (
+                <div
+                  key={index}
+                  ref={hoverRef}
+                  className='flex items-center gap-4'
+                >
+                  <div className='p-8 w-[74%] h-auto bg-green-100 rounded-lg text-sm break-all'>
+                    {message}
+                  </div>
+                  {isHover && (
+                    <SmilePlus
+                      size={16}
+                      className='text-gray-400 cursor-pointer duration-150 hover:text-gray-600'
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
           <div className='flex gap-4 w-full'>
-            <input
+            <textarea
+              ref={textareaRef}
+              rows={1}
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder='Send a message to everyone'
-              className='flex-1 py-12 px-4 rounded-12 text-sm font-light indent-16 bg-gray-200 outline-hidden duration-300 ease-in-out hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100'
+              className='flex-1 py-12 px-4 rounded-12 text-sm font-light indent-16 bg-gray-200 outline-hidden duration-300 ease-in-out hover:bg-gray-100 focus:outline-hidden focus:bg-gray-100 resize-none overflow-hidden scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100'
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = 'auto';
+                const lineHeight = 44;
+                const maxHeight = lineHeight * 2.5;
+                target.style.height =
+                  Math.min(target.scrollHeight, maxHeight) + 'px';
+                target.style.overflowY =
+                  target.scrollHeight > maxHeight ? 'auto' : 'hidden';
+              }}
             />
-            <button className='p-12 rounded-8 duration-200 hover:bg-green-200'>
+            <button
+              onClick={sendMessage}
+              className='p-12 h-44 self-center rounded-8 duration-200 hover:bg-green-200'
+            >
               <SendHorizonalIcon size={20} className='text-green-600' />
             </button>
           </div>
