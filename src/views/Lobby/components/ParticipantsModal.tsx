@@ -1,5 +1,6 @@
 import type { Participant } from '@/types';
 import { Crown, Users } from 'lucide-react';
+import { Avatar } from '@/components/elements';
 import {
   Dialog,
   DialogContent,
@@ -8,20 +9,19 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
-import { Avatar } from '@/components/elements';
 
 interface Props {
-  guests: string[];
-  participants: Participant[];
+  guests: Participant[];
+  participantsInLobby: Participant[];
   participantsInCall: Participant[];
 }
 
 const ParticipantsModal = ({
   guests,
-  participants,
+  participantsInLobby,
   participantsInCall,
 }: Props) => {
-  const totalUsersLobby = guests.length + participants.length;
+  const totalUsersLobby = guests.length + participantsInLobby.length;
 
   return (
     <Dialog>
@@ -44,15 +44,22 @@ const ParticipantsModal = ({
             <div className='text-xs font-medium text-gray-600'>
               IN CALL ({participantsInCall.length})
             </div>
-            <div className='flex flex-col gap-4 mt-4 text-sm'>
+            <div className='flex flex-col gap-4 text-sm'>
               {participantsInCall.map((participant) => (
                 <div key={participant.id}>
                   <div className='flex items-center gap-4 p-4 rounded-8 hover:bg-gray-100 duration-150'>
                     <Avatar size='sm' src={participant.avatar_src} />
-                    <span>{participant.username}</span>
-                    {participant.isHost && (
-                      <Crown size={12} className='text-yellow-600' />
-                    )}
+                    <div className='flex flex-col'>
+                      <div className='flex items-center gap-4'>
+                        <span>{participant.username}</span>
+                        {participant.isHost && (
+                          <Crown size={12} className='text-yellow-600' />
+                        )}
+                      </div>
+                      {/* <span className='text-xs text-muted-foreground'>
+                        In Call
+                      </span> */}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -61,18 +68,30 @@ const ParticipantsModal = ({
           {totalUsersLobby > 0 && (
             <>
               <Separator orientation='vertical' />
-              <div className='flex flex-col gap-4 text-left'>
+              <div className='flex flex-col gap-4 text-left w-full'>
                 <div className='text-xs text-left font-medium text-gray-600'>
                   IN LOBBY ({totalUsersLobby})
                 </div>
-                <div className='flex flex-col text-sm'>
-                  {participants.map((participant) => (
+                <div className='flex flex-col gap-4 text-sm'>
+                  {participantsInLobby.map((participant) => (
                     <div
                       key={participant.id}
-                      className='flex items-center gap-4'
+                      className='flex items-center gap-4 px-4 rounded-8 hover:bg-gray-100 duration-150'
                     >
-                      <Avatar />
-                      <span>{participant.username}</span>
+                      {participant.avatar_src && (
+                        <Avatar size='sm' src={participant.avatar_src} />
+                      )}
+                      <div className='flex flex-col'>
+                        <div className='flex items-center gap-4'>
+                          <span>{participant.username}</span>
+                          {participant.isHost && (
+                            <Crown size={12} className='text-yellow-600' />
+                          )}
+                        </div>
+                        <span className='text-xs text-muted-foreground'>
+                          Waiting in lobby
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>

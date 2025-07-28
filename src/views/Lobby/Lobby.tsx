@@ -38,7 +38,7 @@ const Lobby = () => {
   } = useMediaControlCtx();
   const { connectSettings } = useSettingsCtx();
 
-  const [guests, setGuests] = useState<string[]>([]);
+  const [guests, setGuests] = useState<Participant[]>([]);
   const [formUsername, setFormUsername] = useState<string>('');
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
@@ -56,7 +56,7 @@ const Lobby = () => {
     }
   }, [roomID, connectSettings]);
 
-  const guestsWS = useRef<WebSocket | null>(null);
+  const participantsWS = useRef<WebSocket | null>(null);
 
   useNavigationBlocker({
     message:
@@ -66,8 +66,8 @@ const Lobby = () => {
         videoTrack.stop();
       }
 
-      if (guestsWS.current?.readyState === WebSocket.OPEN) {
-        guestsWS.current.close(1000, 'Component unmounting');
+      if (participantsWS.current?.readyState === WebSocket.OPEN) {
+        participantsWS.current.close(1000, 'Component unmounting');
       }
 
       exitRoom(roomID);
@@ -76,19 +76,21 @@ const Lobby = () => {
   });
 
   useEffect(() => {
-    guestsWS.current = new WebSocket(`ws://localhost:8080/ws/guests/${roomID}`);
-    if (!guestsWS.current) return;
+    participantsWS.current = new WebSocket(
+      `ws://localhost:8080/ws/participants/${roomID}`
+    );
+    if (!participantsWS.current) return;
 
-    guestsWS.current.onmessage = async (event: MessageEvent) => {
-      const data: string[] = JSON.parse(event.data);
+    participantsWS.current.onmessage = async (event: MessageEvent) => {
+      const data: Participant[] = JSON.parse(event.data);
       setGuests(data);
     };
 
     return () => {
-      if (guestsWS.current?.readyState === WebSocket.OPEN) {
-        guestsWS.current.close(1000, 'Component unmounting');
+      if (participantsWS.current?.readyState === WebSocket.OPEN) {
+        participantsWS.current.close(1000, 'Component unmounting');
       }
-      guestsWS.current = null;
+      participantsWS.current = null;
     };
   }, [roomID]);
 
@@ -186,39 +188,6 @@ const Lobby = () => {
       setVideoActiveDevice(defaultSelectedDevice.deviceId);
     }
   }, [videoDevices, videoActiveDeviceId, setVideoActiveDevice]);
-
-  // useEffect(() => {
-  //   const getAudioTrack = async () => {
-  //     // Stop existing track if any
-  //     if (videoTrack) {
-  //       videoTrack.stop();
-  //     }
-
-  //     try {
-  //       if (mediaState.video) {
-  //         const track = await createLocalVideoTrack({
-  //           deviceId: videoActiveDeviceId,
-  //         });
-  //         setVideoTrack(track);
-  //       }
-  //     } catch (error) {
-  //       console.error('Failed to create video track:', error);
-  //     }
-  //   };
-
-  //   // Only create track if user has video enabled
-  //   if (videoActiveDeviceId) {
-  //     getAudioTrack();
-  //   }
-
-  //   // Cleanup function
-  //   return () => {
-  //     if (videoTrack) {
-  //       videoTrack.stop();
-  //     }
-  //   };
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [videoActiveDeviceId, mediaState.video]);
 
   useEffect(() => {
     const getVideoTrack = async () => {

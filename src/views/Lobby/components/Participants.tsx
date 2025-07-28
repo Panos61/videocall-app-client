@@ -4,7 +4,7 @@ import { Separator } from '@/components/ui/separator';
 import ParticipantsModal from './ParticipantsModal';
 
 interface Props {
-  guests: string[];
+  guests: Participant[];
   participants: Participant[];
   participantsInCall: Participant[];
 }
@@ -13,11 +13,15 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
   const totalUsers =
     participants.length + guests.length + participantsInCall.length;
 
+  const participantsInLobby = participants.filter(
+    (participant) => !participantsInCall.some((p) => p.session_id === participant.session_id)
+  );
+
   const renderGuests = () => {
     if (guests.length === 0) return null;
 
     if (guests.length > 0) {
-      const totalUsersLobby = participants.length + guests.length;
+      const totalUsersLobby = participantsInLobby.length + guests.length;
 
       return (
         <>
@@ -45,7 +49,7 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
         {totalUsers > 0 && (
           <ParticipantsModal
             guests={guests}
-            participants={participants}
+            participantsInLobby={participantsInLobby}
             participantsInCall={participantsInCall}
           />
         )}
