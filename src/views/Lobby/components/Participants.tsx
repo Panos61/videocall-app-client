@@ -4,26 +4,32 @@ import { Separator } from '@/components/ui/separator';
 import ParticipantsModal from './ParticipantsModal';
 
 interface Props {
-  guests: Participant[];
+  guests: string[];
+  participants: Participant[];
+  participantsInCall: Participant[];
 }
 
-const Participants = ({ guests }: Props) => {
+const Participants = ({ guests, participants, participantsInCall }: Props) => {
+  const totalUsers =
+    participants.length + guests.length + participantsInCall.length;
+
   const renderGuests = () => {
     if (guests.length === 0) return null;
 
     if (guests.length > 0) {
+      const totalUsersLobby = participants.length + guests.length;
+
       return (
         <>
           <Separator />
           <div className='flex flex-col gap-4'>
             <span className='text-xs font-medium text-gray-600'>
-              IN LOBBY ({guests.length})
+              IN LOBBY ({totalUsersLobby})
             </span>
             <div className='flex flex-col text-xs text-gray-500'>
               <div className='flex flex-col text-xs text-gray-500'>
-                {guests.length}{' '}
-                {guests.length === 1 ? 'Guest' : 'Guests'}{' '}
-                {guests.length === 1 ? 'is' : 'are'} waiting in lobby.
+                {totalUsersLobby} {totalUsersLobby === 1 ? 'Guest' : 'Guests'}{' '}
+                {totalUsersLobby === 1 ? 'is' : 'are'} waiting in lobby.
               </div>
             </div>
           </div>
@@ -36,18 +42,30 @@ const Participants = ({ guests }: Props) => {
     <div className='flex flex-col gap-4 border border-gray-200 rounded-8 p-12 mt-12'>
       <div className='flex justify-between'>
         <span className='font-medium'>Participants</span>
-        <ParticipantsModal participants={guests} />
+        {totalUsers > 0 && (
+          <ParticipantsModal
+            guests={guests}
+            participants={participants}
+            participantsInCall={participantsInCall}
+          />
+        )}
       </div>
       <div className='flex flex-col gap-8'>
         <div className='flex flex-col gap-4'>
-          <span className='text-xs font-medium text-gray-600'>IN CALL (5)</span>
+          <span className='text-xs font-medium text-gray-600'>
+            IN CALL ({participantsInCall.length})
+          </span>
           <div className='flex flex-col text-xs text-gray-500'>
-            <p>
-              <span className='flex items-center gap-4'>
-                <Crown size={12} className='text-yellow-600' /> Panos, Alex and
-                3 others are in call.
-              </span>
-            </p>
+            <span className='flex items-center gap-4'>
+              {participantsInCall.map((participant) => (
+                <div key={participant.id} className='flex items-center gap-4'>
+                  {participant.isHost && (
+                    <Crown size={12} className='text-yellow-600' />
+                  )}
+                  {participant.username}
+                </div>
+              ))}
+            </span>
           </div>
         </div>
         {renderGuests()}

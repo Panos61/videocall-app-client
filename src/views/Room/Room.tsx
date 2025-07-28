@@ -18,7 +18,7 @@ import { LogOutIcon } from 'lucide-react';
 
 import type { Participant, SignallingMessage, UserEvent } from '@/types';
 import { useSessionCtx, useMediaControlCtx, useSettingsCtx } from '@/context';
-import { getRoomParticipants } from '@/api';
+import { getParticipants } from '@/api';
 import { useToast } from '@/components/ui/use-toast';
 
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ const Room = () => {
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
-  >('chat');
+  >('participants');
 
   const [remoteParticipants, setRemoteParticipants] = useState<
     Map<string, RemoteParticipant>
@@ -235,12 +235,12 @@ const Room = () => {
 
   const { data: participantsData, refetch: refetchParticipants } = useQuery({
     queryKey: ['call-participants', roomID],
-    queryFn: () => getRoomParticipants(roomID),
+    queryFn: () => getParticipants(roomID),
   });
 
   useEffect(() => {
     if (participantsData) {
-      setParticipants(participantsData);
+      setParticipants(participantsData.participantsInCall);
     }
   }, [participantsData, sessionID, remoteParticipants]);
 
@@ -306,9 +306,9 @@ const Room = () => {
         text = `${payload.participant_name} has left the call.`;
       } else if (eventType === 'host_left') {
         try {
-          const participants = await getRoomParticipants(roomID);
+          const participants = await getParticipants(roomID);
 
-          if (participants.length >= 2) {
+          if (participants.participantsInCall.length >= 2) {
             shouldShowHostBtn = true;
             setDisplayHostBtn(shouldShowHostBtn);
             text =

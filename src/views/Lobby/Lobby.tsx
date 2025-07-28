@@ -6,7 +6,13 @@ import { useMediaDeviceSelect } from '@livekit/components-react';
 import Cookie from 'js-cookie';
 
 import type { CallState, Participant } from '@/types';
-import { getCallState, getMe, getRoomInfo, exitRoom } from '@/api';
+import {
+  getCallState,
+  getMe,
+  getParticipants,
+  getRoomInfo,
+  exitRoom,
+} from '@/api';
 import { useMediaControlCtx, useSettingsCtx } from '@/context';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 import {
@@ -32,7 +38,7 @@ const Lobby = () => {
   } = useMediaControlCtx();
   const { connectSettings } = useSettingsCtx();
 
-  const [guests, setGuests] = useState<Participant[]>([]);
+  const [guests, setGuests] = useState<string[]>([]);
   const [formUsername, setFormUsername] = useState<string>('');
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
 
@@ -74,7 +80,7 @@ const Lobby = () => {
     if (!guestsWS.current) return;
 
     guestsWS.current.onmessage = async (event: MessageEvent) => {
-      const data: Participant[] = JSON.parse(event.data);
+      const data: string[] = JSON.parse(event.data);
       setGuests(data);
     };
 
@@ -118,6 +124,16 @@ const Lobby = () => {
     queryFn: () => getMe(roomID, jwt as string),
     enabled: !!roomID && !!jwt,
   });
+
+  const { data: participantsData } = useQuery({
+    queryKey: ['participants', roomID],
+    queryFn: () => getParticipants(roomID),
+    enabled: !!roomID,
+  });
+
+  const participants: Participant[] = participantsData?.participants || [];
+  const participantsInCall: Participant[] =
+    participantsData?.participantsInCall || [];
 
   const roomCreatedAt: string = roomInfoData || new Date().toISOString();
   const isHost = meData?.isHost ?? false;
@@ -291,7 +307,11 @@ const Lobby = () => {
                 callStartedAt={callStartedAt}
               />
               <StrictMode roomID={roomID} isHost={isHost} />
-              <Participants guests={guests} />
+              <Participants
+                guests={guests}
+                participants={participants}
+                participantsInCall={participantsInCall}
+              />
               <MediaPermissions
                 selectedAudioDevice={selectedAudioDevice}
                 selectedVideoDevice={selectedVideoDevice}

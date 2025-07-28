@@ -197,17 +197,21 @@ export const updateSettings = async (roomID: string, settings: Settings) => {
   }
 };
 
-export const getRoomParticipants = async (roomID: string) => {
-  const response = await axios.get(
-    `http://localhost:8080/call-participants/${roomID}`,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }
-  );
+export const getParticipants = async (
+  roomID: string
+): Promise<{
+  participants: Participant[];
+  participantsInCall: Participant[];
+}> => {
+  const response = await api.get<{
+    participants: Participant[];
+    participantsInCall: Participant[];
+  }>(`http://localhost:8080/participants/${roomID}`);
 
-  return response.data.roomParticipants;
+  return {
+    participants: response.data.participants,
+    participantsInCall: response.data.participantsInCall,
+  };
 };
 
 export const setSession = async (
