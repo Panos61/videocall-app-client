@@ -16,6 +16,26 @@ interface Props {
   participantsInCall: Participant[];
 }
 
+const ParticipantItem = ({ participant }: { participant: Participant }) => {
+  return (
+    <div key={participant.id}>
+      <div className='flex items-center gap-4 p-4 rounded-8 hover:bg-gray-100 duration-150'>
+        {participant.avatar_src && (
+          <Avatar size='sm' src={participant.avatar_src} />
+        )}
+        <div className='flex flex-col'>
+          <div className='flex items-center gap-4'>
+            <span>{participant.username}</span>
+            {participant.isHost && (
+              <Crown size={12} className='text-yellow-600' />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ParticipantsModal = ({
   guests,
   participantsInLobby,
@@ -46,22 +66,10 @@ const ParticipantsModal = ({
             </div>
             <div className='flex flex-col gap-4 text-sm'>
               {participantsInCall.map((participant) => (
-                <div key={participant.id}>
-                  <div className='flex items-center gap-4 p-4 rounded-8 hover:bg-gray-100 duration-150'>
-                    <Avatar size='sm' src={participant.avatar_src} />
-                    <div className='flex flex-col'>
-                      <div className='flex items-center gap-4'>
-                        <span>{participant.username}</span>
-                        {participant.isHost && (
-                          <Crown size={12} className='text-yellow-600' />
-                        )}
-                      </div>
-                      {/* <span className='text-xs text-muted-foreground'>
-                        In Call
-                      </span> */}
-                    </div>
-                  </div>
-                </div>
+                <ParticipantItem
+                  key={participant.id}
+                  participant={participant}
+                />
               ))}
             </div>
           </div>
@@ -74,25 +82,10 @@ const ParticipantsModal = ({
                 </div>
                 <div className='flex flex-col gap-4 text-sm'>
                   {participantsInLobby.map((participant) => (
-                    <div
+                    <ParticipantItem
                       key={participant.id}
-                      className='flex items-center gap-4 px-4 rounded-8 hover:bg-gray-100 duration-150'
-                    >
-                      {participant.avatar_src && (
-                        <Avatar size='sm' src={participant.avatar_src} />
-                      )}
-                      <div className='flex flex-col'>
-                        <div className='flex items-center gap-4'>
-                          <span>{participant.username}</span>
-                          {participant.isHost && (
-                            <Crown size={12} className='text-yellow-600' />
-                          )}
-                        </div>
-                        <span className='text-xs text-muted-foreground'>
-                          Waiting in lobby
-                        </span>
-                      </div>
-                    </div>
+                      participant={participant}
+                    />
                   ))}
                 </div>
               </div>

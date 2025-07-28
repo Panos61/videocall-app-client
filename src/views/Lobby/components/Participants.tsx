@@ -9,18 +9,28 @@ interface Props {
   participantsInCall: Participant[];
 }
 
+const ParticipantItem = ({ participant }: { participant: Participant }) => {
+  return (
+    <div key={participant.id} className='flex items-center gap-4'>
+      {participant.isHost && <Crown size={12} className='text-yellow-600' />}
+      {participant.username}
+    </div>
+  );
+};
+
 const Participants = ({ guests, participants, participantsInCall }: Props) => {
   const totalUsers =
     participants.length + guests.length + participantsInCall.length;
 
   const participantsInLobby = participants.filter(
-    (participant) => !participantsInCall.some((p) => p.session_id === participant.session_id)
+    (participant) =>
+      !participantsInCall.some((p) => p.session_id === participant.session_id)
   );
 
-  const renderGuests = () => {
-    if (guests.length === 0) return null;
+  const renderParticipantsInLobby = () => {
+    if (guests.length === 0 && participantsInLobby.length === 0) return null;
 
-    if (guests.length > 0) {
+    if (participantsInLobby.length > 0) {
       const totalUsersLobby = participantsInLobby.length + guests.length;
 
       return (
@@ -32,8 +42,12 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
             </span>
             <div className='flex flex-col text-xs text-gray-500'>
               <div className='flex flex-col text-xs text-gray-500'>
-                {totalUsersLobby} {totalUsersLobby === 1 ? 'Guest' : 'Guests'}{' '}
-                {totalUsersLobby === 1 ? 'is' : 'are'} waiting in lobby.
+                {participantsInLobby.map((participant) => (
+                  <ParticipantItem
+                    key={participant.id}
+                    participant={participant}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -44,7 +58,7 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
 
   return (
     <div className='flex flex-col gap-4 border border-gray-200 rounded-8 p-12 mt-12'>
-      <div className='flex justify-between'>
+      <div className='flex items-center justify-between'>
         <span className='font-medium'>Participants</span>
         {totalUsers > 0 && (
           <ParticipantsModal
@@ -56,23 +70,29 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
       </div>
       <div className='flex flex-col gap-8'>
         <div className='flex flex-col gap-4'>
-          <span className='text-xs font-medium text-gray-600'>
-            IN CALL ({participantsInCall.length})
-          </span>
-          <div className='flex flex-col text-xs text-gray-500'>
-            <span className='flex items-center gap-4'>
-              {participantsInCall.map((participant) => (
-                <div key={participant.id} className='flex items-center gap-4'>
-                  {participant.isHost && (
-                    <Crown size={12} className='text-yellow-600' />
-                  )}
-                  {participant.username}
-                </div>
-              ))}
+          {totalUsers > 0 ? (
+            <>
+              <span className='text-xs font-medium text-gray-600'>
+                IN CALL ({participantsInCall.length})
+              </span>
+              <div className='flex flex-col text-xs text-gray-500'>
+                <span className='flex items-center gap-4'>
+                  {participantsInCall.map((participant) => (
+                    <ParticipantItem
+                      key={participant.id}
+                      participant={participant}
+                    />
+                  ))}
+                </span>
+              </div>
+            </>
+          ) : (
+            <span className='text-xs text-gray-500'>
+              You are alone in the room.
             </span>
-          </div>
+          )}
         </div>
-        {renderGuests()}
+        {renderParticipantsInLobby()}
       </div>
     </div>
   );

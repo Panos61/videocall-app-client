@@ -98,7 +98,7 @@ const StrictMode = ({ roomID, isHost }: Props) => {
   const renderNonHostText = () => {
     return (
       <span className='text-sm text-gray-400 font-light whitespace-nowrap'>
-        {capitalize(settings?.strict_mode ? 'enabled' : 'disabled')} by the host
+        {capitalize(settings?.strict_mode ? 'enabled' : 'disabled')}
       </span>
     );
   };
@@ -156,7 +156,8 @@ const StrictMode = ({ roomID, isHost }: Props) => {
         {isHost ? renderForm() : renderNonHostText()}
       </div>
       <span className='text-xs text-gray-500 font-light'>
-        Strict mode restricts participant actions to host-only permissions.
+        Strict mode, when set by the host, restricts participant actions to
+        host-only permissions.
       </span>
     </div>
   );
