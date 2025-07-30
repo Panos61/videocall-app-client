@@ -64,7 +64,7 @@ const Room = () => {
   const { roomID, sessionID } = location.state;
 
   // Settings Context: websocket connection for settings
-  const { connectSettings, disconnect } = useSettingsCtx();
+  const { connectSettings, settings, disconnect } = useSettingsCtx();
 
   // Setup LiveKit room & event listeners
   useEffect(() => {
@@ -282,6 +282,8 @@ const Room = () => {
     };
   }, [roomID, connectSettings]);
 
+  const invitePermission = settings?.invite_permission || false;
+
   const { toast } = useToast();
 
   const [displayHostBtn, setDisplayHostBtn] = useState<boolean>(false);
@@ -354,6 +356,8 @@ const Room = () => {
     (p) => p.session_id == sessionID
   );
 
+  const isHost = localParticipant?.isHost || false;
+
   const remoteUserSessions: string[] = Array.from(
     remoteParticipants.keys()
   ).filter((session) => session !== sessionID);
@@ -416,6 +420,8 @@ const Room = () => {
         <Participants
           open={activePanel === 'participants'}
           participants={participants}
+          invitePermission={invitePermission}
+          isHost={isHost}
           sessionID={sessionID}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}
