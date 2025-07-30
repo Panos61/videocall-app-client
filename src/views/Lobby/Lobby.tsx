@@ -36,7 +36,13 @@ const Lobby = () => {
     setVideoTrack,
     videoTrack,
   } = useMediaControlCtx();
-  const { connectSettings } = useSettingsCtx();
+  const { connectSettings, settings } = useSettingsCtx();
+
+  const settingsData = settings || {
+    strict_mode: false,
+    invite_permission: false,
+    invitation_expiry: '30',
+  };
 
   const [guests, setGuests] = useState<Participant[]>([]);
   const [formUsername, setFormUsername] = useState<string>('');
@@ -258,6 +264,8 @@ const Lobby = () => {
                 isCallActive={isCallActive}
               />
               <Actions
+                settings={settingsData}
+                isHost={isHost}
                 mediaState={mediaState}
                 setAudioState={setAudioState}
                 setVideoState={setVideoState}
