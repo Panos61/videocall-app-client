@@ -1,9 +1,16 @@
 import { useState, useRef } from 'react';
 import { useHover } from 'usehooks-ts';
 
+import { usePreferencesCtx } from '@/context';
+
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import { SendHorizonalIcon, SmilePlus } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  SendHorizonalIcon,
+  SmilePlus,
+} from 'lucide-react';
 import Sidebar from '../Sidebar';
 
 interface Props {
@@ -12,6 +19,7 @@ interface Props {
 }
 
 const Chat = ({ open, onClose }: Props) => {
+  const { isChatExpanded, setIsChatExpanded } = usePreferencesCtx();
   const [messages, setMessages] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -41,11 +49,23 @@ const Chat = ({ open, onClose }: Props) => {
       <div className='h-[calc(100%-100px)] flex flex-col'>
         <div className='flex-1 flex flex-col justify-between items-center gap-4 w-full py-8 px-12 bg-white rounded-16 overflow-y-auto'>
           <div className='flex flex-col items-center gap-4 w-full '>
-            <div className='flex gap-8 mt-4'>
-              <p className='self-center text-xs text-slate-800'>
-                Let everyone send messages
-              </p>
-              <Switch />
+            <div className='flex items-center mt-4 self-start gap-24 w-full'>
+              <div
+                className='p-4 self-center rounded-8 bg-violet-100 hover:bg-violet-200 duration-150 cursor-pointer'
+                onClick={() => setIsChatExpanded(!isChatExpanded)}
+              >
+                {isChatExpanded ? (
+                  <ChevronRight size={20} className='text-violet-600' />
+                ) : (
+                  <ChevronLeft size={20} className='text-violet-600' />
+                )}
+              </div>
+              <div className='flex items-center gap-4'>
+                <p className='self-center text-xs text-slate-800'>
+                  Let everyone send messages
+                </p>
+                <Switch />
+              </div>
             </div>
             <Separator className='mt-4' />
           </div>

@@ -17,7 +17,7 @@ import classNames from 'classnames';
 import { LogOutIcon } from 'lucide-react';
 
 import type { Participant, SignallingMessage, UserEvent } from '@/types';
-import { useSessionCtx, useMediaControlCtx, useSettingsCtx } from '@/context';
+import { useSessionCtx, useMediaControlCtx, useSettingsCtx, usePreferencesCtx } from '@/context';
 import { getParticipants } from '@/api';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -44,6 +44,7 @@ const Room = () => {
     setVideoTrack,
     videoTrack,
   } = useMediaControlCtx();
+  const { isChatExpanded } = usePreferencesCtx();
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
@@ -374,6 +375,7 @@ const Room = () => {
     'mx-4 mb-12 h-full transition-all duration-300 ease-in-out',
     {
       'mr-[348px]': activePanel !== null,
+      'mr-[800px]': isChatExpanded && activePanel === 'chat',
     }
   );
 
