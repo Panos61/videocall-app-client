@@ -6,7 +6,13 @@ import { useMediaDeviceSelect } from '@livekit/components-react';
 import Cookie from 'js-cookie';
 
 import type { CallState, Participant } from '@/types';
-import { getCallState, getMe, getRoomInfo, exitRoom } from '@/api';
+import {
+  getCallState,
+  getMe,
+  getParticipants,
+  getRoomInfo,
+  exitRoom,
+} from '@/api';
 import { useMediaControlCtx, useSettingsCtx } from '@/context';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 import {
@@ -30,7 +36,13 @@ const Lobby = () => {
     setVideoTrack,
     videoTrack,
   } = useMediaControlCtx();
-  const { connectSettings } = useSettingsCtx();
+  const { connectSettings, settings } = useSettingsCtx();
+
+  const settingsData = settings || {
+    strict_mode: false,
+    invite_permission: false,
+    invitation_expiry: '30',
+  };
 
   const [guests, setGuests] = useState<Participant[]>([]);
   const [formUsername, setFormUsername] = useState<string>('');
@@ -50,7 +62,7 @@ const Lobby = () => {
     }
   }, [roomID, connectSettings]);
 
-  const guestsWS = useRef<WebSocket | null>(null);
+  const participantsWS = useRef<WebSocket | null>(null);
 
   useNavigationBlocker({
     message:
@@ -60,8 +72,8 @@ const Lobby = () => {
         videoTrack.stop();
       }
 
-      if (guestsWS.current?.readyState === WebSocket.OPEN) {
-        guestsWS.current.close(1000, 'Component unmounting');
+      if (participantsWS.current?.readyState === WebSocket.OPEN) {
+        participantsWS.current.close(1000, 'Component unmounting');
       }
 
       exitRoom(roomID);
@@ -70,19 +82,21 @@ const Lobby = () => {
   });
 
   useEffect(() => {
-    guestsWS.current = new WebSocket(`ws://localhost:8080/ws/guests/${roomID}`);
-    if (!guestsWS.current) return;
+    participantsWS.current = new WebSocket(
+      `ws://localhost:8080/ws/participants/${roomID}`
+    );
+    if (!participantsWS.current) return;
 
-    guestsWS.current.onmessage = async (event: MessageEvent) => {
+    participantsWS.current.onmessage = async (event: MessageEvent) => {
       const data: Participant[] = JSON.parse(event.data);
       setGuests(data);
     };
 
     return () => {
-      if (guestsWS.current?.readyState === WebSocket.OPEN) {
-        guestsWS.current.close(1000, 'Component unmounting');
+      if (participantsWS.current?.readyState === WebSocket.OPEN) {
+        participantsWS.current.close(1000, 'Component unmounting');
       }
-      guestsWS.current = null;
+      participantsWS.current = null;
     };
   }, [roomID]);
 
@@ -118,6 +132,16 @@ const Lobby = () => {
     queryFn: () => getMe(roomID, jwt as string),
     enabled: !!roomID && !!jwt,
   });
+
+  const { data: participantsData } = useQuery({
+    queryKey: ['participants', roomID],
+    queryFn: () => getParticipants(roomID),
+    enabled: !!roomID,
+  });
+
+  const participants: Participant[] = participantsData?.participants || [];
+  const participantsInCall: Participant[] =
+    participantsData?.participantsInCall || [];
 
   const roomCreatedAt: string = roomInfoData || new Date().toISOString();
   const isHost = meData?.isHost ?? false;
@@ -170,39 +194,6 @@ const Lobby = () => {
       setVideoActiveDevice(defaultSelectedDevice.deviceId);
     }
   }, [videoDevices, videoActiveDeviceId, setVideoActiveDevice]);
-
-  // useEffect(() => {
-  //   const getAudioTrack = async () => {
-  //     // Stop existing track if any
-  //     if (videoTrack) {
-  //       videoTrack.stop();
-  //     }
-
-  //     try {
-  //       if (mediaState.video) {
-  //         const track = await createLocalVideoTrack({
-  //           deviceId: videoActiveDeviceId,
-  //         });
-  //         setVideoTrack(track);
-  //       }
-  //     } catch (error) {
-  //       console.error('Failed to create video track:', error);
-  //     }
-  //   };
-
-  //   // Only create track if user has video enabled
-  //   if (videoActiveDeviceId) {
-  //     getAudioTrack();
-  //   }
-
-  //   // Cleanup function
-  //   return () => {
-  //     if (videoTrack) {
-  //       videoTrack.stop();
-  //     }
-  //   };
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [videoActiveDeviceId, mediaState.video]);
 
   useEffect(() => {
     const getVideoTrack = async () => {
@@ -273,6 +264,8 @@ const Lobby = () => {
                 isCallActive={isCallActive}
               />
               <Actions
+                settings={settingsData}
+                isHost={isHost}
                 mediaState={mediaState}
                 setAudioState={setAudioState}
                 setVideoState={setVideoState}
@@ -291,7 +284,13 @@ const Lobby = () => {
                 callStartedAt={callStartedAt}
               />
               <StrictMode roomID={roomID} isHost={isHost} />
-              <Participants guests={guests} />
+              {isCallActive && (
+              <Participants
+                guests={guests}
+                  participants={participants}
+                  participantsInCall={participantsInCall}
+                />
+              )}
               <MediaPermissions
                 selectedAudioDevice={selectedAudioDevice}
                 selectedVideoDevice={selectedVideoDevice}

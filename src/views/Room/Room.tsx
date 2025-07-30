@@ -18,7 +18,7 @@ import { LogOutIcon } from 'lucide-react';
 
 import type { Participant, SignallingMessage, UserEvent } from '@/types';
 import { useSessionCtx, useMediaControlCtx, useSettingsCtx } from '@/context';
-import { getRoomParticipants } from '@/api';
+import { getParticipants } from '@/api';
 import { useToast } from '@/components/ui/use-toast';
 
 import { Button } from '@/components/ui/button';
@@ -47,7 +47,7 @@ const Room = () => {
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
-  >('chat');
+  >('participants');
 
   const [remoteParticipants, setRemoteParticipants] = useState<
     Map<string, RemoteParticipant>
@@ -64,7 +64,7 @@ const Room = () => {
   const { roomID, sessionID } = location.state;
 
   // Settings Context: websocket connection for settings
-  const { connectSettings, disconnect } = useSettingsCtx();
+  const { connectSettings, settings, disconnect } = useSettingsCtx();
 
   // Setup LiveKit room & event listeners
   useEffect(() => {
@@ -235,12 +235,12 @@ const Room = () => {
 
   const { data: participantsData, refetch: refetchParticipants } = useQuery({
     queryKey: ['call-participants', roomID],
-    queryFn: () => getRoomParticipants(roomID),
+    queryFn: () => getParticipants(roomID),
   });
 
   useEffect(() => {
     if (participantsData) {
-      setParticipants(participantsData);
+      setParticipants(participantsData.participantsInCall);
     }
   }, [participantsData, sessionID, remoteParticipants]);
 
@@ -282,6 +282,8 @@ const Room = () => {
     };
   }, [roomID, connectSettings]);
 
+  const invitePermission = settings?.invite_permission || false;
+
   const { toast } = useToast();
 
   const [displayHostBtn, setDisplayHostBtn] = useState<boolean>(false);
@@ -306,9 +308,9 @@ const Room = () => {
         text = `${payload.participant_name} has left the call.`;
       } else if (eventType === 'host_left') {
         try {
-          const participants = await getRoomParticipants(roomID);
+          const participants = await getParticipants(roomID);
 
-          if (participants.length >= 2) {
+          if (participants.participantsInCall.length >= 2) {
             shouldShowHostBtn = true;
             setDisplayHostBtn(shouldShowHostBtn);
             text =
@@ -353,6 +355,8 @@ const Room = () => {
   const localParticipant: Participant | undefined = participants.find(
     (p) => p.session_id == sessionID
   );
+
+  const isHost = localParticipant?.isHost || false;
 
   const remoteUserSessions: string[] = Array.from(
     remoteParticipants.keys()
@@ -416,6 +420,8 @@ const Room = () => {
         <Participants
           open={activePanel === 'participants'}
           participants={participants}
+          invitePermission={invitePermission}
+          isHost={isHost}
           sessionID={sessionID}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}

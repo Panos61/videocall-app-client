@@ -1,4 +1,6 @@
 import classNames from 'classnames';
+import type { Settings } from '@/types';
+
 import {
   ChevronUp,
   VideoIcon,
@@ -19,6 +21,8 @@ import { Separator } from '@/components/ui/separator';
 import { InviteModal, SettingsModal } from '@/components/elements';
 
 interface Props {
+  settings: Settings;
+  isHost: boolean;
   mediaState: { audio: boolean; video: boolean };
   setAudioState: (enabled: boolean) => Promise<void>;
   setVideoState: (enabled: boolean) => Promise<void>;
@@ -31,6 +35,8 @@ interface Props {
 }
 
 const Actions = ({
+  settings,
+  isHost,
   audioDevices,
   videoDevices,
   audioActiveDeviceId,
@@ -41,6 +47,8 @@ const Actions = ({
   setAudioState,
   setVideoState,
 }: Props) => {
+  const { invite_permission } = settings;
+
   const handleAudioDeviceChange = async (deviceId: string) => {
     setAudioActiveDevice(deviceId);
   };
@@ -145,7 +153,7 @@ const Actions = ({
       </div>
       <Separator orientation='vertical' className='h-6 bg-gray-200' />
       <div className='flex items-center gap-8'>
-        <InviteModal />
+        {(invite_permission || isHost) && <InviteModal />}
         <SettingsModal />
       </div>
     </div>

@@ -1,4 +1,10 @@
-import { MicIcon, MicOffIcon, VideoIcon, VideoOffIcon } from 'lucide-react';
+import {
+  LockIcon,
+  MicIcon,
+  MicOffIcon,
+  VideoIcon,
+  VideoOffIcon,
+} from 'lucide-react';
 import type { Participant } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, InviteModal } from '@/components/elements';
@@ -7,6 +13,8 @@ import Sidebar from '../Sidebar';
 interface Props {
   open: boolean;
   participants: Participant[];
+  invitePermission: boolean;
+  isHost: boolean;
   sessionID: string;
   mediaState: { audio: boolean; video: boolean };
   remoteMediaStates: {
@@ -18,6 +26,8 @@ interface Props {
 const Participants = ({
   open,
   participants,
+  invitePermission,
+  isHost,
   mediaState,
   remoteMediaStates,
   sessionID,
@@ -40,7 +50,15 @@ const Participants = ({
   return (
     <Sidebar title='Participants' open={open} onClose={onClose}>
       <>
-        <InviteModal />
+        {(invitePermission || isHost) && <InviteModal />}
+        {!invitePermission && !isHost && (
+          <div className='ml-16 w-fit outline outline-gray-700 rounded-8 p-8 flex items-center gap-8'>
+            <LockIcon className='size-12 text-orange-400' />
+            <span className='text-xs text-muted italic'>
+              Only host can invite participants.
+            </span>
+          </div>
+        )}
         <p className='p-16 text-xs text-white font-bold'>
           IN MEETING ({participants.length})
         </p>

@@ -5,25 +5,68 @@ import ParticipantsModal from './ParticipantsModal';
 
 interface Props {
   guests: Participant[];
+  participants: Participant[];
+  participantsInCall: Participant[];
 }
 
-const Participants = ({ guests }: Props) => {
-  const renderGuests = () => {
-    if (guests.length === 0) return null;
+const ParticipantItem = ({ participant }: { participant: Participant }) => {
+  return (
+    <div key={participant.id} className='flex items-center gap-4'>
+      {participant.isHost && <Crown size={12} className='text-yellow-600' />}
+      {participant.username}
+    </div>
+  );
+};
 
-    if (guests.length > 0) {
+const Participants = ({ guests, participants, participantsInCall }: Props) => {
+  const totalUsers =
+    participants.length + guests.length + participantsInCall.length;
+
+  const participantsInLobby = participants.filter(
+    (participant) =>
+      !participantsInCall.some((p) => p.session_id === participant.session_id)
+  );
+
+  const renderParticipantsInCall = () => {
+    if (participantsInCall.length === 0) return null;
+
+    return (
+      <div className='flex flex-col gap-4'>
+        <span className='text-xs font-medium text-gray-600'>
+          IN CALL ({participantsInCall.length})
+        </span>
+        <div className='flex flex-col text-xs text-gray-500'>
+          <div className='flex flex-col text-xs text-gray-500'>
+            {participantsInCall.map((participant) => (
+              <ParticipantItem key={participant.id} participant={participant} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderParticipantsInLobby = () => {
+    if (guests.length === 0 && participantsInLobby.length === 0) return null;
+
+    if (participantsInLobby.length > 0) {
+      const totalUsersLobby = participantsInLobby.length + guests.length;
+
       return (
         <>
-          <Separator />
+          {participantsInCall.length > 0 && <Separator />}
           <div className='flex flex-col gap-4'>
             <span className='text-xs font-medium text-gray-600'>
-              IN LOBBY ({guests.length})
+              IN LOBBY ({totalUsersLobby})
             </span>
             <div className='flex flex-col text-xs text-gray-500'>
               <div className='flex flex-col text-xs text-gray-500'>
-                {guests.length}{' '}
-                {guests.length === 1 ? 'Guest' : 'Guests'}{' '}
-                {guests.length === 1 ? 'is' : 'are'} waiting in lobby.
+                {participantsInLobby.map((participant) => (
+                  <ParticipantItem
+                    key={participant.id}
+                    participant={participant}
+                  />
+                ))}
               </div>
             </div>
           </div>
@@ -34,23 +77,19 @@ const Participants = ({ guests }: Props) => {
 
   return (
     <div className='flex flex-col gap-4 border border-gray-200 rounded-8 p-12 mt-12'>
-      <div className='flex justify-between'>
+      <div className='flex items-center justify-between'>
         <span className='font-medium'>Participants</span>
-        <ParticipantsModal participants={guests} />
+        {totalUsers > 0 && (
+          <ParticipantsModal
+            guests={guests}
+            participantsInLobby={participantsInLobby}
+            participantsInCall={participantsInCall}
+          />
+        )}
       </div>
       <div className='flex flex-col gap-8'>
-        <div className='flex flex-col gap-4'>
-          <span className='text-xs font-medium text-gray-600'>IN CALL (5)</span>
-          <div className='flex flex-col text-xs text-gray-500'>
-            <p>
-              <span className='flex items-center gap-4'>
-                <Crown size={12} className='text-yellow-600' /> Panos, Alex and
-                3 others are in call.
-              </span>
-            </p>
-          </div>
-        </div>
-        {renderGuests()}
+        {renderParticipantsInCall()}
+        {renderParticipantsInLobby()}
       </div>
     </div>
   );
