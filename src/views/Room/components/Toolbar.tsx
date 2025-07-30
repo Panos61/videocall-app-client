@@ -4,7 +4,11 @@ import { Room } from 'livekit-client';
 import classNames from 'classnames';
 
 import { leaveCall } from '@/api';
-import { useSessionCtx, useMediaControlCtx } from '@/context';
+import {
+  useSessionCtx,
+  useMediaControlCtx,
+  usePreferencesCtx,
+} from '@/context';
 
 import {
   VideoIcon,
@@ -38,6 +42,7 @@ const Toolbar = ({
 }: Props) => {
   const { sendMessage, disconnect } = useSessionCtx();
   const { videoTrack, setVideoTrack } = useMediaControlCtx();
+  const { setIsChatExpanded } = usePreferencesCtx();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,11 +89,17 @@ const Toolbar = ({
       disconnect();
       await leaveCall(roomID, jwt);
 
-      navigate(`/room/${roomID}/post-call`, { state: { roomID }, replace: true });
+      navigate(`/room/${roomID}/post-call`, {
+        state: { roomID },
+        replace: true,
+      });
     } catch (error) {
       console.error('Error during leave:', error);
     } finally {
-      navigate(`/room/${roomID}/post-call`, { state: { roomID }, replace: true });
+      navigate(`/room/${roomID}/post-call`, {
+        state: { roomID },
+        replace: true,
+      });
     }
   };
 
@@ -114,11 +125,12 @@ const Toolbar = ({
         </div>
         <div
           className={menuBtnCls}
-          onClick={() =>
+          onClick={() => {
             setActivePanel(
               activePanel === 'participants' ? null : 'participants'
-            )
-          }
+            );
+            setIsChatExpanded(false);
+          }}
         >
           <UsersIcon size={16} />
         </div>

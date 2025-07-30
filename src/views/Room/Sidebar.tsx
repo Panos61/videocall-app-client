@@ -1,20 +1,26 @@
 import { ReactElement } from 'react';
 import classNames from 'classnames';
+import { usePreferencesCtx } from '@/context';
 import { X } from 'lucide-react';
 
 interface Props {
   title: string;
   children: ReactElement | JSX.Element;
   open: boolean;
+  expandable?: boolean;
   onClose: () => void;
 }
 
 const Sidebar = ({ title, children, open, onClose }: Props) => {
+  const { isChatExpanded } = usePreferencesCtx();
+
   const cls = classNames(
     'absolute top-0 right-0 bottom-0 w-[340px] bg-zinc-950 shadow-lg transform transition-all duration-300 ease-in-out',
     {
       'translate-x-0 opacity-100 visible': open,
       'translate-x-full opacity-0 invisible': !open,
+      'w-[340px]': !isChatExpanded,
+      'w-[800px]': isChatExpanded ,
     }
   );
 
