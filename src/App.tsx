@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import {
   MediaControlProvider,
+  PreferencesProvider,
   SessionProvider,
   SettingsProvider,
 } from './context';
@@ -40,12 +41,14 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
         <SettingsProvider>
-          <MediaControlProvider>
-            <TooltipProvider>
-              <RouterProvider router={router} />
-            </TooltipProvider>
-            <Toaster />
-          </MediaControlProvider>
+          <PreferencesProvider>
+            <MediaControlProvider>
+              <TooltipProvider>
+                <RouterProvider router={router} />
+              </TooltipProvider>
+              <Toaster />
+            </MediaControlProvider>
+          </PreferencesProvider>
         </SettingsProvider>
       </SessionProvider>
     </QueryClientProvider>
