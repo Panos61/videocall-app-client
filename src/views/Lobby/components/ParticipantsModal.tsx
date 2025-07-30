@@ -18,9 +18,11 @@ interface Props {
 
 const ParticipantItem = ({
   participant,
+  participantsInCall,
   isLobby,
 }: {
   participant: Participant;
+  participantsInCall?: Participant[];
   isLobby?: boolean;
 }) => {
   return (
@@ -35,7 +37,7 @@ const ParticipantItem = ({
             {participant.isHost && (
               <Crown size={12} className='text-yellow-600' />
             )}
-            {isLobby && (
+            {isLobby && participantsInCall?.length === 0 && (
               <span className='text-xs text-gray-500'>Waiting in lobby</span>
             )}
           </div>
@@ -98,6 +100,7 @@ const ParticipantsModal = ({
                     <ParticipantItem
                       key={participant.id}
                       participant={participant}
+                      participantsInCall={participantsInCall}
                       isLobby
                     />
                   ))}

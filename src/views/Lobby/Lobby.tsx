@@ -284,11 +284,13 @@ const Lobby = () => {
                 callStartedAt={callStartedAt}
               />
               <StrictMode roomID={roomID} isHost={isHost} />
+              {isCallActive && (
               <Participants
                 guests={guests}
-                participants={participants}
-                participantsInCall={participantsInCall}
-              />
+                  participants={participants}
+                  participantsInCall={participantsInCall}
+                />
+              )}
               <MediaPermissions
                 selectedAudioDevice={selectedAudioDevice}
                 selectedVideoDevice={selectedVideoDevice}

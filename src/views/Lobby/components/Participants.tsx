@@ -27,6 +27,25 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
       !participantsInCall.some((p) => p.session_id === participant.session_id)
   );
 
+  const renderParticipantsInCall = () => {
+    if (participantsInCall.length === 0) return null;
+
+    return (
+      <div className='flex flex-col gap-4'>
+        <span className='text-xs font-medium text-gray-600'>
+          IN CALL ({participantsInCall.length})
+        </span>
+        <div className='flex flex-col text-xs text-gray-500'>
+          <div className='flex flex-col text-xs text-gray-500'>
+            {participantsInCall.map((participant) => (
+              <ParticipantItem key={participant.id} participant={participant} />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderParticipantsInLobby = () => {
     if (guests.length === 0 && participantsInLobby.length === 0) return null;
 
@@ -35,7 +54,7 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
 
       return (
         <>
-          <Separator />
+          {participantsInCall.length > 0 && <Separator />}
           <div className='flex flex-col gap-4'>
             <span className='text-xs font-medium text-gray-600'>
               IN LOBBY ({totalUsersLobby})
@@ -69,29 +88,7 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
         )}
       </div>
       <div className='flex flex-col gap-8'>
-        <div className='flex flex-col gap-4'>
-          {totalUsers > 0 ? (
-            <>
-              <span className='text-xs font-medium text-gray-600'>
-                IN CALL ({participantsInCall.length})
-              </span>
-              <div className='flex flex-col text-xs text-gray-500'>
-                <span className='flex items-center gap-4'>
-                  {participantsInCall.map((participant) => (
-                    <ParticipantItem
-                      key={participant.id}
-                      participant={participant}
-                    />
-                  ))}
-                </span>
-              </div>
-            </>
-          ) : (
-            <span className='text-xs text-gray-500'>
-              You are alone in the room.
-            </span>
-          )}
-        </div>
+        {renderParticipantsInCall()}
         {renderParticipantsInLobby()}
       </div>
     </div>
