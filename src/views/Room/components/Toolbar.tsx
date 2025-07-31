@@ -19,6 +19,7 @@ import {
   UsersIcon,
   MessageCircleIcon,
 } from 'lucide-react';
+import Reactions from './Reactions';
 import { SettingsModal } from '@/components/elements';
 
 interface Props {
@@ -134,6 +135,7 @@ const Toolbar = ({
         >
           <UsersIcon size={16} />
         </div>
+          <Reactions />
         <div
           className={menuBtnCls}
           onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}
