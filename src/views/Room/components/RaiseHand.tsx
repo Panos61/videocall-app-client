@@ -1,50 +1,23 @@
-import { useEffect, useRef } from 'react';
 import { HandIcon } from 'lucide-react';
-import type { BaseEvent } from '@/types';
+import { useEventsCtx } from '@/context';
 
 interface Props {
-  roomID: string;
   username: string;
+  sessionID: string;
 }
 
-const RaiseHand = ({ roomID, username }: Props) => {
-  const ws = useRef<WebSocket | null>(null);
-
-  useEffect(() => {
-    ws.current = new WebSocket(`ws://localhost:8080/ws/user-events/${roomID}`);
-
-    if (!ws.current) return;
-
-    ws.current.onmessage = (event: MessageEvent) => {
-      const data: BaseEvent = JSON.parse(event.data);
-      console.log('Raise hand received:', data);
-    };
-
-    ws.current.onopen = () => {
-      console.log('Raise hand websocket connected');
-    };
-
-    ws.current.onerror = (event: Event) => {
-      console.error('Raise hand websocket error:', event);
-    };
-
-    ws.current.onclose = () => {
-      console.log('Raise hand websocket disconnected');
-    };
-  }, [roomID, username]);
+const RaiseHand = ({ username, sessionID }: Props) => {
+  const { sendEvent } = useEventsCtx();
 
   const handleRaiseHand = () => {
-    if (!ws.current) return;
-
-    ws.current.send(
-      JSON.stringify({
-        type: 'raised_hand',
-        data: {
-          sender: username,
-        },
-      })
-    );
-    console.log('Raise hand sent:', username);
+    sendEvent({
+      type: 'raised_hand.sent',
+      senderID: sessionID,
+      payload: {
+        raised_hand: true,
+        sender: username,
+      },
+    });
   };
 
   return (

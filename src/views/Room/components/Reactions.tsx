@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useHover } from 'usehooks-ts';
 import { SmilePlusIcon } from 'lucide-react';
-import type { BaseEvent } from '@/types';
+
+import { useEventsCtx } from '@/context';
 
 const REACTIONS = [
   {
@@ -42,50 +43,25 @@ const REACTIONS = [
 ];
 
 interface Props {
-  roomID: string;
   username: string;
+  sessionID: string;
 }
 
-const Reactions = ({ roomID, username }: Props) => {
-  const ws = useRef<WebSocket | null>(null);
+const Reactions = ({ username, sessionID }: Props) => {
+  const { sendEvent } = useEventsCtx();
+
   const hoverRef = useRef<HTMLDivElement>(null);
   const isHovering = useHover(hoverRef);
 
-  useEffect(() => {
-    ws.current = new WebSocket(`ws://localhost:8080/ws/user-events/${roomID}`);
-
-    if (!ws.current) return;
-
-    ws.current.onmessage = (event: MessageEvent) => {
-      const data: BaseEvent = JSON.parse(event.data);
-      console.log('Reaction received:', data);
-    };
-
-    ws.current.onopen = () => {
-      console.log('Reactions websocket connected');
-    };
-
-    ws.current.onerror = (event: Event) => {
-      console.error('Reactions websocket error:', event);
-    };
-
-    ws.current.onclose = () => {
-      console.log('Reactions websocket disconnected');
-    };
-  }, [roomID, username]);
-
   const handleSendReaction = (emoji: string) => {
-    if (!ws.current) return;
-
-    ws.current.send(
-      JSON.stringify({
-        type: 'reaction',
-        data: {
-          reaction_type: emoji,
-          sender: username,
-        },
-      })
-    );
+    sendEvent({
+      type: 'reaction.sent',
+      senderID: sessionID,
+      payload: {
+        reaction_type: emoji,
+        sender: username,
+      },
+    });
     console.log('Reaction sent:', emoji);
   };
 

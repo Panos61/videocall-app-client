@@ -6,6 +6,7 @@ import {
   PreferencesProvider,
   SessionProvider,
   SettingsProvider,
+  EventsProvider,
 } from './context';
 import { Home, Authorization, Lobby, Room, PostCall } from './views';
 import { Toaster } from '@/components/ui/toaster';
@@ -41,14 +42,16 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
         <SettingsProvider>
-          <PreferencesProvider>
-            <MediaControlProvider>
-              <TooltipProvider>
-                <RouterProvider router={router} />
-              </TooltipProvider>
-              <Toaster />
-            </MediaControlProvider>
-          </PreferencesProvider>
+          <EventsProvider>
+            <PreferencesProvider>
+              <MediaControlProvider>
+                <TooltipProvider>
+                  <RouterProvider router={router} />
+                </TooltipProvider>
+                <Toaster />
+              </MediaControlProvider>
+            </PreferencesProvider>
+          </EventsProvider>
         </SettingsProvider>
       </SessionProvider>
     </QueryClientProvider>

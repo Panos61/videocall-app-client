@@ -14,14 +14,16 @@ import {
   RemoteVideoTrack,
 } from 'livekit-client';
 import classNames from 'classnames';
-import { LogOutIcon } from 'lucide-react';
 
-import type { Participant, SignallingMessage, UserEvent } from '@/types';
-import { useSessionCtx, useMediaControlCtx, useSettingsCtx, usePreferencesCtx } from '@/context';
+import type { BaseEvent, Participant, SignallingMessage } from '@/types';
+import {
+  useSessionCtx,
+  useMediaControlCtx,
+  useSettingsCtx,
+  usePreferencesCtx,
+  useEventsCtx,
+} from '@/context';
 import { getParticipants } from '@/api';
-import { useToast } from '@/components/ui/use-toast';
-
-import { Button } from '@/components/ui/button';
 import { Chat, VideoTile, Header, Toolbar, Participants } from './components';
 
 interface TrackInfo {
@@ -32,6 +34,8 @@ interface TrackInfo {
 const Room = () => {
   // Signalling Context: websocket connection for session/livekit token exchange
   const { ws, connectSession, isConnected, sendMessage } = useSessionCtx();
+  // Events Context: websocket connection for user events
+  const { connectEvents, disconnect: disconnectEvents } = useEventsCtx();
   // Media Control Context: websocket connection for media device control
   const {
     connectMedia,
@@ -201,11 +205,11 @@ const Room = () => {
 
         // Connect to room
         await room.connect(livekitUrl, lvkToken);
-        const localParticipant = room?.localParticipant;
+        // const localParticipant = room?.localParticipant;
 
         // Only enable camera/mic if they were enabled in the lobby
-        await localParticipant?.setCameraEnabled(true);
-        await localParticipant?.setMicrophoneEnabled(true);
+        // await localParticipant?.setCameraEnabled(true);
+        // await localParticipant?.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
@@ -260,6 +264,20 @@ const Room = () => {
   }, [ws, isConnected, sendMessage]);
 
   useEffect(() => {
+    connectEvents(`/ws/user-events/${roomID}`);
+    if (!ws) return;
+
+    ws.onmessage = (event: MessageEvent) => {
+      const data: BaseEvent = JSON.parse(event.data);
+      console.log('event data received => ', data);
+    };
+
+    return () => {
+      disconnectEvents();
+    };
+  }, [roomID]);
+
+  useEffect(() => {
     const connect = async () => {
       try {
         connectMedia(`/ws/media/${roomID}`, sessionID);
@@ -285,78 +303,9 @@ const Room = () => {
 
   const invitePermission = settings?.invite_permission || false;
 
-  const { toast } = useToast();
-
-  const [displayHostBtn, setDisplayHostBtn] = useState<boolean>(false);
-  const userEventsWS = useRef<WebSocket | null>(null);
-
-  useEffect(() => {
-    userEventsWS.current = new WebSocket(
-      `ws://localhost:8080/ws/user-events/${roomID}`
-    );
-
-    if (!userEventsWS.current) return;
-
-    userEventsWS.current.onmessage = async (event: MessageEvent) => {
-      const data: UserEvent = JSON.parse(event.data);
-      const { payload } = data;
-      const eventType: string = data.type;
-
-      let text: string = '';
-      let shouldShowHostBtn: boolean = false;
-
-      if (eventType === 'user_left') {
-        text = `${payload.participant_name} has left the call.`;
-      } else if (eventType === 'host_left') {
-        try {
-          const participants = await getParticipants(roomID);
-
-          if (participants.participantsInCall.length >= 2) {
-            shouldShowHostBtn = true;
-            setDisplayHostBtn(shouldShowHostBtn);
-            text =
-              'The host has left the call. Be the first to make a move! After 30 seconds, the host will be chosen randomly.';
-          } else {
-            text =
-              'The previous host has left the call. You are now the host of the call.';
-          }
-        } catch (error) {
-          text = 'The host has left the call.';
-        }
-      }
-
-      const toastConfig = {
-        duration: shouldShowHostBtn ? 30000 : 5000,
-        description: (
-          <div className='flex items-center gap-8'>
-            <LogOutIcon size={24} color='#fb2c36' />
-            <div className='flex flex-col gap-4'>
-              <span>{text}</span>
-              {shouldShowHostBtn && (
-                <Button size='sm' onClick={() => console.log('make me host')}>
-                  Make me host 🙌
-                </Button>
-              )}
-            </div>
-          </div>
-        ),
-      };
-
-      toast(toastConfig);
-    };
-
-    return () => {
-      if (userEventsWS.current?.readyState === WebSocket.OPEN) {
-        userEventsWS.current.close(1000, 'Component unmounting');
-      }
-      userEventsWS.current = null;
-    };
-  }, [roomID, toast, displayHostBtn, remoteParticipants]);
-
   const localParticipant: Participant | undefined = participants.find(
     (p) => p.session_id == sessionID
   );
-
   const isHost = localParticipant?.isHost || false;
 
   const remoteUserSessions: string[] = Array.from(

@@ -17,14 +17,9 @@ export interface SignallingMessage {
 }
 
 export interface BaseEvent {
-  roomID: string;
-  sender: string;
   type: string;
-  duration?: number;
-  data: {
-    type: string;
-    sender: string;
-  };
+  senderID: string;
+  payload: unknown;
 }
 
 export interface CreateRoom {
