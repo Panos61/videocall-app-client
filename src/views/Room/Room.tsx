@@ -302,7 +302,7 @@ const Room = () => {
     };
   }, [roomID, connectSettings]);
 
-  const invitePermission = settings?.invite_permission || false;
+  const hasInvitePermission = settings?.invite_permission || false;
 
   const localParticipant: Participant | undefined = participants.find(
     (p) => p.session_id == sessionID
@@ -380,7 +380,7 @@ const Room = () => {
         <Participants
           open={activePanel === 'participants'}
           participants={participants}
-          invitePermission={invitePermission}
+          invitePermission={hasInvitePermission}
           isHost={isHost}
           sessionID={sessionID}
           mediaState={mediaState}
