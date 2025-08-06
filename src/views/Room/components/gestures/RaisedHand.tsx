@@ -6,7 +6,6 @@ interface Props {
 }
 
 const RaisedHand = ({ username }: Props) => {
-  console.log('username', username);
   const duration = useRef<number>(10000);
   const [animation, setAnimation] = useState<boolean>(true);
   

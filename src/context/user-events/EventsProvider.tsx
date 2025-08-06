@@ -56,8 +56,6 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
       ws.current.onmessage = (event: MessageEvent) => {
         try {
           const data: BaseEvent = JSON.parse(event.data);
-          console.log('Received event from another user:', data);
-
           // Process received events and update state
           switch (data.type) {
             case 'reaction.sent':
