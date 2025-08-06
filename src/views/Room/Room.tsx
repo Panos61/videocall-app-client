@@ -25,6 +25,7 @@ import {
 } from '@/context';
 import { getParticipants } from '@/api';
 import { Chat, VideoTile, Header, Toolbar, Participants } from './components';
+import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
 
 interface TrackInfo {
   track: LocalVideoTrack | RemoteVideoTrack;
@@ -38,6 +39,7 @@ const Room = () => {
   const {
     ws: eventsWS,
     connectEvents,
+    events: { reaction },
     disconnect: disconnectEvents,
   } = useEventsCtx();
   // Media Control Context: websocket connection for media device control
@@ -319,6 +321,13 @@ const Room = () => {
     return participants.find((p) => p.session_id === remoteSession);
   };
 
+  // Transform reactions to match ReactionData interface
+  const transformedReactions = reaction.map((r, index) => ({
+    id: `${r.username}-${Date.now()}-${index}`,
+    emoji: r.reaction_type,
+    username: r.username,
+  }));
+
   const videoContainerCls = classNames(
     'mx-4 mb-12 h-full transition-all duration-300 ease-in-out',
     {
@@ -338,6 +347,7 @@ const Room = () => {
     <div className='h-screen bg-black flex flex-col'>
       <Header />
       <div className='flex-1 relative overflow-hidden'>
+        <ReactionWrapper reactions={transformedReactions} />
         <div className={videoContainerCls}>
           <div className='h-full p-8 overflow-auto' style={gridStyle}>
             {remoteTracks.map((remoteTrack, index) => {

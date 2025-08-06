@@ -2,11 +2,10 @@ import { useEventsCtx } from '@/context';
 import { RaisedHand } from './gestures';
 
 const Header = () => {
-  const { events } = useEventsCtx();
-
-  const raisedHandEvents = events.raisedHand;
+  const { events: { raisedHand } } = useEventsCtx();
+  
   const uniqueRaisedHandEvents = [
-    ...new Set(raisedHandEvents.map((event) => event.sender)),
+    ...new Set(raisedHand.map((event) => event.username)),
   ];
 
   return (

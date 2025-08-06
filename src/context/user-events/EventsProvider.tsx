@@ -4,12 +4,12 @@ import type { BaseEvent } from '@/types';
 
 interface Reaction {
   reaction_type: string;
-  sender: string;
+  username: string;
 }
 
 interface RaisedHand {
   raised_hand: boolean;
-  sender: string;
+  username: string;
 }
 export interface Props {
   ws: WebSocket | null;
