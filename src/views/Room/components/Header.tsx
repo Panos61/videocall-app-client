@@ -1,7 +1,23 @@
+import { useEventsCtx } from '@/context';
+import { RaisedHand } from './gestures';
+
 const Header = () => {
+  const { events: { raisedHand } } = useEventsCtx();
+  
+  const uniqueRaisedHandEvents = [
+    ...new Set(raisedHand.map((event) => event.username)),
+  ];
+
   return (
     <header className='flex items-center justify-between h-60 px-48 border-b border-zinc-800'>
-      <div className='text-lg text-white font-mono'>Toku</div>
+      <div className='flex items-center gap-72'>
+        <div className='text-lg text-white font-mono'>[name..]</div>
+        <div className='flex items-center gap-8'>
+          {uniqueRaisedHandEvents.map((event) => (
+            <RaisedHand key={event} username={event} />
+          ))}
+        </div>
+      </div>
       <div className='flex items-center gap-8'>
         <div className='text-xs text-gray-300'>00:00</div>
         <span className='text-gray-300'>-</span>

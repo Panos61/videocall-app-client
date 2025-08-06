@@ -2,6 +2,7 @@ import { useMediaControlCtx, MediaControlProvider } from './media';
 import { SessionProvider, useSessionCtx } from './session';
 import { SettingsProvider, useSettingsCtx } from './settings';
 import { PreferencesProvider, usePreferencesCtx } from './preferences';
+import { EventsProvider, useEventsCtx } from './user-events';
 
 export {
   useMediaControlCtx,
@@ -12,4 +13,6 @@ export {
   SettingsProvider,
   usePreferencesCtx,
   PreferencesProvider,
+  useEventsCtx,
+  EventsProvider,
 };

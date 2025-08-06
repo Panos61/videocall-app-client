@@ -20,6 +20,8 @@ import {
   MessageCircleIcon,
 } from 'lucide-react';
 import { SettingsModal } from '@/components/elements';
+import Reactions from './Reactions';
+import RaiseHand from './RaiseHand';
 
 interface Props {
   sessionID: string;
@@ -123,6 +125,14 @@ const Toolbar = ({
             <VideoOffIcon color='#dc2626' size={16} />
           )}
         </div>
+        <RaiseHand sessionID={sessionID} />
+        <Reactions sessionID={sessionID} />
+        <div
+          className={menuBtnCls}
+          onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}
+        >
+          <MessageCircleIcon size={16} />
+        </div>
         <div
           className={menuBtnCls}
           onClick={() => {
@@ -133,12 +143,6 @@ const Toolbar = ({
           }}
         >
           <UsersIcon size={16} />
-        </div>
-        <div
-          className={menuBtnCls}
-          onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}
-        >
-          <MessageCircleIcon size={16} />
         </div>
         <SettingsModal />
         <div
