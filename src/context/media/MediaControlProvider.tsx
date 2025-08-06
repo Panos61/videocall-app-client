@@ -93,8 +93,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
         }
       };
 
-      socket.onclose = (event) => {
-        console.log('WebSocket closed:', event.code, event.reason);
+      socket.onclose = () => {
         setIsConnected(false);
       };
 

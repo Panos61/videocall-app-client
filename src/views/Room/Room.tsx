@@ -15,7 +15,7 @@ import {
 } from 'livekit-client';
 import classNames from 'classnames';
 
-import type { BaseEvent, Participant, SignallingMessage } from '@/types';
+import type { Participant, SignallingMessage } from '@/types';
 import {
   useSessionCtx,
   useMediaControlCtx,
@@ -35,7 +35,11 @@ const Room = () => {
   // Signalling Context: websocket connection for session/livekit token exchange
   const { ws, connectSession, isConnected, sendMessage } = useSessionCtx();
   // Events Context: websocket connection for user events
-  const { connectEvents, disconnect: disconnectEvents } = useEventsCtx();
+  const {
+    ws: eventsWS,
+    connectEvents,
+    disconnect: disconnectEvents,
+  } = useEventsCtx();
   // Media Control Context: websocket connection for media device control
   const {
     connectMedia,
@@ -265,12 +269,7 @@ const Room = () => {
 
   useEffect(() => {
     connectEvents(`/ws/user-events/${roomID}`);
-    if (!ws) return;
-
-    ws.onmessage = (event: MessageEvent) => {
-      const data: BaseEvent = JSON.parse(event.data);
-      console.log('event data received => ', data);
-    };
+    if (!eventsWS) return;
 
     return () => {
       disconnectEvents();

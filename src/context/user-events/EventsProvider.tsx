@@ -2,6 +2,15 @@ import { createContext, useState, useRef } from 'react';
 import { BASE_WS_URL } from '@/utils/constants';
 import type { BaseEvent } from '@/types';
 
+interface Reaction {
+  reaction_type: string;
+  sender: string;
+}
+
+interface RaisedHand {
+  raised_hand: boolean;
+  sender: string;
+}
 export interface Props {
   ws: WebSocket | null;
   connectEvents: (roomID: string) => void;
@@ -12,16 +21,6 @@ export interface Props {
     reaction: Reaction[];
     raisedHand: RaisedHand[];
   };
-}
-
-interface Reaction {
-  reaction_type: string;
-  sender: string;
-}
-
-interface RaisedHand {
-  raised_hand: boolean;
-  sender: string;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -53,6 +52,31 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
       ws.current.onerror = () => {
         setIsConnected(false);
       };
+
+      ws.current.onmessage = (event: MessageEvent) => {
+        try {
+          const data: BaseEvent = JSON.parse(event.data);
+          console.log('Received event from another user:', data);
+
+          // Process received events and update state
+          switch (data.type) {
+            case 'reaction.sent':
+              setReaction((prev) => [...prev, data.payload as Reaction]);
+              setTimeout(() => {
+                setReaction((prev) => prev.slice(1));
+              }, 5000);
+              break;
+            case 'raised_hand.sent':
+              setRaisedHand((prev) => [...prev, data.payload as RaisedHand]);
+              setTimeout(() => {
+                setRaisedHand((prev) => prev.slice(1)); // Remove oldest raised hand
+              }, 10000);
+              break;
+          }
+        } catch (error) {
+          console.error('Failed to parse incoming event:', error);
+        }
+      };
     }
   };
 
@@ -65,15 +89,6 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
   const sendEvent = (event: BaseEvent) => {
     if (isConnected && ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(event));
-
-      switch (event.type) {
-        case 'reaction.sent':
-          setReaction((prev) => [...prev, event.payload as Reaction]);
-          break;
-        case 'raised_hand.sent':
-          setRaisedHand((prev) => [...prev, event.payload as RaisedHand]);
-          break;
-      }
     } else {
       console.warn('WebSocket not ready, message not sent:', event);
     }

@@ -4,14 +4,20 @@ import { RaisedHand } from './gestures';
 const Header = () => {
   const { events } = useEventsCtx();
 
-  const hasRaisedHand = events.raisedHand;
-  console.log('hasRaisedHand', hasRaisedHand);
+  const raisedHandEvents = events.raisedHand;
+  const uniqueRaisedHandEvents = [
+    ...new Set(raisedHandEvents.map((event) => event.sender)),
+  ];
 
   return (
     <header className='flex items-center justify-between h-60 px-48 border-b border-zinc-800'>
       <div className='flex items-center gap-72'>
         <div className='text-lg text-white font-mono'>[name..]</div>
-        <RaisedHand username='alex' />
+        <div className='flex items-center gap-8'>
+          {uniqueRaisedHandEvents.map((event) => (
+            <RaisedHand key={event} username={event} />
+          ))}
+        </div>
       </div>
       <div className='flex items-center gap-8'>
         <div className='text-xs text-gray-300'>00:00</div>

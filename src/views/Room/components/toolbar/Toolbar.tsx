@@ -1,10 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import { Room } from 'livekit-client';
 import classNames from 'classnames';
 
-import { getMe, leaveCall } from '@/api';
+import { leaveCall } from '@/api';
 import {
   useSessionCtx,
   useMediaControlCtx,
@@ -20,8 +19,9 @@ import {
   UsersIcon,
   MessageCircleIcon,
 } from 'lucide-react';
-import { Reactions, RaiseHand } from '.';
 import { SettingsModal } from '@/components/elements';
+import Reactions from './Reactions';
+import RaiseHand from './RaiseHand';
 
 interface Props {
   sessionID: string;
@@ -51,14 +51,6 @@ const Toolbar = ({
   const { roomID } = location.state;
 
   const jwt: string | undefined = Cookie.get('rsCookie');
-
-  const { data: userData } = useQuery({
-    queryKey: ['me', roomID],
-    queryFn: () => getMe(roomID, jwt || ''),
-    enabled: !!jwt,
-  });
-
-  const username = userData?.username || '';
 
   const handleAudioState = async () => {
     setAudioState(!mediaState.audio, sessionID);
@@ -133,8 +125,8 @@ const Toolbar = ({
             <VideoOffIcon color='#dc2626' size={16} />
           )}
         </div>
-        <RaiseHand username={username} sessionID={sessionID} />
-        <Reactions username={username} sessionID={sessionID} />
+        <RaiseHand sessionID={sessionID} />
+        <Reactions sessionID={sessionID} />
         <div
           className={menuBtnCls}
           onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}

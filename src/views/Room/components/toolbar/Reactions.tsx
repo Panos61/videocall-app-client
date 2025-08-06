@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { useHover } from 'usehooks-ts';
 import { SmilePlusIcon } from 'lucide-react';
-
 import { useEventsCtx } from '@/context';
 
 const REACTIONS = [
@@ -42,12 +41,7 @@ const REACTIONS = [
   },
 ];
 
-interface Props {
-  username: string;
-  sessionID: string;
-}
-
-const Reactions = ({ username, sessionID }: Props) => {
+const Reactions = ({ sessionID }: { sessionID: string }) => {
   const { sendEvent } = useEventsCtx();
 
   const hoverRef = useRef<HTMLDivElement>(null);
@@ -59,10 +53,8 @@ const Reactions = ({ username, sessionID }: Props) => {
       senderID: sessionID,
       payload: {
         reaction_type: emoji,
-        sender: username,
       },
     });
-    console.log('Reaction sent:', emoji);
   };
 
   const menu = (

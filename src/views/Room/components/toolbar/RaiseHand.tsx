@@ -1,12 +1,7 @@
 import { HandIcon } from 'lucide-react';
 import { useEventsCtx } from '@/context';
 
-interface Props {
-  username: string;
-  sessionID: string;
-}
-
-const RaiseHand = ({ username, sessionID }: Props) => {
+const RaiseHand = ({ sessionID }: { sessionID: string }) => {
   const { sendEvent } = useEventsCtx();
 
   const handleRaiseHand = () => {
@@ -15,7 +10,6 @@ const RaiseHand = ({ username, sessionID }: Props) => {
       senderID: sessionID,
       payload: {
         raised_hand: true,
-        sender: username,
       },
     });
   };
