@@ -211,11 +211,11 @@ const Room = () => {
 
         // Connect to room
         await room.connect(livekitUrl, lvkToken);
-        // const localParticipant = room?.localParticipant;
+        const localParticipant = room?.localParticipant;
 
         // Only enable camera/mic if they were enabled in the lobby
-        // await localParticipant?.setCameraEnabled(true);
-        // await localParticipant?.setMicrophoneEnabled(true);
+        await localParticipant?.setCameraEnabled(true);
+        await localParticipant?.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
