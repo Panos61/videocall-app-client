@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useState, useRef, useEffect } from 'react';
-import { LocalVideoTrack } from 'livekit-client';
+import { LocalAudioTrack, LocalVideoTrack } from 'livekit-client';
 import Cookie from 'js-cookie';
 import { BASE_WS_URL } from '@/utils/constants';
 
@@ -36,8 +36,9 @@ export interface CtxProps {
   videoDevice: DevicePreferences | null;
   setAudioDevice: (device: DevicePreferences) => void;
   setVideoDevice: (device: DevicePreferences) => void;
-  // setAudioTrack: (track: LocalAudioTrack) => void;
+  setAudioTrack: (track: LocalAudioTrack | null) => void;
   setVideoTrack: (track: LocalVideoTrack | null) => void;
+  audioTrack: LocalAudioTrack | null;
   videoTrack: LocalVideoTrack | null;
 }
 
@@ -60,7 +61,10 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
   const [videoTrack, setLocalVideoTrack] = useState<LocalVideoTrack | null>(
     null
   );
-
+  const [audioTrack, setLocalAudioTrack] = useState<LocalAudioTrack | null>(
+    null
+  );
+  
   const connectMedia = (route: string, sessionID: string) => {
     // Clean up any existing connection
     disconnectMedia();
@@ -197,7 +201,6 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
       deviceId: device.deviceId,
       label: device.label,
     });
-    // localStorage.setItem('rs-audio-device', JSON.stringify(device));
 
     if (mediaState.audio) {
       await setAudioState(false);
@@ -210,7 +213,6 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
       deviceId: device.deviceId,
       label: device.label,
     });
-    // localStorage.setItem('rs-video-device', JSON.stringify(device));
 
     if (mediaState.video) {
       await setVideoState(false);
@@ -218,10 +220,10 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // const setAudioTrack = async (_track: LocalAudioTrack) => {
-  //   // console.log('audio track', track);
-  // };
-
+  const setAudioTrack = async (track: LocalAudioTrack | null) => {
+    setLocalAudioTrack(track);
+  };
+  
   const setVideoTrack = async (track: LocalVideoTrack | null) => {
     setLocalVideoTrack(track);
   };
@@ -240,7 +242,8 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
         setVideoDevice,
         audioDevice,
         videoDevice,
-        // setAudioTrack,
+        setAudioTrack,
+        audioTrack,
         setVideoTrack,
         videoTrack,
       }}

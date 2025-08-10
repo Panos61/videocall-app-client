@@ -1,15 +1,33 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
-import { LocalVideoTrack, RemoteVideoTrack } from 'livekit-client';
+import {
+  LocalVideoTrack,
+  RemoteVideoTrack,
+  LocalAudioTrack,
+  RemoteAudioTrack,
+  Track,
+} from 'livekit-client';
 import classNames from 'classnames';
 import { MicIcon, MicOffIcon } from 'lucide-react';
 
 import type { Participant } from '@/types';
 import { Avatar, LoadingSpinner } from '@/components/elements';
 
+interface TrackInfo {
+  track:
+    | LocalVideoTrack
+    | RemoteVideoTrack
+    | LocalAudioTrack
+    | RemoteAudioTrack;
+  participantIdentity: string;
+  kind: Track.Kind;
+}
+
 interface Props {
   index?: number;
   participant: Participant | undefined;
   track: LocalVideoTrack | RemoteVideoTrack;
+  audioTracks?: TrackInfo[];
+  audioTrack?: LocalAudioTrack | RemoteAudioTrack;
   remoteSession?: string;
   isLocal: boolean;
   mediaState?: { audio: boolean; video: boolean };
@@ -22,6 +40,7 @@ const VideoTile = ({
   index,
   participant,
   track,
+  audioTracks,
   remoteSession,
   isLocal,
   mediaState,
@@ -195,6 +214,28 @@ const VideoTile = ({
     };
   }, [track, remoteMediaStates, remoteSession, isVideoMounted]);
 
+  useEffect(() => {
+    if (!audioTracks || !remoteSession) return;
+
+    const participantAudioTrack = audioTracks.find(
+      (audioTrack) => audioTrack.participantIdentity === remoteSession
+    );
+
+    if (
+      audioElement.current &&
+      participantAudioTrack &&
+      remoteMediaStates[remoteSession]?.audio
+    ) {
+      participantAudioTrack.track.attach(audioElement.current);
+    }
+
+    return () => {
+      if (audioElement.current && participantAudioTrack) {
+        participantAudioTrack.track.detach(audioElement.current);
+      }
+    };
+  }, [audioTracks, remoteMediaStates, remoteSession]);
+
   const getAudioState = () => {
     if (isLocal) {
       return mediaState;
@@ -223,6 +264,7 @@ const VideoTile = ({
           <MicOffIcon color='#dc2626' className='size-20' />
         )}
       </div>
+      {/* <audio ref={audioElement} autoPlay style={{ display: 'none' }} /> */}
     </div>
   );
 };
