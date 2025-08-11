@@ -12,6 +12,9 @@ import {
   VideoPresets,
   LocalVideoTrack,
   RemoteVideoTrack,
+  AudioPresets,
+  LocalAudioTrack,
+  RemoteAudioTrack,
 } from 'livekit-client';
 import classNames from 'classnames';
 
@@ -28,8 +31,13 @@ import { Chat, VideoTile, Header, Toolbar, Participants } from './components';
 import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
 
 interface TrackInfo {
-  track: LocalVideoTrack | RemoteVideoTrack;
+  track:
+    | LocalVideoTrack
+    | RemoteVideoTrack
+    | LocalAudioTrack
+    | RemoteAudioTrack;
   participantIdentity: string;
+  kind: Track.Kind;
 }
 
 const Room = () => {
@@ -52,6 +60,8 @@ const Room = () => {
     setAudioState,
     setVideoState,
     setVideoTrack,
+    audioTrack,
+    setAudioTrack,
     videoTrack,
   } = useMediaControlCtx();
   const { isChatExpanded } = usePreferencesCtx();
@@ -70,6 +80,7 @@ const Room = () => {
     null
   );
   const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
+  const [remoteAudioTracks, setRemoteAudioTracks] = useState<TrackInfo[]>([]);
 
   const location = useLocation();
   const { roomID, sessionID } = location.state;
@@ -84,6 +95,15 @@ const Room = () => {
       dynacast: true,
       videoCaptureDefaults: {
         resolution: VideoPresets.h720.resolution,
+      },
+      audioCaptureDefaults: {
+        autoGainControl: true,
+        echoCancellation: true,
+        noiseSuppression: true,
+      },
+      publishDefaults: {
+        audioPreset: AudioPresets.music, // or AudioPresets.speech for voice calls
+        videoCodec: 'vp8', // or 'h264' depending on your needs
       },
     });
 
@@ -100,12 +120,23 @@ const Room = () => {
           {
             track: track as RemoteVideoTrack,
             participantIdentity: participant.identity,
+            kind: Track.Kind.Video,
+          },
+        ]);
+      } else if (track.kind === Track.Kind.Audio) {
+        setRemoteAudioTracks((prev) => [
+          ...prev,
+          {
+            track: track as RemoteAudioTrack,
+            participantIdentity: participant.identity,
+            kind: Track.Kind.Audio,
           },
         ]);
       }
     };
 
     const handleLocalTrackPublished = () => {
+      // Handle video track
       if (!videoTrack) {
         const newVideoTrack = room?.localParticipant?.videoTrackPublications
           .values()
@@ -113,6 +144,15 @@ const Room = () => {
         setVideoTrack(newVideoTrack as LocalVideoTrack);
       } else {
         setVideoTrack(videoTrack);
+      }
+
+      if (!audioTrack) {
+        const newAudioTrack = room?.localParticipant?.audioTrackPublications
+          .values()
+          .next().value?.audioTrack;
+        setAudioTrack(newAudioTrack as LocalAudioTrack);
+      } else {
+        setAudioTrack(audioTrack);
       }
     };
 
@@ -147,6 +187,11 @@ const Room = () => {
             (track) => track.participantIdentity !== participant.identity
           )
         );
+        setRemoteAudioTracks((prevTracks) =>
+          prevTracks.filter(
+            (track) => track.participantIdentity !== participant.identity
+          )
+        );
 
         setTimeout(() => {
           refetchParticipants();
@@ -169,9 +214,11 @@ const Room = () => {
     room.on(RoomEvent.Disconnected, () => {
       setRemoteParticipants(new Map());
       setRemoteTracks([]);
+      setRemoteAudioTracks([]);
       setParticipants([]);
       setLvkToken(null);
       setVideoTrack(null);
+      setAudioTrack(null);
       setAudioState(false);
       setVideoState(false);
     });
@@ -186,6 +233,14 @@ const Room = () => {
 
   const handleTrackUnsubscribed = (track: RemoteTrack) => {
     track.detach();
+
+    if (track.kind === Track.Kind.Video) {
+      setRemoteTracks((prev) => prev.filter((t) => t.track.sid !== track.sid));
+    } else if (track.kind === Track.Kind.Audio) {
+      setRemoteAudioTracks((prev) =>
+        prev.filter((t) => t.track.sid !== track.sid)
+      );
+    }
   };
 
   // Connect to LiveKit room
@@ -360,6 +415,7 @@ const Room = () => {
                       remoteTrack.participantIdentity
                     )}
                     track={remoteTrack.track}
+                    audioTracks={remoteAudioTracks}
                     remoteSession={remoteTrack.participantIdentity}
                     isLocal={false}
                     remoteMediaStates={remoteMediaStates}
@@ -373,6 +429,7 @@ const Room = () => {
               track={videoTrack as LocalVideoTrack}
               isLocal={true}
               mediaState={mediaState}
+              audioTracks={remoteAudioTracks}
               remoteMediaStates={remoteMediaStates}
             />
           </div>
