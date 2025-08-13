@@ -1,9 +1,12 @@
 import { useEventsCtx } from '@/context';
 import { RaisedHand } from './gestures';
+import ShareScreenTab from './ShareScreenTab';
 
 const Header = () => {
-  const { events: { raisedHand } } = useEventsCtx();
-  
+  const {
+    events: { raisedHand },
+  } = useEventsCtx();
+
   const uniqueRaisedHandEvents = [
     ...new Set(raisedHand.map((event) => event.username)),
   ];
@@ -18,6 +21,7 @@ const Header = () => {
           ))}
         </div>
       </div>
+      <ShareScreenTab />
       <div className='flex items-center gap-8'>
         <div className='text-xs text-gray-300'>00:00</div>
         <span className='text-gray-300'>-</span>

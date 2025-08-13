@@ -27,7 +27,14 @@ import {
   useEventsCtx,
 } from '@/context';
 import { getParticipants } from '@/api';
-import { Chat, VideoTile, Header, Toolbar, Participants } from './components';
+import {
+  Chat,
+  VideoTile,
+  Header,
+  Toolbar,
+  Participants,
+  ShareScreenTile,
+} from './components';
 import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
 
 interface TrackInfo {
@@ -64,7 +71,7 @@ const Room = () => {
     setAudioTrack,
     videoTrack,
   } = useMediaControlCtx();
-  const { isChatExpanded } = usePreferencesCtx();
+  const { isChatExpanded, shareScreenView } = usePreferencesCtx();
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
@@ -404,35 +411,42 @@ const Room = () => {
       <div className='flex-1 relative overflow-hidden'>
         <ReactionWrapper reactions={transformedReactions} />
         <div className={videoContainerCls}>
-          <div className='h-full p-8 overflow-auto' style={gridStyle}>
-            {remoteTracks.map((remoteTrack, index) => {
-              return (
-                remoteTrack.track.kind === 'video' && (
-                  <VideoTile
-                    key={remoteTrack.track.sid}
-                    index={index}
-                    participant={remoteParticipant(
-                      remoteTrack.participantIdentity
-                    )}
-                    track={remoteTrack.track}
-                    audioTracks={remoteAudioTracks}
-                    remoteSession={remoteTrack.participantIdentity}
-                    isLocal={false}
-                    remoteMediaStates={remoteMediaStates}
-                  />
-                )
-              );
-            })}
-            <VideoTile
-              key='local-video'
-              participant={localParticipant}
-              track={videoTrack as LocalVideoTrack}
-              isLocal={true}
-              mediaState={mediaState}
-              audioTracks={remoteAudioTracks}
-              remoteMediaStates={remoteMediaStates}
-            />
-          </div>
+          {shareScreenView === 'shared' && (
+            <div className='h-full p-8 overscroll-auto'>
+              <ShareScreenTile  />
+            </div>
+          )}
+          {shareScreenView === 'participants' && (
+            <div className='h-full p-8 overflow-auto' style={gridStyle}>
+              {remoteTracks.map((remoteTrack, index) => {
+                return (
+                  remoteTrack.track.kind === 'video' && (
+                    <VideoTile
+                      key={remoteTrack.track.sid}
+                      index={index}
+                      participant={remoteParticipant(
+                        remoteTrack.participantIdentity
+                      )}
+                      track={remoteTrack.track}
+                      audioTracks={remoteAudioTracks}
+                      remoteSession={remoteTrack.participantIdentity}
+                      isLocal={false}
+                      remoteMediaStates={remoteMediaStates}
+                    />
+                  )
+                );
+              })}
+              <VideoTile
+                key='local-video'
+                participant={localParticipant}
+                track={videoTrack as LocalVideoTrack}
+                isLocal={true}
+                mediaState={mediaState}
+                audioTracks={remoteAudioTracks}
+                remoteMediaStates={remoteMediaStates}
+              />
+            </div>
+          )}
         </div>
         <Participants
           open={activePanel === 'participants'}

@@ -22,6 +22,7 @@ import {
 import { SettingsModal } from '@/components/elements';
 import Reactions from './Reactions';
 import RaiseHand from './RaiseHand';
+import ShareScreen from './ShareScreen';
 
 interface Props {
   sessionID: string;
@@ -127,11 +128,12 @@ const Toolbar = ({
         </div>
         <RaiseHand sessionID={sessionID} />
         <Reactions sessionID={sessionID} />
+        <ShareScreen sessionID={sessionID} room={room} />
         <div
           className={menuBtnCls}
           onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}
         >
-          <MessageCircleIcon size={16} />
+          <MessageCircleIcon size={16} className='text-violet-500' />
         </div>
         <div
           className={menuBtnCls}
