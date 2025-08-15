@@ -62,11 +62,7 @@ const PostCall = () => {
           />
         </div>
       </div>
-      <Card className='flex flex-row items-center justify-center gap-12 p-8 w-[384px] shadow-elevation-low'>
-        <LockIcon
-          size={20}
-          className='cursor-pointer hover:scale-105 duration-300 ease-in-out hover:text-green-500'
-        />
+      <Card className='flex flex-row items-center justify-center gap-12 p-16 w-[384px] shadow-elevation-low'>
         <div className='flex flex-col items-center justify-center gap-4'>
           <div className='flex items-center justify-center gap-4'>
             <LockIcon size={20} className='text-orange-500' />

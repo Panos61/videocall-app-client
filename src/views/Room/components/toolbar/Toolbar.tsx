@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
-import { Room } from 'livekit-client';
+import { Room, LocalParticipant } from 'livekit-client';
 import classNames from 'classnames';
 
 import { leaveCall } from '@/api';
@@ -8,6 +8,7 @@ import {
   useSessionCtx,
   useMediaControlCtx,
   usePreferencesCtx,
+  useEventsCtx,
 } from '@/context';
 
 import {
@@ -32,6 +33,7 @@ interface Props {
   setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
   activePanel: 'participants' | 'chat' | null;
   setActivePanel: (panel: 'participants' | 'chat' | null) => void;
+  onScreenShareChange?: (isSharing: boolean, track?: any) => void; // Add this
 }
 
 const Toolbar = ({
@@ -42,6 +44,7 @@ const Toolbar = ({
   setVideoState,
   activePanel,
   setActivePanel,
+  onScreenShareChange, // Add this
 }: Props) => {
   const { sendMessage, disconnect } = useSessionCtx();
   const { videoTrack, setVideoTrack } = useMediaControlCtx();
@@ -128,7 +131,11 @@ const Toolbar = ({
         </div>
         <RaiseHand sessionID={sessionID} />
         <Reactions sessionID={sessionID} />
-        <ShareScreen sessionID={sessionID} room={room} />
+        <ShareScreen 
+          sessionID={sessionID} 
+          room={room} 
+          onScreenShareChange={onScreenShareChange}
+        />
         <div
           className={menuBtnCls}
           onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}

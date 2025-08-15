@@ -2,7 +2,7 @@ import { useEventsCtx } from '@/context';
 import { RaisedHand } from './gestures';
 import ShareScreenTab from './ShareScreenTab';
 
-const Header = () => {
+const Header = ({ isSharingScreen }: { isSharingScreen: boolean }) => {
   const {
     events: { raisedHand },
   } = useEventsCtx();
@@ -21,7 +21,7 @@ const Header = () => {
           ))}
         </div>
       </div>
-      <ShareScreenTab />
+      {isSharingScreen && <ShareScreenTab />}
       <div className='flex items-center gap-8'>
         <div className='text-xs text-gray-300'>00:00</div>
         <span className='text-gray-300'>-</span>
