@@ -22,15 +22,15 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
         room.localParticipant.videoTrackPublications.values()
       ).find((pub) => pub.source === Track.Source.ScreenShare);
 
-      console.log('Checking screen share:', {
-        publications: room.localParticipant.videoTrackPublications.size,
-        screenSharePublication: !!screenSharePublication,
-        sources: Array.from(
-          room.localParticipant.videoTrackPublications.values()
-        ).map((p) => ({ source: p.source, kind: p.kind })),
-        isSharing: !!screenSharePublication,
-        Track_Source_ScreenShare: Track.Source.ScreenShare,
-      });
+      // console.log('Checking screen share:', {
+      //   publications: room.localParticipant.videoTrackPublications.size,
+      //   screenSharePublication: !!screenSharePublication,
+      //   sources: Array.from(
+      //     room.localParticipant.videoTrackPublications.values()
+      //   ).map((p) => ({ source: p.source, kind: p.kind })),
+      //   isSharing: !!screenSharePublication,
+      //   Track_Source_ScreenShare: Track.Source.ScreenShare,
+      // });
 
       const newIsSharing = !!screenSharePublication;
       setIsSharing(newIsSharing);
@@ -74,20 +74,24 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
     if (!room?.localParticipant) {
       return;
     }
+    
+    let shareTrackSid: string = '';
 
     console.log('isSharing', isSharing);
     try {
       if (isSharing) {
         await room.localParticipant.setScreenShareEnabled(false);
         sendEvent({
-          type: 'share_screen.stopped',
+          type: 'share_screen.ended',
           senderID: sessionID,
           payload: {
             share_screen: false,
+            track_sid: shareTrackSid,
           },
         });
       } else {
         const result = await room.localParticipant.setScreenShareEnabled(true);
+        shareTrackSid = result?.track?.sid || '';
         console.log('Screen share enabled result:', result);
 
         // Manual check after enabling screen share
@@ -95,11 +99,6 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
           const screenSharePublication = Array.from(
             room.localParticipant.videoTrackPublications.values()
           ).find((pub) => pub.source === Track.Source.ScreenShare);
-
-          console.log('Manual check after screen share enabled:', {
-            screenSharePublication: !!screenSharePublication,
-            track: screenSharePublication?.videoTrack,
-          });
 
           if (screenSharePublication && onScreenShareChange) {
             onScreenShareChange(true, {
@@ -115,6 +114,7 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
           senderID: sessionID,
           payload: {
             share_screen: true,
+            track_sid: shareTrackSid,
           },
         });
       }

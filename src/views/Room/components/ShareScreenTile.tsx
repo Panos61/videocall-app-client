@@ -7,6 +7,7 @@ import {
   RemoteVideoTrack,
   Track,
 } from 'livekit-client';
+import { useEventsCtx } from '@/context';
 
 interface TrackInfo {
   track:
@@ -24,24 +25,19 @@ const ShareScreenTile = ({
   screenShareTrack: TrackInfo | null;
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-
+  const { events: { shareScreen } } = useEventsCtx();
   useEffect(() => {
     const videoElement = videoRef.current;
     const sharedTrack = screenShareTrack?.track;
-    console.log('ShareScreenTile useEffect:', {
-      hasVideoElement: !!videoElement,
-      hasSharedTrack: !!sharedTrack,
-      screenShareTrack,
-    });
 
     if (videoElement && sharedTrack) {
-      console.log('Attaching screen share track to video element');
+      console.warn('Attaching screen share track to video element');
       sharedTrack.attach(videoElement);
     }
 
     return () => {
       if (videoElement && sharedTrack) {
-        console.log('Detaching screen share track from video element');
+        console.warn('Detaching screen share track from video element');
         sharedTrack.detach(videoElement);
       }
     };
@@ -59,7 +55,7 @@ const ShareScreenTile = ({
         className='absolute size-full object-contain'
       />
       <div className='absolute bottom-4 right-12 px-12 py-4 rounded-md text-sm text-white bg-black bg-opacity-45 z-50 flex items-center gap-8'>
-        <span>Screen share</span>
+        <span>{shareScreen[0].username}'s shared screen</span>
         <ScreenShare size={16} className='text-green-500' />
       </div>
     </div>

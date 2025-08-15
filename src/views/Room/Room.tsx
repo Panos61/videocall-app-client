@@ -163,10 +163,6 @@ const Room = () => {
       ).find((pub) => pub.source === Track.Source.ScreenShare);
 
       if (screenSharePublication && screenSharePublication.videoTrack) {
-        console.log(
-          'Local screen share track published:',
-          screenSharePublication.videoTrack
-        );
         setScreenShareTrack({
           track: screenSharePublication.videoTrack,
           participantIdentity: sessionID,
@@ -301,6 +297,8 @@ const Room = () => {
       livekitRoom.current?.localParticipant?.videoTrackPublications.values() ||
         []
     ).find((pub) => pub.source === Track.Source.ScreenShare);
+
+    console.log('screenSharePublication', screenSharePublication);
 
     if (!screenSharePublication) {
       setScreenShareTrack(null);
@@ -465,8 +463,6 @@ const Room = () => {
     }
   }, [screenShareTrack, setShareScreenView]);
 
-  console.log('screenShareTrack', screenShareTrack);
-
   const videoContainerCls = classNames(
     'mx-4 mb-12 h-full transition-all duration-300 ease-in-out',
     {
@@ -482,11 +478,12 @@ const Room = () => {
     gap: '8px',
   };
 
-  console.log('localParticipant', localParticipant);
-
   return (
     <div className='h-screen bg-black flex flex-col'>
-      <Header isSharingScreen={!!screenShareTrack} />
+      <Header
+        isSharingScreen={!!screenShareTrack}
+        participantsCount={participants.length}
+      />
       <div className='flex-1 relative overflow-hidden'>
         <ReactionWrapper reactions={transformedReactions} />
         <div className={videoContainerCls}>
