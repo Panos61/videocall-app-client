@@ -11,6 +11,13 @@ interface RaisedHand {
   raised_hand: boolean;
   username: string;
 }
+
+interface ShareScreen {
+  isSharing: boolean;
+  track_sid: string;
+  username: string;
+}
+
 export interface Props {
   ws: WebSocket | null;
   connectEvents: (roomID: string) => void;
@@ -20,6 +27,7 @@ export interface Props {
   events: {
     reaction: Reaction[];
     raisedHand: RaisedHand[];
+    shareScreen: ShareScreen[];
   };
 }
 
@@ -32,6 +40,7 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [reaction, setReaction] = useState<Reaction[]>([]);
   const [raisedHand, setRaisedHand] = useState<RaisedHand[]>([]);
+  const [shareScreen, setShareScreen] = useState<ShareScreen[]>([]);
 
   const connectEvents = (roomID: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
@@ -70,6 +79,17 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
                 setRaisedHand((prev) => prev.slice(1)); // Remove oldest raised hand
               }, 10000);
               break;
+            case 'share_screen.started':
+              setShareScreen((prev) => [...prev, data.payload as ShareScreen]);
+              break;
+            case 'share_screen.ended':
+              setShareScreen((prev) =>
+                prev.filter(
+                  (event) =>
+                    event.track_sid !== (data.payload as ShareScreen).track_sid
+                )
+              );
+              break;
           }
         } catch (error) {
           console.error('Failed to parse incoming event:', error);
@@ -103,6 +123,7 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
         events: {
           reaction,
           raisedHand,
+          shareScreen,
         },
       }}
     >

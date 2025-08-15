@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import {
@@ -27,7 +27,14 @@ import {
   useEventsCtx,
 } from '@/context';
 import { getParticipants } from '@/api';
-import { Chat, VideoTile, Header, Toolbar, Participants } from './components';
+import {
+  Chat,
+  VideoTile,
+  Header,
+  Toolbar,
+  Participants,
+  ShareScreenTile,
+} from './components';
 import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
 
 interface TrackInfo {
@@ -64,7 +71,8 @@ const Room = () => {
     setAudioTrack,
     videoTrack,
   } = useMediaControlCtx();
-  const { isChatExpanded } = usePreferencesCtx();
+  const { isChatExpanded, shareScreenView, setShareScreenView } =
+    usePreferencesCtx();
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
@@ -81,6 +89,9 @@ const Room = () => {
   );
   const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
   const [remoteAudioTracks, setRemoteAudioTracks] = useState<TrackInfo[]>([]);
+  const [screenShareTrack, setScreenShareTrack] = useState<TrackInfo | null>(
+    null
+  );
 
   const location = useLocation();
   const { roomID, sessionID } = location.state;
@@ -102,8 +113,8 @@ const Room = () => {
         noiseSuppression: true,
       },
       publishDefaults: {
-        audioPreset: AudioPresets.music, // or AudioPresets.speech for voice calls
-        videoCodec: 'vp8', // or 'h264' depending on your needs
+        audioPreset: AudioPresets.speech,
+        videoCodec: 'vp8',
       },
     });
 
@@ -111,10 +122,20 @@ const Room = () => {
 
     const handleTrackSubscribed = (
       track: RemoteTrack,
-      _publication: RemoteTrackPublication,
+      publication: RemoteTrackPublication,
       participant: RemoteParticipant
     ) => {
-      if (track.kind === Track.Kind.Video) {
+      if (
+        track.kind === Track.Kind.Video &&
+        publication.source === Track.Source.ScreenShare
+      ) {
+        console.log('Screen share track detected:', track);
+        setScreenShareTrack({
+          track: track as RemoteVideoTrack,
+          participantIdentity: participant.identity,
+          kind: Track.Kind.Video,
+        });
+      } else if (track.kind === Track.Kind.Video) {
         setRemoteTracks((prev) => [
           ...prev,
           {
@@ -136,27 +157,41 @@ const Room = () => {
     };
 
     const handleLocalTrackPublished = () => {
-      // Handle video track
-      if (!videoTrack) {
-        const newVideoTrack = room?.localParticipant?.videoTrackPublications
-          .values()
-          .next().value?.videoTrack;
-        setVideoTrack(newVideoTrack as LocalVideoTrack);
-      } else {
-        setVideoTrack(videoTrack);
-      }
+      // Check for screen share track
+      const screenSharePublication = Array.from(
+        room.localParticipant.videoTrackPublications.values()
+      ).find((pub) => pub.source === Track.Source.ScreenShare);
 
-      if (!audioTrack) {
-        const newAudioTrack = room?.localParticipant?.audioTrackPublications
-          .values()
-          .next().value?.audioTrack;
-        setAudioTrack(newAudioTrack as LocalAudioTrack);
+      if (screenSharePublication && screenSharePublication.videoTrack) {
+        setScreenShareTrack({
+          track: screenSharePublication.videoTrack,
+          participantIdentity: sessionID,
+          kind: Track.Kind.Video,
+        });
       } else {
-        setAudioTrack(audioTrack);
+        // Handle video track
+        if (!videoTrack) {
+          const newVideoTrack = room?.localParticipant?.videoTrackPublications
+            .values()
+            .next().value?.videoTrack;
+          setVideoTrack(newVideoTrack as LocalVideoTrack);
+        } else {
+          setVideoTrack(videoTrack);
+        }
+
+        if (!audioTrack) {
+          const newAudioTrack = room?.localParticipant?.audioTrackPublications
+            .values()
+            .next().value?.audioTrack;
+          setAudioTrack(newAudioTrack as LocalAudioTrack);
+        } else {
+          setAudioTrack(audioTrack);
+        }
       }
     };
 
     room.localParticipant.on('trackPublished', handleLocalTrackPublished);
+    room.localParticipant.on('trackUnpublished', handleLocalTrackUnpublished);
 
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
@@ -174,6 +209,7 @@ const Room = () => {
         refetchParticipants();
       }
     );
+
     room.on(
       RoomEvent.ParticipantDisconnected,
       (participant: RemoteParticipant) => {
@@ -225,21 +261,47 @@ const Room = () => {
 
     return () => {
       room.localParticipant.off('trackPublished', handleLocalTrackPublished);
+      room.localParticipant.off(
+        'trackUnpublished',
+        handleLocalTrackUnpublished
+      );
       room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
       room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.disconnect();
     };
   }, []);
 
-  const handleTrackUnsubscribed = (track: RemoteTrack) => {
+  const handleTrackUnsubscribed = (
+    track: RemoteTrack,
+    publication: RemoteTrackPublication
+  ) => {
     track.detach();
 
-    if (track.kind === Track.Kind.Video) {
+    if (
+      track.kind === Track.Kind.Video &&
+      publication.source === Track.Source.ScreenShare
+    ) {
+      setScreenShareTrack(null);
+    } else if (track.kind === Track.Kind.Video) {
       setRemoteTracks((prev) => prev.filter((t) => t.track.sid !== track.sid));
     } else if (track.kind === Track.Kind.Audio) {
       setRemoteAudioTracks((prev) =>
         prev.filter((t) => t.track.sid !== track.sid)
       );
+    }
+  };
+
+  const handleLocalTrackUnpublished = () => {
+    // Check if screen share track still exists
+    const screenSharePublication = Array.from(
+      livekitRoom.current?.localParticipant?.videoTrackPublications.values() ||
+        []
+    ).find((pub) => pub.source === Track.Source.ScreenShare);
+
+    console.log('screenSharePublication', screenSharePublication);
+
+    if (!screenSharePublication) {
+      setScreenShareTrack(null);
     }
   };
 
@@ -266,11 +328,10 @@ const Room = () => {
 
         // Connect to room
         await room.connect(livekitUrl, lvkToken);
-        const localParticipant = room?.localParticipant;
 
         // Only enable camera/mic if they were enabled in the lobby
-        await localParticipant?.setCameraEnabled(true);
-        await localParticipant?.setMicrophoneEnabled(true);
+        // await localParticipant?.setCameraEnabled(true);
+        // await localParticipant?.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
@@ -383,6 +444,25 @@ const Room = () => {
     username: r.username,
   }));
 
+  const handleScreenShareChange = useCallback(
+    (isSharing: boolean, track?: any) => {
+      if (isSharing && track) {
+        setScreenShareTrack(track);
+        setShareScreenView('shared');
+      } else {
+        setScreenShareTrack(null);
+        setShareScreenView('participants');
+      }
+    },
+    [setShareScreenView]
+  );
+
+  useEffect(() => {
+    if (screenShareTrack) {
+      setShareScreenView('shared');
+    }
+  }, [screenShareTrack, setShareScreenView]);
+
   const videoContainerCls = classNames(
     'mx-4 mb-12 h-full transition-all duration-300 ease-in-out',
     {
@@ -400,39 +480,49 @@ const Room = () => {
 
   return (
     <div className='h-screen bg-black flex flex-col'>
-      <Header />
+      <Header
+        isSharingScreen={!!screenShareTrack}
+        participantsCount={participants.length}
+      />
       <div className='flex-1 relative overflow-hidden'>
         <ReactionWrapper reactions={transformedReactions} />
         <div className={videoContainerCls}>
-          <div className='h-full p-8 overflow-auto' style={gridStyle}>
-            {remoteTracks.map((remoteTrack, index) => {
-              return (
-                remoteTrack.track.kind === 'video' && (
-                  <VideoTile
-                    key={remoteTrack.track.sid}
-                    index={index}
-                    participant={remoteParticipant(
-                      remoteTrack.participantIdentity
-                    )}
-                    track={remoteTrack.track}
-                    audioTracks={remoteAudioTracks}
-                    remoteSession={remoteTrack.participantIdentity}
-                    isLocal={false}
-                    remoteMediaStates={remoteMediaStates}
-                  />
-                )
-              );
-            })}
-            <VideoTile
-              key='local-video'
-              participant={localParticipant}
-              track={videoTrack as LocalVideoTrack}
-              isLocal={true}
-              mediaState={mediaState}
-              audioTracks={remoteAudioTracks}
-              remoteMediaStates={remoteMediaStates}
-            />
-          </div>
+          {shareScreenView === 'shared' && (
+            <div className='h-full p-8 overscroll-auto'>
+              <ShareScreenTile screenShareTrack={screenShareTrack} />
+            </div>
+          )}
+          {shareScreenView === 'participants' && (
+            <div className='h-full p-8 overflow-auto' style={gridStyle}>
+              {remoteTracks.map((remoteTrack, index) => {
+                return (
+                  remoteTrack.track.kind === 'video' && (
+                    <VideoTile
+                      key={remoteTrack.track.sid}
+                      index={index}
+                      participant={remoteParticipant(
+                        remoteTrack.participantIdentity
+                      )}
+                      track={remoteTrack.track}
+                      audioTracks={remoteAudioTracks}
+                      remoteSession={remoteTrack.participantIdentity}
+                      isLocal={false}
+                      remoteMediaStates={remoteMediaStates}
+                    />
+                  )
+                );
+              })}
+              <VideoTile
+                key='local-video'
+                participant={localParticipant}
+                track={videoTrack as LocalVideoTrack}
+                isLocal={true}
+                mediaState={mediaState}
+                audioTracks={remoteAudioTracks}
+                remoteMediaStates={remoteMediaStates}
+              />
+            </div>
+          )}
         </div>
         <Participants
           open={activePanel === 'participants'}
@@ -449,7 +539,7 @@ const Room = () => {
           onClose={() => setActivePanel(null)}
         />
       </div>
-      <div className='flex-shrink-0 flex justify-center items-center border-t border-zinc-800 bg-zinc-950'>
+      <div className='flex flex-shrink-0 justify-center items-center border-t border-zinc-800 bg-zinc-950'>
         <Toolbar
           sessionID={sessionID}
           room={livekitRoom.current}
@@ -458,6 +548,7 @@ const Room = () => {
           setVideoState={setVideoState}
           activePanel={activePanel}
           setActivePanel={setActivePanel}
+          onScreenShareChange={handleScreenShareChange}
         />
       </div>
     </div>

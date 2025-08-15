@@ -7,7 +7,7 @@ import { leaveCall } from '@/api';
 import {
   useSessionCtx,
   useMediaControlCtx,
-  usePreferencesCtx,
+  usePreferencesCtx
 } from '@/context';
 
 import {
@@ -22,6 +22,7 @@ import {
 import { SettingsModal } from '@/components/elements';
 import Reactions from './Reactions';
 import RaiseHand from './RaiseHand';
+import ShareScreen from './ShareScreen';
 
 interface Props {
   sessionID: string;
@@ -31,6 +32,7 @@ interface Props {
   setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
   activePanel: 'participants' | 'chat' | null;
   setActivePanel: (panel: 'participants' | 'chat' | null) => void;
+  onScreenShareChange?: (isSharing: boolean, track?: any) => void;
 }
 
 const Toolbar = ({
@@ -41,6 +43,7 @@ const Toolbar = ({
   setVideoState,
   activePanel,
   setActivePanel,
+  onScreenShareChange,
 }: Props) => {
   const { sendMessage, disconnect } = useSessionCtx();
   const { videoTrack, setVideoTrack } = useMediaControlCtx();
@@ -127,11 +130,16 @@ const Toolbar = ({
         </div>
         <RaiseHand sessionID={sessionID} />
         <Reactions sessionID={sessionID} />
+        <ShareScreen 
+          sessionID={sessionID} 
+          room={room} 
+          onScreenShareChange={onScreenShareChange}
+        />
         <div
           className={menuBtnCls}
           onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}
         >
-          <MessageCircleIcon size={16} />
+          <MessageCircleIcon size={16} className='text-violet-500' />
         </div>
         <div
           className={menuBtnCls}
