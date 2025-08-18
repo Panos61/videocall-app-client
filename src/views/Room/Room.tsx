@@ -35,7 +35,13 @@ import {
   Participants,
   ShareScreenTile,
 } from './components';
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@/components/ui/resizable';
 import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
+import TilePanel from './TilePanel';
 
 interface TrackInfo {
   track:
@@ -486,48 +492,63 @@ const Room = () => {
         participantsCount={participants.length}
       />
       <div className='flex-1 relative overflow-hidden'>
-        <ReactionWrapper reactions={transformedReactions} />
-        <div className={videoContainerCls}>
-          {shareScreenEvents.length > 0 && screenShareTrack && (
-            <div className='h-full p-8 overscroll-auto'>
-              <ShareScreenTile screenShareTrack={screenShareTrack} />
-            </div>
-          )}
-          {shareScreenView === 'participants' && (
-            <div
-              className='grid gap-8 h-full p-8 overflow-auto'
-              style={gridStyle}
-            >
-              {remoteTracks.map((remoteTrack, index) => {
-                return (
-                  remoteTrack.track.kind === 'video' && (
+        <ResizablePanelGroup direction='horizontal' className='h-full'>
+          <ResizablePanel
+            defaultSize={10}
+            minSize={10}
+            maxSize={40}
+            className='bg-white'
+          >
+            <TilePanel />
+          </ResizablePanel>
+          <ResizableHandle withHandle />
+          <ResizablePanel defaultSize={70} minSize={30}>
+            <div className='h-full relative overflow-hidden'>
+              <ReactionWrapper reactions={transformedReactions} />
+              <div className={videoContainerCls}>
+                {shareScreenEvents.length > 0 && screenShareTrack && (
+                  <div className='h-full p-8 overscroll-auto'>
+                    <ShareScreenTile screenShareTrack={screenShareTrack} />
+                  </div>
+                )}
+                {shareScreenView === 'participants' && (
+                  <div
+                    className='grid gap-8 h-full p-8 overflow-auto transition-all duration-300 ease-in-out'
+                    style={gridStyle}
+                  >
+                    {remoteTracks.map((remoteTrack, index) => {
+                      return (
+                        remoteTrack.track.kind === 'video' && (
+                          <VideoTile
+                            key={remoteTrack.track.sid}
+                            index={index}
+                            participant={remoteParticipant(
+                              remoteTrack.participantIdentity
+                            )}
+                            track={remoteTrack.track}
+                            audioTracks={remoteAudioTracks}
+                            remoteSession={remoteTrack.participantIdentity}
+                            isLocal={false}
+                            remoteMediaStates={remoteMediaStates}
+                          />
+                        )
+                      );
+                    })}
                     <VideoTile
-                      key={remoteTrack.track.sid}
-                      index={index}
-                      participant={remoteParticipant(
-                        remoteTrack.participantIdentity
-                      )}
-                      track={remoteTrack.track}
+                      key='local-video'
+                      participant={localParticipant}
+                      track={videoTrack as LocalVideoTrack}
+                      isLocal={true}
+                      mediaState={mediaState}
                       audioTracks={remoteAudioTracks}
-                      remoteSession={remoteTrack.participantIdentity}
-                      isLocal={false}
                       remoteMediaStates={remoteMediaStates}
                     />
-                  )
-                );
-              })}
-              <VideoTile
-                key='local-video'
-                participant={localParticipant}
-                track={videoTrack as LocalVideoTrack}
-                isLocal={true}
-                mediaState={mediaState}
-                audioTracks={remoteAudioTracks}
-                remoteMediaStates={remoteMediaStates}
-              />
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
         <Participants
           open={activePanel === 'participants'}
           participants={participants}
@@ -543,7 +564,7 @@ const Room = () => {
           onClose={() => setActivePanel(null)}
         />
       </div>
-      <div className='flex flex-shrink-0 justify-center items-center border-t border-zinc-800 bg-zinc-950'>
+      <div className='flex items-center border-t border-zinc-800 bg-zinc-950'>
         <Toolbar
           sessionID={sessionID}
           room={livekitRoom.current}

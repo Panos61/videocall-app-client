@@ -17,7 +17,7 @@ const Header = ({ isSharingScreen, participantsCount }: Props) => {
   ];
 
   return (
-    <header className='flex items-center justify-between h-60 px-48 border-b border-zinc-800'>
+    <header className='flex items-center justify-between h-52 px-48 border-b border-zinc-800'>
       <div className='flex items-center gap-72'>
         <div className='text-lg text-white font-mono'>[placeholder...]</div>
         <div className='flex items-center gap-8'>
