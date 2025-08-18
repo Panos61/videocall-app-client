@@ -334,8 +334,8 @@ const Room = () => {
         await room.connect(livekitUrl, lvkToken);
 
         // Only enable camera/mic if they were enabled in the lobby
-        // await localParticipant?.setCameraEnabled(true);
-        // await localParticipant?.setMicrophoneEnabled(true);
+        await room.localParticipant.setCameraEnabled(true);
+        await room.localParticipant.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
@@ -497,9 +497,38 @@ const Room = () => {
             defaultSize={10}
             minSize={10}
             maxSize={40}
-            className='bg-white'
           >
-            <TilePanel />
+            <TilePanel>
+              {remoteTracks.map((remoteTrack, index) => {
+                return (
+                  remoteTrack.track.kind === 'video' && (
+                    <VideoTile
+                      key={remoteTrack.track.sid}
+                      index={index}
+                      avatarSize='md'
+                      participant={remoteParticipant(
+                        remoteTrack.participantIdentity
+                      )}
+                      track={remoteTrack.track}
+                      audioTracks={remoteAudioTracks}
+                      remoteSession={remoteTrack.participantIdentity}
+                      isLocal={false}
+                      remoteMediaStates={remoteMediaStates}
+                    />
+                  )
+                );
+              })}
+              <VideoTile
+                key='local-video'
+                avatarSize='md'
+                participant={localParticipant}
+                track={videoTrack as LocalVideoTrack}
+                isLocal={true}
+                mediaState={mediaState}
+                audioTracks={remoteAudioTracks}
+                remoteMediaStates={remoteMediaStates}
+              />
+            </TilePanel>
           </ResizablePanel>
           <ResizableHandle withHandle />
           <ResizablePanel defaultSize={70} minSize={30}>
