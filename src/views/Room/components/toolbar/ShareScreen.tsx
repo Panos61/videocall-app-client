@@ -76,7 +76,6 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
           type: 'share_screen.ended',
           senderID: sessionID,
           payload: {
-            share_screen: false,
             active: false,
             track_sid: shareTrackSid,
           },
@@ -112,7 +111,6 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
           type: 'share_screen.started',
           senderID: sessionID,
           payload: {
-            share_screen: true,
             active: true,
             track_sid: shareTrackSid,
           },

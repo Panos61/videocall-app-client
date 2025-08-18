@@ -54,7 +54,7 @@ const Room = () => {
   const {
     ws: eventsWS,
     connectEvents,
-    events: { reaction },
+    events: { reaction, shareScreen },
     disconnect: disconnectEvents,
   } = useEventsCtx();
   // Media Control Context: websocket connection for media device control
@@ -298,8 +298,6 @@ const Room = () => {
         []
     ).find((pub) => pub.source === Track.Source.ScreenShare);
 
-    console.log('screenSharePublication', screenSharePublication);
-
     if (!screenSharePublication) {
       setScreenShareTrack(null);
     }
@@ -317,7 +315,7 @@ const Room = () => {
           return;
         }
 
-        const livekitUrl = import.meta.env.VITE_LIVEKIT_CLOUD_URL;
+        const livekitUrl: string = import.meta.env.VITE_LIVEKIT_CLOUD_URL;
         if (!livekitUrl) {
           console.error('LiveKit URL is not set');
           return;
@@ -448,7 +446,7 @@ const Room = () => {
     (isSharing: boolean, track?: any) => {
       if (isSharing && track) {
         setScreenShareTrack(track);
-        setShareScreenView('shared');
+        setShareScreenView([{ trackSid: track.track.sid }]);
       } else {
         setScreenShareTrack(null);
         setShareScreenView('participants');
@@ -458,10 +456,13 @@ const Room = () => {
   );
 
   useEffect(() => {
-    if (screenShareTrack) {
-      setShareScreenView('shared');
+    if (shareScreen.length > 0) {
+      setShareScreenView([{ trackSid: screenShareTrack?.track.sid || '' }]);
+    } else {
+      setScreenShareTrack(null);
+      setShareScreenView('participants');
     }
-  }, [screenShareTrack, setShareScreenView]);
+  }, [shareScreen, setShareScreenView]);
 
   const videoContainerCls = classNames(
     'mx-4 mb-12 h-full transition-all duration-300 ease-in-out',
@@ -473,27 +474,28 @@ const Room = () => {
 
   const totalVideos = remoteParticipants.size + 1;
   const gridStyle = {
-    display: 'grid',
     gridTemplateColumns: `repeat(${Math.ceil(Math.sqrt(totalVideos))}, 1fr)`,
-    gap: '8px',
   };
 
   return (
     <div className='h-screen bg-black flex flex-col'>
       <Header
-        isSharingScreen={!!screenShareTrack}
+        isSharingScreen={shareScreen.length > 0}
         participantsCount={participants.length}
       />
       <div className='flex-1 relative overflow-hidden'>
         <ReactionWrapper reactions={transformedReactions} />
         <div className={videoContainerCls}>
-          {shareScreenView === 'shared' && (
+          {shareScreen.length > 0 && screenShareTrack && (
             <div className='h-full p-8 overscroll-auto'>
               <ShareScreenTile screenShareTrack={screenShareTrack} />
             </div>
           )}
           {shareScreenView === 'participants' && (
-            <div className='h-full p-8 overflow-auto' style={gridStyle}>
+            <div
+              className='grid gap-8 h-full p-8 overflow-auto'
+              style={gridStyle}
+            >
               {remoteTracks.map((remoteTrack, index) => {
                 return (
                   remoteTrack.track.kind === 'video' && (

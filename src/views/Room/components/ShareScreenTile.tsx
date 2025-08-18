@@ -25,7 +25,10 @@ const ShareScreenTile = ({
   screenShareTrack: TrackInfo | null;
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const { events: { shareScreen } } = useEventsCtx();
+  const {
+    events: { shareScreen },
+  } = useEventsCtx();
+
   useEffect(() => {
     const videoElement = videoRef.current;
     const sharedTrack = screenShareTrack?.track;
@@ -52,10 +55,10 @@ const ShareScreenTile = ({
         autoPlay
         playsInline
         muted
-        className='absolute size-full object-contain'
+        className='absolute size-full object-cover'
       />
       <div className='absolute bottom-4 right-12 px-12 py-4 rounded-md text-sm text-white bg-black bg-opacity-45 z-50 flex items-center gap-8'>
-        <span>{shareScreen[0].username}'s shared screen</span>
+        {/* <span>{shareScreen[0].username}'s shared screen</span> */}
         <ScreenShare size={16} className='text-green-500' />
       </div>
     </div>

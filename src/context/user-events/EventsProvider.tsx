@@ -13,9 +13,9 @@ interface RaisedHand {
 }
 
 interface ShareScreen {
-  isSharing: boolean;
-  track_sid: string;
+  trackSid: string;
   username: string;
+  active: boolean;
 }
 
 export interface Props {
@@ -86,7 +86,7 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
               setShareScreen((prev) =>
                 prev.filter(
                   (event) =>
-                    event.track_sid !== (data.payload as ShareScreen).track_sid
+                    event.trackSid !== (data.payload as ShareScreen).trackSid
                 )
               );
               break;

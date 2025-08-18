@@ -1,10 +1,16 @@
 import { createContext, useState } from 'react';
 
+interface SharedScreenTile {
+  trackSid: string;
+}
+
 export interface Props {
   isChatExpanded: boolean;
   setIsChatExpanded: (isChatExpanded: boolean) => void;
-  shareScreenView: 'shared' | 'participants';
-  setShareScreenView: (shareScreenView: 'shared' | 'participants') => void;
+  shareScreenView: SharedScreenTile[] | 'participants';
+  setShareScreenView: (
+    shareScreenView: SharedScreenTile[] | 'participants'
+  ) => void;
 }
 
 export const PreferencesContext = createContext<Props | undefined>(undefined);
@@ -16,8 +22,8 @@ export const PreferencesProvider = ({
 }) => {
   const [isChatExpanded, setIsChatExpanded] = useState(false);
   const [shareScreenView, setShareScreenView] = useState<
-    'shared' | 'participants'
-  >('shared');
+    SharedScreenTile[] | 'participants'
+  >([]);
 
   return (
     <PreferencesContext.Provider

@@ -14,7 +14,7 @@ const ShareScreenTab = ({ participantsCount }: Props) => {
   return (
     <div className='flex items-center gap-12'>
       <div
-        className='flex items-center gap-8 px-12 py-8 outline outline-zinc-800 rounded-8 text-sm text-white bg-zinc-900 hover:bg-zinc-800 duration-300 ease-in-out cursor-pointer'
+        className='flex items-center gap-8 p-8 outline outline-zinc-800 rounded-8 text-sm text-white bg-zinc-900 hover:bg-zinc-800 duration-300 ease-in-out cursor-pointer'
         onClick={() => setShareScreenView('participants')}
       >
         <span>Participants ({participantsCount})</span>
@@ -22,11 +22,11 @@ const ShareScreenTab = ({ participantsCount }: Props) => {
       </div>
       {shareScreen.map((event) => (
         <div
-          key={event.track_sid}
-          className='flex items-center gap-8 px-12 py-8 outline outline-zinc-800 rounded-8 text-sm text-white bg-green-700/20 hover:bg-green-600/25 duration-300 ease-in-out cursor-pointer'
-          onClick={() => setShareScreenView('shared')}
+          key={event.trackSid}
+          className='flex items-center gap-8 p-8 outline outline-zinc-800 rounded-8 text-sm text-white bg-green-700/20 hover:bg-green-600/25 duration-300 ease-in-out cursor-pointer'
+          onClick={() => setShareScreenView([{ trackSid: event.trackSid }])}
         >
-          <span>{event.username}'s shared screen</span>
+          <span>{event.username}'s screen</span>
           <ScreenShare size={16} className='text-green-500' />
         </div>
       ))}
