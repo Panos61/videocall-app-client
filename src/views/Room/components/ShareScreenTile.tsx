@@ -26,7 +26,7 @@ const ShareScreenTile = ({
 }) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const {
-    events: { shareScreen },
+    events: { shareScreenEvents },
   } = useEventsCtx();
 
   useEffect(() => {

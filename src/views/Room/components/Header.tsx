@@ -9,11 +9,11 @@ interface Props {
 
 const Header = ({ isSharingScreen, participantsCount }: Props) => {
   const {
-    events: { raisedHand },
+    events: { raisedHandEvents },
   } = useEventsCtx();
 
   const uniqueRaisedHandEvents = [
-    ...new Set(raisedHand.map((event) => event.username)),
+    ...new Set(raisedHandEvents.map((event) => event.username)),
   ];
 
   return (

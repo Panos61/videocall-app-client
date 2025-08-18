@@ -25,9 +25,9 @@ export interface Props {
   disconnect: () => void;
   isConnected: boolean;
   events: {
-    reaction: Reaction[];
-    raisedHand: RaisedHand[];
-    shareScreen: ShareScreen[];
+    reactionEvents: Reaction[];
+    raisedHandEvents: RaisedHand[];
+    shareScreenEvents: ShareScreen[];
   };
 }
 
@@ -121,9 +121,9 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
         disconnect,
         isConnected,
         events: {
-          reaction,
-          raisedHand,
-          shareScreen,
+          reactionEvents: reaction,
+          raisedHandEvents: raisedHand,
+          shareScreenEvents: shareScreen,
         },
       }}
     >

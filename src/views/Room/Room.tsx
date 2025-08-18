@@ -54,7 +54,7 @@ const Room = () => {
   const {
     ws: eventsWS,
     connectEvents,
-    events: { reaction, shareScreen },
+    events: { reactionEvents, shareScreenEvents },
     disconnect: disconnectEvents,
   } = useEventsCtx();
   // Media Control Context: websocket connection for media device control
@@ -436,11 +436,13 @@ const Room = () => {
   };
 
   // Transform reactions to match ReactionData interface
-  const transformedReactions = reaction.map((r, index) => ({
-    id: `${r.username}-${Date.now()}-${index}`,
-    emoji: r.reaction_type,
-    username: r.username,
-  }));
+  const transformedReactions =
+    reactionEvents &&
+    reactionEvents.map((r, index) => ({
+      id: `${r.username}-${Date.now()}-${index}`,
+      emoji: r.reaction_type,
+      username: r.username,
+    }));
 
   const handleScreenShareChange = useCallback(
     (isSharing: boolean, track?: any) => {
@@ -456,13 +458,13 @@ const Room = () => {
   );
 
   useEffect(() => {
-    if (shareScreen.length > 0) {
+    if (shareScreenEvents.length > 0) {
       setShareScreenView([{ trackSid: screenShareTrack?.track.sid || '' }]);
     } else {
       setScreenShareTrack(null);
       setShareScreenView('participants');
     }
-  }, [shareScreen, setShareScreenView]);
+  }, [shareScreenEvents, setShareScreenView]);
 
   const videoContainerCls = classNames(
     'mx-4 mb-12 h-full transition-all duration-300 ease-in-out',
@@ -480,13 +482,13 @@ const Room = () => {
   return (
     <div className='h-screen bg-black flex flex-col'>
       <Header
-        isSharingScreen={shareScreen.length > 0}
+        isSharingScreen={shareScreenEvents.length > 0}
         participantsCount={participants.length}
       />
       <div className='flex-1 relative overflow-hidden'>
         <ReactionWrapper reactions={transformedReactions} />
         <div className={videoContainerCls}>
-          {shareScreen.length > 0 && screenShareTrack && (
+          {shareScreenEvents.length > 0 && screenShareTrack && (
             <div className='h-full p-8 overscroll-auto'>
               <ShareScreenTile screenShareTrack={screenShareTrack} />
             </div>
