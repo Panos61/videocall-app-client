@@ -30,6 +30,7 @@ interface Props {
   audioTrack?: LocalAudioTrack | RemoteAudioTrack;
   remoteSession?: string;
   isLocal: boolean;
+  avatarSize?: 'sm' | 'md' | 'lg';
   mediaState?: { audio: boolean; video: boolean };
   remoteMediaStates: {
     [sessionID: string]: { audio: boolean; video: boolean };
@@ -45,6 +46,7 @@ const VideoTile = ({
   isLocal,
   mediaState,
   remoteMediaStates,
+  avatarSize = 'lg',
 }: Props) => {
   const videoID: string = isLocal ? 'local-video' : `${remoteSession}-video`;
   const localVideoElement = useRef<HTMLVideoElement | null>(null);
@@ -112,6 +114,7 @@ const VideoTile = ({
         <Avatar
           src={participant?.avatar_src}
           className='size-24 object-cover'
+          size={avatarSize}
         />
       </div>
     );
@@ -157,6 +160,7 @@ const VideoTile = ({
             <Avatar
               src={participant.avatar_src}
               className='size-24 object-cover'
+              size={avatarSize}
             />
           )}
         </div>
