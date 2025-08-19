@@ -78,7 +78,7 @@ const Room = () => {
     setAudioTrack,
     videoTrack,
   } = useMediaControlCtx();
-  const { isChatExpanded, shareScreenView, setShareScreenView } =
+  const { isChatExpanded, shareScreenView, setShareScreenView, isTileView } =
     usePreferencesCtx();
 
   const [activePanel, setActivePanel] = useState<
@@ -517,7 +517,12 @@ const Room = () => {
       />
       <div className='flex-1 relative overflow-hidden'>
         <ResizablePanelGroup direction='horizontal' className='h-full'>
-          <ResizablePanel defaultSize={8} minSize={8} maxSize={40}>
+          <ResizablePanel
+            defaultSize={8}
+            minSize={8}
+            maxSize={40}
+            hidden={!isTileView}
+          >
             <TilePanel ref={tilePanelRef}>
               {shareScreenEvents.length > 0 && screenShareTrack && (
                 <div className='h-full p-8 overscroll-auto'>
@@ -563,7 +568,7 @@ const Room = () => {
               />
             </TilePanel>
           </ResizablePanel>
-          <ResizableHandle withHandle />
+          <ResizableHandle withHandle hidden={!isTileView} />
           <ResizablePanel defaultSize={70} minSize={30}>
             <div className='h-full relative overflow-hidden'>
               <ReactionWrapper reactions={transformedReactions} />

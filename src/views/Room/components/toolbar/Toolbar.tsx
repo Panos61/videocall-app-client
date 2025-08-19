@@ -7,7 +7,7 @@ import { leaveCall } from '@/api';
 import {
   useSessionCtx,
   useMediaControlCtx,
-  usePreferencesCtx
+  usePreferencesCtx,
 } from '@/context';
 
 import {
@@ -18,8 +18,11 @@ import {
   PhoneOffIcon,
   UsersIcon,
   MessageCircleIcon,
+  LayoutGridIcon,
+  LayoutPanelLeftIcon,
 } from 'lucide-react';
 import { SettingsModal } from '@/components/elements';
+import { Separator } from '@/components/ui/separator';
 import Reactions from './Reactions';
 import RaiseHand from './RaiseHand';
 import ShareScreen from './ShareScreen';
@@ -47,7 +50,7 @@ const Toolbar = ({
 }: Props) => {
   const { sendMessage, disconnect } = useSessionCtx();
   const { videoTrack, setVideoTrack } = useMediaControlCtx();
-  const { setIsChatExpanded } = usePreferencesCtx();
+  const { setIsChatExpanded, setIsTileView, isTileView } = usePreferencesCtx();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -112,8 +115,24 @@ const Toolbar = ({
     'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer hover:scale-105';
 
   return (
-    <div className='flex items-center h-60'>
-      <div className='flex items-center gap-8 m-8'>
+    <div className='flex justify-center items-center w-full h-60 px-4'>
+      <div className='flex items-center justify-center gap-8 p-8 border border-zinc-700 rounded-12'>
+        <div
+          className='flex items-center gap-4 p-4 border border-zinc-500 rounded-16 text-xs bg-zinc-800 hover:bg-zinc-600/20 duration-300 ease-in-out cursor-pointer'
+          onClick={() => setIsTileView(!isTileView)}
+        >
+          <div className='p-4 bg-white rounded-full'>
+            {isTileView ? (
+              <LayoutGridIcon size={16} />
+            ) : (
+              <LayoutPanelLeftIcon size={16} />
+            )}
+          </div>
+          <span className='text-zinc-200'>
+            {isTileView ? 'Tile view' : 'Focus view'}
+          </span>
+        </div>
+        <Separator orientation='vertical' className='h-28 bg-zinc-700' />
         <div className={menuBtnCls} onClick={handleAudioState}>
           {mediaState.audio ? (
             <MicIcon size={16} />
@@ -130,9 +149,9 @@ const Toolbar = ({
         </div>
         <RaiseHand sessionID={sessionID} />
         <Reactions sessionID={sessionID} />
-        <ShareScreen 
-          sessionID={sessionID} 
-          room={room} 
+        <ShareScreen
+          sessionID={sessionID}
+          room={room as Room}
           onScreenShareChange={onScreenShareChange}
         />
         <div
