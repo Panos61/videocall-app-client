@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { ScreenShare } from 'lucide-react';
+import { ScreenShareIcon } from 'lucide-react';
 import {
   LocalAudioTrack,
   LocalVideoTrack,
@@ -8,6 +8,7 @@ import {
   Track,
 } from 'livekit-client';
 import { useEventsCtx } from '@/context';
+import classNames from 'classnames';
 
 interface TrackInfo {
   track:
@@ -19,11 +20,12 @@ interface TrackInfo {
   kind: Track.Kind;
 }
 
-const ShareScreenTile = ({
-  screenShareTrack,
-}: {
+interface Props {
+  isTilePanel: boolean;
   screenShareTrack: TrackInfo | null;
-}) => {
+}
+
+const ShareScreenTile = ({ isTilePanel, screenShareTrack }: Props) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const {
     events: { shareScreenEvents },
@@ -48,6 +50,14 @@ const ShareScreenTile = ({
 
   if (!screenShareTrack) return null;
 
+  const tileInfoCls = classNames(
+    'absolute bottom-4 right-12 flex items-center gap-8 px-12 py-4 rounded-md text-sm text-white bg-black z-50',
+    {
+      'bg-black/45': isTilePanel,
+      'bg-black': !isTilePanel,
+    }
+  );
+
   return (
     <div className='relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr outline outline-green-500/45 transition-all duration-1000 ease-out'>
       <video
@@ -57,9 +67,14 @@ const ShareScreenTile = ({
         muted
         className='absolute size-full object-cover'
       />
-      <div className='absolute bottom-4 right-12 px-12 py-4 rounded-md text-sm text-white bg-black bg-opacity-45 z-50 flex items-center gap-8'>
-        {/* <span>{shareScreen[0].username}'s shared screen</span> */}
-        <ScreenShare size={16} className='text-green-500' />
+      <div className={tileInfoCls}>
+        {!isTilePanel && (
+          <span>{shareScreenEvents[0].username}'s shared screen</span>
+        )}
+        <ScreenShareIcon
+          size={isTilePanel ? 12 : 20}
+          className='text-green-500'
+        />
       </div>
     </div>
   );

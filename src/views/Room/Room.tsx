@@ -508,7 +508,7 @@ const Room = () => {
     usernameSize = 'lg';
     iconSize = 20;
   }
-  
+
   return (
     <div className='h-screen bg-black flex flex-col'>
       <Header
@@ -525,8 +525,11 @@ const Room = () => {
           >
             <TilePanel ref={tilePanelRef}>
               {shareScreenEvents.length > 0 && screenShareTrack && (
-                <div className='h-full p-8 overscroll-auto'>
-                  <ShareScreenTile screenShareTrack={screenShareTrack} />
+                <div className='h-full overscroll-auto'>
+                  <ShareScreenTile
+                    isTilePanel={true}
+                    screenShareTrack={screenShareTrack}
+                  />
                 </div>
               )}
               {remoteTracks.map((remoteTrack, index) => {
@@ -575,7 +578,10 @@ const Room = () => {
               <div className={videoContainerCls}>
                 {shareScreenEvents.length > 0 && screenShareTrack && (
                   <div className='h-full p-8 overscroll-auto'>
-                    <ShareScreenTile screenShareTrack={screenShareTrack} />
+                    <ShareScreenTile
+                      isTilePanel={false}
+                      screenShareTrack={screenShareTrack}
+                    />
                   </div>
                 )}
                 {shareScreenView === 'participants' && (
