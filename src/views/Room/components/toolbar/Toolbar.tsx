@@ -50,7 +50,7 @@ const Toolbar = ({
 }: Props) => {
   const { sendMessage, disconnect } = useSessionCtx();
   const { videoTrack, setVideoTrack } = useMediaControlCtx();
-  const { setIsChatExpanded, setIsTileView, isTileView } = usePreferencesCtx();
+  const { setIsChatExpanded, setIsFocusView, isFocusView } = usePreferencesCtx();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -119,17 +119,17 @@ const Toolbar = ({
       <div className='flex items-center justify-center gap-8 p-8 border border-zinc-700 rounded-12'>
         <div
           className='flex items-center gap-4 p-4 border border-zinc-500 rounded-16 text-xs bg-zinc-800 hover:bg-zinc-600/20 duration-300 ease-in-out cursor-pointer'
-          onClick={() => setIsTileView(!isTileView)}
+          onClick={() => setIsFocusView(!isFocusView)}
         >
           <div className='p-4 bg-white rounded-full'>
-            {isTileView ? (
+            {isFocusView ? (
               <LayoutGridIcon size={16} />
             ) : (
               <LayoutPanelLeftIcon size={16} />
             )}
           </div>
           <span className='text-zinc-200'>
-            {isTileView ? 'Tile view' : 'Focus view'}
+            {isFocusView ? 'Focus view' : 'Tile view'}
           </span>
         </div>
         <Separator orientation='vertical' className='h-28 bg-zinc-700' />

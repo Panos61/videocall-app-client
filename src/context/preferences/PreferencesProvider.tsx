@@ -11,8 +11,8 @@ export interface Props {
   setShareScreenView: (
     shareScreenView: SharedScreenTile[] | 'participants'
   ) => void;
-  isTileView: boolean;
-  setIsTileView: (isTileView: boolean) => void;
+  isFocusView: boolean;
+  setIsFocusView: (isFocusView: boolean) => void;
 }
 
 export const PreferencesContext = createContext<Props | undefined>(undefined);
@@ -26,7 +26,7 @@ export const PreferencesProvider = ({
   const [shareScreenView, setShareScreenView] = useState<
     SharedScreenTile[] | 'participants'
   >([]);
-  const [isTileView, setIsTileView] = useState(false);
+  const [isFocusView, setIsFocusView] = useState(false);
 
   return (
     <PreferencesContext.Provider
@@ -35,8 +35,8 @@ export const PreferencesProvider = ({
         setIsChatExpanded,
         shareScreenView,
         setShareScreenView,
-        isTileView,
-        setIsTileView,
+        isFocusView,
+        setIsFocusView,
       }}
     >
       {children}

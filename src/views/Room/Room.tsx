@@ -78,7 +78,7 @@ const Room = () => {
     setAudioTrack,
     videoTrack,
   } = useMediaControlCtx();
-  const { isChatExpanded, shareScreenView, setShareScreenView, isTileView } =
+  const { isChatExpanded, shareScreenView, setShareScreenView, isFocusView } =
     usePreferencesCtx();
 
   const [activePanel, setActivePanel] = useState<
@@ -481,7 +481,8 @@ const Room = () => {
     }
   );
 
-  const totalVideos = remoteParticipants.size + 1;
+  const totalVideos = remoteParticipants.size + (isFocusView ? 0 : 1);
+
   const gridStyle = {
     gridTemplateColumns: `repeat(${Math.ceil(Math.sqrt(totalVideos))}, 1fr)`,
   };
@@ -521,7 +522,7 @@ const Room = () => {
             defaultSize={8}
             minSize={8}
             maxSize={40}
-            hidden={!isTileView}
+            hidden={!isFocusView}
           >
             <TilePanel ref={tilePanelRef}>
               {shareScreenEvents.length > 0 && screenShareTrack && (
@@ -571,7 +572,7 @@ const Room = () => {
               />
             </TilePanel>
           </ResizablePanel>
-          <ResizableHandle withHandle hidden={!isTileView} />
+          <ResizableHandle withHandle hidden={!isFocusView} />
           <ResizablePanel defaultSize={70} minSize={30}>
             <div className='h-full relative overflow-hidden'>
               <ReactionWrapper reactions={transformedReactions} />
@@ -607,15 +608,17 @@ const Room = () => {
                         )
                       );
                     })}
-                    <VideoTile
-                      key='local-video'
-                      participant={localParticipant}
-                      track={videoTrack as LocalVideoTrack}
-                      isLocal={true}
-                      mediaState={mediaState}
-                      audioTracks={remoteAudioTracks}
-                      remoteMediaStates={remoteMediaStates}
-                    />
+                    {(remoteTracks.length === 0 || !isFocusView) && (
+                      <VideoTile
+                        key='local-video'
+                        participant={localParticipant}
+                        track={videoTrack as LocalVideoTrack}
+                        isLocal={true}
+                        mediaState={mediaState}
+                        audioTracks={remoteAudioTracks}
+                        remoteMediaStates={remoteMediaStates}
+                      />
+                    )}
                   </div>
                 )}
               </div>
