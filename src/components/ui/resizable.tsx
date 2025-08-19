@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { GripVerticalIcon } from 'lucide-react';
+import { ArrowRightLeftIcon } from 'lucide-react';
 import * as ResizablePrimitive from 'react-resizable-panels';
 
 import { cn } from '@/lib/utils';
@@ -37,14 +37,14 @@ function ResizableHandle({
     <ResizablePrimitive.PanelResizeHandle
       data-slot='resizable-handle'
       className={cn(
-        'focus-visible:ring-ring relative flex w-px items-center justify-center bg-zinc-800 after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-hidden data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:translate-x-0 data-[panel-group-direction=vertical]:after:-translate-y-1/2 [&[data-panel-group-direction=vertical]>div]:rotate-90',
+        'focus-visible:ring-ring relative flex w-px items-center justify-center bg-transparent after:absolute after:inset-y-0 after:left-1/2 after:w-1 after:-translate-x-1/2 focus-visible:ring-1 focus-visible:ring-offset-1 focus-visible:outline-hidden data-[panel-group-direction=vertical]:h-px data-[panel-group-direction=vertical]:w-full data-[panel-group-direction=vertical]:after:left-0 data-[panel-group-direction=vertical]:after:h-1 data-[panel-group-direction=vertical]:after:w-full data-[panel-group-direction=vertical]:after:translate-x-0 data-[panel-group-direction=vertical]:after:-translate-y-1/2 [&[data-panel-group-direction=vertical]>div]:rotate-90',
         className
       )}
       {...props}
     >
       {withHandle && (
-        <div className='bg-border z-10 flex size-12 items-center justify-center rounded-xs border'>
-          <GripVerticalIcon className='size-12 text-violet-500' />
+        <div className='flex size-20 items-center justify-center rounded-xs z-10'>
+          <ArrowRightLeftIcon className='size-20 text-violet-500 hover:text-violet-600 duration-300' />
         </div>
       )}
     </ResizablePrimitive.PanelResizeHandle>

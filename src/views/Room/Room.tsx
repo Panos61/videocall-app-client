@@ -517,7 +517,7 @@ const Room = () => {
       />
       <div className='flex-1 relative overflow-hidden'>
         <ResizablePanelGroup direction='horizontal' className='h-full'>
-          <ResizablePanel defaultSize={10} minSize={10} maxSize={40}>
+          <ResizablePanel defaultSize={8} minSize={8} maxSize={40}>
             <TilePanel ref={tilePanelRef}>
               {shareScreenEvents.length > 0 && screenShareTrack && (
                 <div className='h-full p-8 overscroll-auto'>
