@@ -17,6 +17,7 @@ import {
   RemoteAudioTrack,
 } from 'livekit-client';
 import classNames from 'classnames';
+import { useResizeObserver } from 'usehooks-ts';
 
 import type { Participant, SignallingMessage } from '@/types';
 import {
@@ -485,6 +486,29 @@ const Room = () => {
     gridTemplateColumns: `repeat(${Math.ceil(Math.sqrt(totalVideos))}, 1fr)`,
   };
 
+  // Adjust video tile conponents (avatar, username, icons) size based on width of tile panel (only for tile panel video tiles)
+  const tilePanelRef = useRef<HTMLDivElement>(null);
+  const { width = 0 } = useResizeObserver({
+    ref: tilePanelRef,
+  });
+
+  let avatarSize: 'sm' | 'md' | 'lg' = 'lg';
+  let usernameSize: 'sm' | 'lg' = 'lg';
+  let iconSize: 16 | 20 = 20;
+  if (width < 205) {
+    avatarSize = 'sm';
+    usernameSize = 'sm';
+    iconSize = 16;
+  } else if (width < 250) {
+    avatarSize = 'md';
+    usernameSize = 'sm';
+    iconSize = 16;
+  } else if (width < 590) {
+    avatarSize = 'md';
+    usernameSize = 'lg';
+    iconSize = 20;
+  }
+  
   return (
     <div className='h-screen bg-black flex flex-col'>
       <Header
@@ -493,19 +517,24 @@ const Room = () => {
       />
       <div className='flex-1 relative overflow-hidden'>
         <ResizablePanelGroup direction='horizontal' className='h-full'>
-          <ResizablePanel
-            defaultSize={10}
-            minSize={10}
-            maxSize={40}
-          >
-            <TilePanel>
+          <ResizablePanel defaultSize={10} minSize={10} maxSize={40}>
+            <TilePanel ref={tilePanelRef}>
+              {shareScreenEvents.length > 0 && screenShareTrack && (
+                <div className='h-full p-8 overscroll-auto'>
+                  <ShareScreenTile screenShareTrack={screenShareTrack} />
+                </div>
+              )}
               {remoteTracks.map((remoteTrack, index) => {
                 return (
                   remoteTrack.track.kind === 'video' && (
                     <VideoTile
                       key={remoteTrack.track.sid}
                       index={index}
-                      avatarSize='md'
+                      responsiveSize={{
+                        avatarSize,
+                        usernameSize,
+                        iconSize,
+                      }}
                       participant={remoteParticipant(
                         remoteTrack.participantIdentity
                       )}
@@ -520,7 +549,11 @@ const Room = () => {
               })}
               <VideoTile
                 key='local-video'
-                avatarSize='md'
+                responsiveSize={{
+                  avatarSize,
+                  usernameSize,
+                  iconSize,
+                }}
                 participant={localParticipant}
                 track={videoTrack as LocalVideoTrack}
                 isLocal={true}
