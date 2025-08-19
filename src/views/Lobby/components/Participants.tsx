@@ -35,12 +35,10 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
         <span className='text-xs font-medium text-gray-600'>
           IN CALL ({participantsInCall.length})
         </span>
-        <div className='flex flex-col text-xs text-gray-500'>
-          <div className='flex flex-col text-xs text-gray-500'>
-            {participantsInCall.map((participant) => (
-              <ParticipantItem key={participant.id} participant={participant} />
-            ))}
-          </div>
+        <div className='flex items-center gap-4 text-xs text-gray-500'>
+          {participantsInCall.map((participant) => (
+            <ParticipantItem key={participant.id} participant={participant} />
+          ))}
         </div>
       </div>
     );
@@ -60,14 +58,12 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
               IN LOBBY ({totalUsersLobby})
             </span>
             <div className='flex flex-col text-xs text-gray-500'>
-              <div className='flex flex-col text-xs text-gray-500'>
-                {participantsInLobby.map((participant) => (
-                  <ParticipantItem
-                    key={participant.id}
-                    participant={participant}
-                  />
-                ))}
-              </div>
+              {participantsInLobby.map((participant) => (
+                <ParticipantItem
+                  key={participant.id}
+                  participant={participant}
+                />
+              ))}
             </div>
           </div>
         </>

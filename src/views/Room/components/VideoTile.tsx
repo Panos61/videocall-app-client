@@ -267,7 +267,7 @@ const VideoTile = ({
   const usernameCls = classNames(
     'absolute bottom-4 right-12 px-12 py-4 rounded-md text-white bg-black bg-opacity-45 z-50',
     {
-      'w-[52px] text-xs bg-black/80 truncate': usernameSize === 'sm',
+      'w-48 text-xs bg-black/80 truncate': usernameSize === 'sm',
       'text-sm': usernameSize === 'lg',
     }
   );
