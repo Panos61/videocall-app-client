@@ -71,7 +71,7 @@ export const Avatar = forwardRef<HTMLDivElement, Props>(
       'flex items-center justify-center rounded-full',
       {
         'size-[208px]': size == 'lg',
-        'size-[36px]': size == 'md',
+        'size-[72px]': size == 'md',
         'size-[28px]': size == 'sm',
         'shadow-lg': size == 'lg' || size == 'md',
       },
@@ -81,7 +81,7 @@ export const Avatar = forwardRef<HTMLDivElement, Props>(
 
     const textCls = classNames('text-white', {
       'text-6xl': size == 'lg',
-      'text-sm': size == 'md',
+      'text-xl': size == 'md',
       'text-xs': size == 'sm',
     });
 

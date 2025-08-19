@@ -22,6 +22,12 @@ interface TrackInfo {
   kind: Track.Kind;
 }
 
+interface ResponsiveSize {
+  avatarSize: 'sm' | 'md' | 'lg';
+  usernameSize: 'sm' | 'lg';
+  iconSize: 16 | 20;
+}
+
 interface Props {
   index?: number;
   participant: Participant | undefined;
@@ -30,6 +36,7 @@ interface Props {
   audioTrack?: LocalAudioTrack | RemoteAudioTrack;
   remoteSession?: string;
   isLocal: boolean;
+  responsiveSize?: ResponsiveSize;
   mediaState?: { audio: boolean; video: boolean };
   remoteMediaStates: {
     [sessionID: string]: { audio: boolean; video: boolean };
@@ -45,6 +52,11 @@ const VideoTile = ({
   isLocal,
   mediaState,
   remoteMediaStates,
+  responsiveSize = {
+    avatarSize: 'lg',
+    usernameSize: 'lg',
+    iconSize: 20,
+  },
 }: Props) => {
   const videoID: string = isLocal ? 'local-video' : `${remoteSession}-video`;
   const localVideoElement = useRef<HTMLVideoElement | null>(null);
@@ -56,6 +68,8 @@ const VideoTile = ({
   const [isVideoMounted, setIsVideoMounted] = useState(false);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(isLocal);
   const isIntersectingRef = useRef(false);
+
+  const { avatarSize, usernameSize, iconSize } = responsiveSize;
 
   const setVideoRef = useCallback((element: HTMLVideoElement | null) => {
     remoteVideoElement.current = element;
@@ -112,6 +126,7 @@ const VideoTile = ({
         <Avatar
           src={participant?.avatar_src}
           className='size-24 object-cover'
+          size={avatarSize}
         />
       </div>
     );
@@ -157,6 +172,7 @@ const VideoTile = ({
             <Avatar
               src={participant.avatar_src}
               className='size-24 object-cover'
+              size={avatarSize}
             />
           )}
         </div>
@@ -248,20 +264,26 @@ const VideoTile = ({
     };
   };
 
+  const usernameCls = classNames(
+    'absolute bottom-4 right-12 px-12 py-4 rounded-md text-white bg-black bg-opacity-45 z-50',
+    {
+      'w-[52px] text-xs bg-black/80 truncate': usernameSize === 'sm',
+      'text-sm': usernameSize === 'lg',
+    }
+  );
+
   return (
     <div
       ref={tileContainerRef}
       className='relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr transition-all duration-1000 ease-out'
     >
       {isLocal ? renderLocalPreview() : renderRemotePreview()}
-      <div className='absolute bottom-4 right-12 px-12 py-4 rounded-md text-sm text-white bg-black bg-opacity-45 z-50'>
-        {participant?.username}
-      </div>
+      <div className={usernameCls}>{participant?.username}</div>
       <div className='absolute bottom-4 left-12 py-4 z-50'>
         {getAudioState()?.audio ? (
-          <MicIcon color='#e5e7eb' className='size-20' />
+          <MicIcon color='#e5e7eb' className={`size-${iconSize}`} />
         ) : (
-          <MicOffIcon color='#dc2626' className='size-20' />
+          <MicOffIcon color='#dc2626' className={`size-${iconSize}`} />
         )}
       </div>
       {/* <audio ref={audioElement} autoPlay style={{ display: 'none' }} /> */}

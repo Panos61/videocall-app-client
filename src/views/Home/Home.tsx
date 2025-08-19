@@ -83,23 +83,8 @@ const Home = () => {
   return (
     <div className='flex flex-col gap-32 relative min-h-screen bg-gradient-to-br text-gray-900 px-4 py-12 items-center justify-center'>
       <header className='absolute top-40 left-[104px] flex items-center gap-12 text-gray-800'>
-        <div className='flex items-center justify-center size-64 bg-white border-[2px] border-[#00dc5ce0] rounded-xl'>
-          <div className='border border-[#635BFF] rounded-xl p-8 translate-x-8 translate-y-12'>
-            <svg
-              viewBox='0 0 24 24'
-              className='size-48 text-[#635BFF] stroke-2'
-              fill='none'
-            >
-              #00dc5ce0
-              <path
-                d='M4 4H20V14C20 15.1046 19.1046 16 18 16H9L4 21V4Z'
-                fill='currentColor'
-              />
-            </svg>
-          </div>
-        </div>
         <h1 className='text-5xl'>
-          <span className='font-mono'>Toku</span>
+          <span className='font-mono'>[placeholder...]</span>
         </h1>
       </header>
       <motion.div

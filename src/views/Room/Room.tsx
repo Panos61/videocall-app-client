@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import {
@@ -17,6 +17,7 @@ import {
   RemoteAudioTrack,
 } from 'livekit-client';
 import classNames from 'classnames';
+import { useResizeObserver } from 'usehooks-ts';
 
 import type { Participant, SignallingMessage } from '@/types';
 import {
@@ -27,8 +28,21 @@ import {
   useEventsCtx,
 } from '@/context';
 import { getParticipants } from '@/api';
-import { Chat, VideoTile, Header, Toolbar, Participants } from './components';
+import {
+  Chat,
+  VideoTile,
+  Header,
+  Toolbar,
+  Participants,
+  ShareScreenTile,
+} from './components';
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from '@/components/ui/resizable';
 import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
+import TilePanel from './TilePanel';
 
 interface TrackInfo {
   track:
@@ -47,7 +61,7 @@ const Room = () => {
   const {
     ws: eventsWS,
     connectEvents,
-    events: { reaction },
+    events: { reactionEvents, shareScreenEvents },
     disconnect: disconnectEvents,
   } = useEventsCtx();
   // Media Control Context: websocket connection for media device control
@@ -64,7 +78,8 @@ const Room = () => {
     setAudioTrack,
     videoTrack,
   } = useMediaControlCtx();
-  const { isChatExpanded } = usePreferencesCtx();
+  const { isChatExpanded, shareScreenView, setShareScreenView, isTileView } =
+    usePreferencesCtx();
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
@@ -81,6 +96,9 @@ const Room = () => {
   );
   const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
   const [remoteAudioTracks, setRemoteAudioTracks] = useState<TrackInfo[]>([]);
+  const [screenShareTrack, setScreenShareTrack] = useState<TrackInfo | null>(
+    null
+  );
 
   const location = useLocation();
   const { roomID, sessionID } = location.state;
@@ -102,8 +120,8 @@ const Room = () => {
         noiseSuppression: true,
       },
       publishDefaults: {
-        audioPreset: AudioPresets.music, // or AudioPresets.speech for voice calls
-        videoCodec: 'vp8', // or 'h264' depending on your needs
+        audioPreset: AudioPresets.speech,
+        videoCodec: 'vp8',
       },
     });
 
@@ -111,10 +129,20 @@ const Room = () => {
 
     const handleTrackSubscribed = (
       track: RemoteTrack,
-      _publication: RemoteTrackPublication,
+      publication: RemoteTrackPublication,
       participant: RemoteParticipant
     ) => {
-      if (track.kind === Track.Kind.Video) {
+      if (
+        track.kind === Track.Kind.Video &&
+        publication.source === Track.Source.ScreenShare
+      ) {
+        console.log('Screen share track detected:', track);
+        setScreenShareTrack({
+          track: track as RemoteVideoTrack,
+          participantIdentity: participant.identity,
+          kind: Track.Kind.Video,
+        });
+      } else if (track.kind === Track.Kind.Video) {
         setRemoteTracks((prev) => [
           ...prev,
           {
@@ -136,27 +164,41 @@ const Room = () => {
     };
 
     const handleLocalTrackPublished = () => {
-      // Handle video track
-      if (!videoTrack) {
-        const newVideoTrack = room?.localParticipant?.videoTrackPublications
-          .values()
-          .next().value?.videoTrack;
-        setVideoTrack(newVideoTrack as LocalVideoTrack);
-      } else {
-        setVideoTrack(videoTrack);
-      }
+      // Check for screen share track
+      const screenSharePublication = Array.from(
+        room.localParticipant.videoTrackPublications.values()
+      ).find((pub) => pub.source === Track.Source.ScreenShare);
 
-      if (!audioTrack) {
-        const newAudioTrack = room?.localParticipant?.audioTrackPublications
-          .values()
-          .next().value?.audioTrack;
-        setAudioTrack(newAudioTrack as LocalAudioTrack);
+      if (screenSharePublication && screenSharePublication.videoTrack) {
+        setScreenShareTrack({
+          track: screenSharePublication.videoTrack,
+          participantIdentity: sessionID,
+          kind: Track.Kind.Video,
+        });
       } else {
-        setAudioTrack(audioTrack);
+        // Handle video track
+        if (!videoTrack) {
+          const newVideoTrack = room?.localParticipant?.videoTrackPublications
+            .values()
+            .next().value?.videoTrack;
+          setVideoTrack(newVideoTrack as LocalVideoTrack);
+        } else {
+          setVideoTrack(videoTrack);
+        }
+
+        if (!audioTrack) {
+          const newAudioTrack = room?.localParticipant?.audioTrackPublications
+            .values()
+            .next().value?.audioTrack;
+          setAudioTrack(newAudioTrack as LocalAudioTrack);
+        } else {
+          setAudioTrack(audioTrack);
+        }
       }
     };
 
     room.localParticipant.on('trackPublished', handleLocalTrackPublished);
+    room.localParticipant.on('trackUnpublished', handleLocalTrackUnpublished);
 
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
@@ -174,6 +216,7 @@ const Room = () => {
         refetchParticipants();
       }
     );
+
     room.on(
       RoomEvent.ParticipantDisconnected,
       (participant: RemoteParticipant) => {
@@ -225,21 +268,45 @@ const Room = () => {
 
     return () => {
       room.localParticipant.off('trackPublished', handleLocalTrackPublished);
+      room.localParticipant.off(
+        'trackUnpublished',
+        handleLocalTrackUnpublished
+      );
       room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
       room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.disconnect();
     };
   }, []);
 
-  const handleTrackUnsubscribed = (track: RemoteTrack) => {
+  const handleTrackUnsubscribed = (
+    track: RemoteTrack,
+    publication: RemoteTrackPublication
+  ) => {
     track.detach();
 
-    if (track.kind === Track.Kind.Video) {
+    if (
+      track.kind === Track.Kind.Video &&
+      publication.source === Track.Source.ScreenShare
+    ) {
+      setScreenShareTrack(null);
+    } else if (track.kind === Track.Kind.Video) {
       setRemoteTracks((prev) => prev.filter((t) => t.track.sid !== track.sid));
     } else if (track.kind === Track.Kind.Audio) {
       setRemoteAudioTracks((prev) =>
         prev.filter((t) => t.track.sid !== track.sid)
       );
+    }
+  };
+
+  const handleLocalTrackUnpublished = () => {
+    // Check if screen share track still exists
+    const screenSharePublication = Array.from(
+      livekitRoom.current?.localParticipant?.videoTrackPublications.values() ||
+        []
+    ).find((pub) => pub.source === Track.Source.ScreenShare);
+
+    if (!screenSharePublication) {
+      setScreenShareTrack(null);
     }
   };
 
@@ -255,7 +322,7 @@ const Room = () => {
           return;
         }
 
-        const livekitUrl = import.meta.env.VITE_LIVEKIT_CLOUD_URL;
+        const livekitUrl: string = import.meta.env.VITE_LIVEKIT_CLOUD_URL;
         if (!livekitUrl) {
           console.error('LiveKit URL is not set');
           return;
@@ -266,11 +333,10 @@ const Room = () => {
 
         // Connect to room
         await room.connect(livekitUrl, lvkToken);
-        const localParticipant = room?.localParticipant;
 
         // Only enable camera/mic if they were enabled in the lobby
-        await localParticipant?.setCameraEnabled(true);
-        await localParticipant?.setMicrophoneEnabled(true);
+        await room.localParticipant.setCameraEnabled(true);
+        await room.localParticipant.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
@@ -377,11 +443,35 @@ const Room = () => {
   };
 
   // Transform reactions to match ReactionData interface
-  const transformedReactions = reaction.map((r, index) => ({
-    id: `${r.username}-${Date.now()}-${index}`,
-    emoji: r.reaction_type,
-    username: r.username,
-  }));
+  const transformedReactions =
+    reactionEvents &&
+    reactionEvents.map((r, index) => ({
+      id: `${r.username}-${Date.now()}-${index}`,
+      emoji: r.reaction_type,
+      username: r.username,
+    }));
+
+  const handleScreenShareChange = useCallback(
+    (isSharing: boolean, track?: any) => {
+      if (isSharing && track) {
+        setScreenShareTrack(track);
+        setShareScreenView([{ trackSid: track.track.sid }]);
+      } else {
+        setScreenShareTrack(null);
+        setShareScreenView('participants');
+      }
+    },
+    [setShareScreenView]
+  );
+
+  useEffect(() => {
+    if (shareScreenEvents.length > 0) {
+      setShareScreenView([{ trackSid: screenShareTrack?.track.sid || '' }]);
+    } else {
+      setScreenShareTrack(null);
+      setShareScreenView('participants');
+    }
+  }, [shareScreenEvents, setShareScreenView]);
 
   const videoContainerCls = classNames(
     'mx-4 mb-12 h-full transition-all duration-300 ease-in-out',
@@ -393,47 +483,145 @@ const Room = () => {
 
   const totalVideos = remoteParticipants.size + 1;
   const gridStyle = {
-    display: 'grid',
     gridTemplateColumns: `repeat(${Math.ceil(Math.sqrt(totalVideos))}, 1fr)`,
-    gap: '8px',
   };
+
+  // Adjust video tile conponents (avatar, username, icons) size based on width of tile panel (only for tile panel video tiles)
+  const tilePanelRef = useRef<HTMLDivElement>(null);
+  const { width = 0 } = useResizeObserver({
+    ref: tilePanelRef,
+  });
+
+  let avatarSize: 'sm' | 'md' | 'lg' = 'lg';
+  let usernameSize: 'sm' | 'lg' = 'lg';
+  let iconSize: 16 | 20 = 20;
+  if (width < 205) {
+    avatarSize = 'sm';
+    usernameSize = 'sm';
+    iconSize = 16;
+  } else if (width < 250) {
+    avatarSize = 'md';
+    usernameSize = 'sm';
+    iconSize = 16;
+  } else if (width < 590) {
+    avatarSize = 'md';
+    usernameSize = 'lg';
+    iconSize = 20;
+  }
 
   return (
     <div className='h-screen bg-black flex flex-col'>
-      <Header />
+      <Header
+        isSharingScreen={shareScreenEvents.length > 0}
+        participantsCount={participants.length}
+      />
       <div className='flex-1 relative overflow-hidden'>
-        <ReactionWrapper reactions={transformedReactions} />
-        <div className={videoContainerCls}>
-          <div className='h-full p-8 overflow-auto' style={gridStyle}>
-            {remoteTracks.map((remoteTrack, index) => {
-              return (
-                remoteTrack.track.kind === 'video' && (
-                  <VideoTile
-                    key={remoteTrack.track.sid}
-                    index={index}
-                    participant={remoteParticipant(
-                      remoteTrack.participantIdentity
-                    )}
-                    track={remoteTrack.track}
-                    audioTracks={remoteAudioTracks}
-                    remoteSession={remoteTrack.participantIdentity}
-                    isLocal={false}
-                    remoteMediaStates={remoteMediaStates}
+        <ResizablePanelGroup direction='horizontal' className='h-full'>
+          <ResizablePanel
+            defaultSize={8}
+            minSize={8}
+            maxSize={40}
+            hidden={!isTileView}
+          >
+            <TilePanel ref={tilePanelRef}>
+              {shareScreenEvents.length > 0 && screenShareTrack && (
+                <div className='h-full overscroll-auto'>
+                  <ShareScreenTile
+                    isTilePanel={true}
+                    screenShareTrack={screenShareTrack}
                   />
-                )
-              );
-            })}
-            <VideoTile
-              key='local-video'
-              participant={localParticipant}
-              track={videoTrack as LocalVideoTrack}
-              isLocal={true}
-              mediaState={mediaState}
-              audioTracks={remoteAudioTracks}
-              remoteMediaStates={remoteMediaStates}
-            />
-          </div>
-        </div>
+                </div>
+              )}
+              {remoteTracks.map((remoteTrack, index) => {
+                return (
+                  remoteTrack.track.kind === 'video' && (
+                    <VideoTile
+                      key={remoteTrack.track.sid}
+                      index={index}
+                      responsiveSize={{
+                        avatarSize,
+                        usernameSize,
+                        iconSize,
+                      }}
+                      participant={remoteParticipant(
+                        remoteTrack.participantIdentity
+                      )}
+                      track={remoteTrack.track}
+                      audioTracks={remoteAudioTracks}
+                      remoteSession={remoteTrack.participantIdentity}
+                      isLocal={false}
+                      remoteMediaStates={remoteMediaStates}
+                    />
+                  )
+                );
+              })}
+              <VideoTile
+                key='local-video'
+                responsiveSize={{
+                  avatarSize,
+                  usernameSize,
+                  iconSize,
+                }}
+                participant={localParticipant}
+                track={videoTrack as LocalVideoTrack}
+                isLocal={true}
+                mediaState={mediaState}
+                audioTracks={remoteAudioTracks}
+                remoteMediaStates={remoteMediaStates}
+              />
+            </TilePanel>
+          </ResizablePanel>
+          <ResizableHandle withHandle hidden={!isTileView} />
+          <ResizablePanel defaultSize={70} minSize={30}>
+            <div className='h-full relative overflow-hidden'>
+              <ReactionWrapper reactions={transformedReactions} />
+              <div className={videoContainerCls}>
+                {shareScreenEvents.length > 0 && screenShareTrack && (
+                  <div className='h-full p-8 overscroll-auto'>
+                    <ShareScreenTile
+                      isTilePanel={false}
+                      screenShareTrack={screenShareTrack}
+                    />
+                  </div>
+                )}
+                {shareScreenView === 'participants' && (
+                  <div
+                    className='grid gap-8 h-full p-8 overflow-auto transition-all duration-300 ease-in-out'
+                    style={gridStyle}
+                  >
+                    {remoteTracks.map((remoteTrack, index) => {
+                      return (
+                        remoteTrack.track.kind === 'video' && (
+                          <VideoTile
+                            key={remoteTrack.track.sid}
+                            index={index}
+                            participant={remoteParticipant(
+                              remoteTrack.participantIdentity
+                            )}
+                            track={remoteTrack.track}
+                            audioTracks={remoteAudioTracks}
+                            remoteSession={remoteTrack.participantIdentity}
+                            isLocal={false}
+                            remoteMediaStates={remoteMediaStates}
+                          />
+                        )
+                      );
+                    })}
+                    <VideoTile
+                      key='local-video'
+                      participant={localParticipant}
+                      track={videoTrack as LocalVideoTrack}
+                      isLocal={true}
+                      mediaState={mediaState}
+                      audioTracks={remoteAudioTracks}
+                      remoteMediaStates={remoteMediaStates}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
         <Participants
           open={activePanel === 'participants'}
           participants={participants}
@@ -449,7 +637,7 @@ const Room = () => {
           onClose={() => setActivePanel(null)}
         />
       </div>
-      <div className='flex-shrink-0 flex justify-center items-center border-t border-zinc-800 bg-zinc-950'>
+      <div className='flex items-center border-t border-zinc-800 bg-zinc-950'>
         <Toolbar
           sessionID={sessionID}
           room={livekitRoom.current}
@@ -458,6 +646,7 @@ const Room = () => {
           setVideoState={setVideoState}
           activePanel={activePanel}
           setActivePanel={setActivePanel}
+          onScreenShareChange={handleScreenShareChange}
         />
       </div>
     </div>

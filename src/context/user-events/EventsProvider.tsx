@@ -11,6 +11,13 @@ interface RaisedHand {
   raised_hand: boolean;
   username: string;
 }
+
+interface ShareScreen {
+  trackSid: string;
+  username: string;
+  active: boolean;
+}
+
 export interface Props {
   ws: WebSocket | null;
   connectEvents: (roomID: string) => void;
@@ -18,8 +25,9 @@ export interface Props {
   disconnect: () => void;
   isConnected: boolean;
   events: {
-    reaction: Reaction[];
-    raisedHand: RaisedHand[];
+    reactionEvents: Reaction[];
+    raisedHandEvents: RaisedHand[];
+    shareScreenEvents: ShareScreen[];
   };
 }
 
@@ -32,6 +40,7 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [reaction, setReaction] = useState<Reaction[]>([]);
   const [raisedHand, setRaisedHand] = useState<RaisedHand[]>([]);
+  const [shareScreen, setShareScreen] = useState<ShareScreen[]>([]);
 
   const connectEvents = (roomID: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
@@ -70,6 +79,17 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
                 setRaisedHand((prev) => prev.slice(1)); // Remove oldest raised hand
               }, 10000);
               break;
+            case 'share_screen.started':
+              setShareScreen((prev) => [...prev, data.payload as ShareScreen]);
+              break;
+            case 'share_screen.ended':
+              setShareScreen((prev) =>
+                prev.filter(
+                  (event) =>
+                    event.trackSid !== (data.payload as ShareScreen).trackSid
+                )
+              );
+              break;
           }
         } catch (error) {
           console.error('Failed to parse incoming event:', error);
@@ -101,8 +121,9 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
         disconnect,
         isConnected,
         events: {
-          reaction,
-          raisedHand,
+          reactionEvents: reaction,
+          raisedHandEvents: raisedHand,
+          shareScreenEvents: shareScreen,
         },
       }}
     >
