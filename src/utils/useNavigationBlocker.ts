@@ -78,14 +78,10 @@ export const useNavigationBlocker = ({
       ) {
         onBeforeLeave?.();
         event.preventDefault();
-        event.returnValue = message;
-
-        return event.returnValue;
+        return;
       }
 
       event.preventDefault();
-      event.returnValue = message;
-      return event.returnValue;
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
