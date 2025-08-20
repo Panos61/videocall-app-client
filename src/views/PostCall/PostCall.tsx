@@ -3,6 +3,8 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Cookie from 'js-cookie';
 
 import { exitRoom } from '@/api';
+import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
+
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
@@ -16,6 +18,15 @@ import {
 const PostCall = () => {
   const navigate = useNavigate();
   const { roomID } = useLocation().state;
+
+  useNavigationBlocker({
+    message:
+      'Are you sure you want to leave the room? All your data will be deleted.',
+    onBeforeLeave: () => {
+      exitRoom(roomID);
+    },
+    allowedPaths: ['/', '/room'],
+  });
 
   const { mutate: exitRoomMutation, isPending } = useMutation({
     mutationFn: () => exitRoom(roomID),
