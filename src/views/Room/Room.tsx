@@ -27,7 +27,9 @@ import {
   usePreferencesCtx,
   useEventsCtx,
 } from '@/context';
-import { getParticipants } from '@/api';
+import { exitRoom, getParticipants } from '@/api';
+import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
+
 import {
   Chat,
   VideoTile,
@@ -105,6 +107,28 @@ const Room = () => {
 
   // Settings Context: websocket connection for settings
   const { connectSettings, settings, disconnect } = useSettingsCtx();
+
+  useNavigationBlocker({
+    message:
+      'Are you sure you want to leave the call? You will be disconnected from the room too.',
+    onBeforeLeave: () => {
+      const room: LivekitRoom | null = livekitRoom.current;
+      if (room) room.disconnect();
+
+      if (videoTrack) {
+        videoTrack.stop();
+      }
+      if (audioTrack) {
+        audioTrack.stop();
+      }
+
+      sendMessage({ type: 'disconnect', sessionID });
+      disconnect();
+
+      exitRoom(roomID);
+    },
+    allowedPaths: ['/post-call'],
+  });
 
   // Setup LiveKit room & event listeners
   useEffect(() => {
@@ -335,8 +359,8 @@ const Room = () => {
         await room.connect(livekitUrl, lvkToken);
 
         // Only enable camera/mic if they were enabled in the lobby
-        await room.localParticipant.setCameraEnabled(true);
-        await room.localParticipant.setMicrophoneEnabled(true);
+        // await room.localParticipant.setCameraEnabled(true);
+        // await room.localParticipant.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
