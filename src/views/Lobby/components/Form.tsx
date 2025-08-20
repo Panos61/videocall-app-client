@@ -29,7 +29,10 @@ const Form = ({
     watch,
     formState: { errors, isValid },
     reset,
-  } = useForm({ mode: 'onChange', defaultValues: { username: username || '' } });
+  } = useForm({
+    mode: 'onChange',
+    defaultValues: { username: username || '' },
+  });
 
   const formUsername = watch('username');
 
@@ -60,6 +63,7 @@ const Form = ({
 
       navigate(`/room/${roomID}/call`, {
         state: { roomID: roomID, sessionID: sessionID },
+        replace: true,
       });
     } catch (error) {
       console.error(error);

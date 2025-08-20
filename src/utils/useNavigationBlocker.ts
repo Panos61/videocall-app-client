@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useBlocker } from 'react-router-dom';
+import { useBlocker, useLocation } from 'react-router-dom';
 
 interface UseNavigationBlockerOptions {
   message: string;
@@ -14,9 +14,16 @@ export const useNavigationBlocker = ({
   shouldBlock = true,
   allowedPaths = [],
 }: UseNavigationBlockerOptions) => {
+  const location = useLocation();
+
   // Block navigation when user tries to leave
   const blocker = useBlocker(({ currentLocation, nextLocation }) => {
     if (!shouldBlock) return false;
+
+    // For post-call pages, block ALL navigation  (we handle redirects manually)
+    if (currentLocation.pathname.includes('/post-call')) {
+      return currentLocation.pathname !== nextLocation.pathname;
+    }
 
     // Don't block if navigating to an allowed path
     const isAllowedPath = allowedPaths.some((path) =>
@@ -31,6 +38,23 @@ export const useNavigationBlocker = ({
 
   useEffect(() => {
     if (blocker.state === 'blocked') {
+      // If current path contains /call or /post-call, show confirmation but redirect to home instead of proceeding
+      if (
+        location.pathname.includes('/call') ||
+        location.pathname.includes('/post-call')
+      ) {
+        const shouldLeave = window.confirm(message);
+
+        if (shouldLeave) {
+          onBeforeLeave?.();
+          blocker.reset();
+          window.location.replace('/');
+        } else {
+          blocker.reset();
+        }
+        return;
+      }
+
       const shouldLeave = window.confirm(message);
 
       if (shouldLeave) {
@@ -40,16 +64,24 @@ export const useNavigationBlocker = ({
         blocker.reset();
       }
     }
-  }, [blocker, message, onBeforeLeave]);
+  }, [blocker, message, onBeforeLeave, location.pathname]);
 
   // Handle browser back button and page refresh
   useEffect(() => {
     if (!shouldBlock) return;
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      // If current path contains /call or /post-call, show confirmation for refresh/close
+      if (
+        location.pathname.includes('/call') ||
+        location.pathname.includes('/post-call')
+      ) {
+        onBeforeLeave?.();
+        event.preventDefault();
+        return;
+      }
+
       event.preventDefault();
-      event.returnValue = message;
-      return event.returnValue;
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -57,7 +89,7 @@ export const useNavigationBlocker = ({
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [message, shouldBlock]);
+  }, [message, shouldBlock, onBeforeLeave, location.pathname]);
 
   return {
     isBlocked: blocker.state === 'blocked',
