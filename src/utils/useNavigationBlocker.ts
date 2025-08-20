@@ -38,7 +38,7 @@ export const useNavigationBlocker = ({
 
   useEffect(() => {
     if (blocker.state === 'blocked') {
-      // If current path contains /call, show confirmation but redirect to home instead of proceeding
+      // If current path contains /call or /post-call, show confirmation but redirect to home instead of proceeding
       if (
         location.pathname.includes('/call') ||
         location.pathname.includes('/post-call')
@@ -71,7 +71,7 @@ export const useNavigationBlocker = ({
     if (!shouldBlock) return;
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      // If current path contains /call, show confirmation for refresh/close
+      // If current path contains /call or /post-call, show confirmation for refresh/close
       if (
         location.pathname.includes('/call') ||
         location.pathname.includes('/post-call')
