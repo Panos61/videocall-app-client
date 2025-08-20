@@ -20,6 +20,11 @@ export const useNavigationBlocker = ({
   const blocker = useBlocker(({ currentLocation, nextLocation }) => {
     if (!shouldBlock) return false;
 
+    // For post-call pages, block ALL navigation  (we handle redirects manually)
+    if (currentLocation.pathname.includes('/post-call')) {
+      return currentLocation.pathname !== nextLocation.pathname;
+    }
+
     // Don't block if navigating to an allowed path
     const isAllowedPath = allowedPaths.some((path) =>
       nextLocation.pathname.includes(path)
@@ -34,7 +39,10 @@ export const useNavigationBlocker = ({
   useEffect(() => {
     if (blocker.state === 'blocked') {
       // If current path contains /call, show confirmation but redirect to home instead of proceeding
-      if (location.pathname.includes('/call')) {
+      if (
+        location.pathname.includes('/call') ||
+        location.pathname.includes('/post-call')
+      ) {
         const shouldLeave = window.confirm(message);
 
         if (shouldLeave) {
@@ -64,7 +72,10 @@ export const useNavigationBlocker = ({
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
       // If current path contains /call, show confirmation for refresh/close
-      if (location.pathname.includes('/call')) {
+      if (
+        location.pathname.includes('/call') ||
+        location.pathname.includes('/post-call')
+      ) {
         onBeforeLeave?.();
         event.preventDefault();
         event.returnValue = message;

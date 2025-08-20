@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import Cookie from 'js-cookie';
 
 import { exitRoom } from '@/api';
@@ -18,6 +19,7 @@ import {
 const PostCall = () => {
   const navigate = useNavigate();
   const { roomID } = useLocation().state;
+  const [allowNavigation, setAllowNavigation] = useState(false);
 
   useNavigationBlocker({
     message:
@@ -25,20 +27,28 @@ const PostCall = () => {
     onBeforeLeave: () => {
       exitRoom(roomID);
     },
-    allowedPaths: ['/', '/room'],
+    shouldBlock: !allowNavigation,
+    allowedPaths: [],
   });
 
   const { mutate: exitRoomMutation, isPending } = useMutation({
     mutationFn: () => exitRoom(roomID),
     onSuccess: () => {
-      navigate('/', { replace: true });
+      setAllowNavigation(true);
+      setTimeout(() => navigate('/', { replace: true }), 0);
       Cookie.remove('rsCookie');
     },
     onError: () => {
-      navigate('/', { replace: true });
+      setAllowNavigation(true);
+      setTimeout(() => navigate('/', { replace: true }), 0);
       Cookie.remove('rsCookie');
     },
   });
+
+  const handleStayInLobby = () => {
+    setAllowNavigation(true);
+    setTimeout(() => navigate(`/room/${roomID}`, { replace: true }), 0);
+  };
 
   return (
     <div className='flex flex-col items-center gap-52 mt-72'>
@@ -47,7 +57,7 @@ const PostCall = () => {
         <div className='flex items-center justify-center gap-12'>
           <Button
             variant='outline'
-            onClick={() => navigate(`/room/${roomID}`, { replace: true })}
+            onClick={handleStayInLobby}
           >
             <LogOutIcon size={20} className='mr-8' />
             Stay in lobby
