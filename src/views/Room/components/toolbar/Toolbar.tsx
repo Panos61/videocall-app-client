@@ -119,7 +119,7 @@ const Toolbar = ({
     'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer hover:scale-105';
 
   return (
-    <div className='flex items-center w-full h-60 px-24'>
+    <div className='flex items-center w-full h-56 px-24'>
       <div className='flex-1 mr-16'>
         <div className='flex items-center gap-8'>
           <Clock />
