@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import {
   Room as LivekitRoom,
   RoomEvent,
@@ -103,7 +103,10 @@ const Room = () => {
   );
 
   const location = useLocation();
-  const { roomID, sessionID } = location.state;
+  const { id: roomID } = useParams<{ id: string }>();
+  const { sessionID } = location.state || {};
+
+  if (!roomID || !sessionID) return null;
 
   // Settings Context: websocket connection for settings
   const { connectSettings, settings, disconnect } = useSettingsCtx();
@@ -124,7 +127,6 @@ const Room = () => {
 
       sendMessage({ type: 'disconnect', sessionID });
       disconnect();
-
       exitRoom(roomID);
     },
     allowedPaths: ['/post-call'],

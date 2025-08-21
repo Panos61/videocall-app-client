@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Cookie from 'js-cookie';
 import { Room } from 'livekit-client';
 import classNames from 'classnames';
@@ -50,11 +50,13 @@ const Toolbar = ({
 }: Props) => {
   const { sendMessage, disconnect } = useSessionCtx();
   const { videoTrack, setVideoTrack } = useMediaControlCtx();
-  const { setIsChatExpanded, setIsFocusView, isFocusView } = usePreferencesCtx();
+  const { setIsChatExpanded, setIsFocusView, isFocusView } =
+    usePreferencesCtx();
 
   const navigate = useNavigate();
-  const location = useLocation();
-  const { roomID } = location.state;
+  const { id: roomID } = useParams<{ id: string }>();
+
+  if (!roomID) return null;
 
   const jwt: string | undefined = Cookie.get('rsCookie');
 

@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useState } from 'react';
 import Cookie from 'js-cookie';
 
@@ -18,7 +18,10 @@ import {
 
 const PostCall = () => {
   const navigate = useNavigate();
-  const { roomID } = useLocation().state;
+  const { id: roomID } = useParams<{ id: string }>();
+  
+  if (!roomID) return null;
+  
   const [allowNavigation, setAllowNavigation] = useState(false);
 
   useNavigationBlocker({
@@ -55,10 +58,7 @@ const PostCall = () => {
       <div className='flex flex-col items-center justify-center gap-36'>
         <h1 className='text-4xl'>You left the call</h1>
         <div className='flex items-center justify-center gap-12'>
-          <Button
-            variant='outline'
-            onClick={handleStayInLobby}
-          >
+          <Button variant='outline' onClick={handleStayInLobby}>
             <LogOutIcon size={20} className='mr-8' />
             Stay in lobby
           </Button>

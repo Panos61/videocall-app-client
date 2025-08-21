@@ -8,9 +8,19 @@ import {
   SettingsProvider,
   EventsProvider,
 } from './context';
-import { Home, Authorization, Lobby, Room, PostCall } from './views';
+import ProtectedRoute from './utils/ProtectedRoute';
+
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import {
+  Home,
+  Authorization,
+  Lobby,
+  Room,
+  PostCall,
+  Invalid,
+  NotFound,
+} from './views';
 
 const queryClient: QueryClient = new QueryClient();
 
@@ -26,15 +36,35 @@ const App = () => {
     },
     {
       path: '/room/:id',
-      element: <Lobby />,
+      element: (
+        <ProtectedRoute>
+          <Lobby />
+        </ProtectedRoute>
+      ),
     },
     {
       path: '/room/:id/call',
-      element: <Room />,
+      element: (
+        <ProtectedRoute>
+          <Room />
+        </ProtectedRoute>
+      ),
     },
     {
       path: '/room/:id/post-call',
-      element: <PostCall />,
+      element: (
+        <ProtectedRoute>
+          <PostCall />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: '/whoops',
+      element: <Invalid />,
+    },
+    {
+      path: '*',
+      element: <NotFound />,
     },
   ]);
 
