@@ -1,3 +1,4 @@
 import Invalid from './Invalid';
+import NotFound from './NotFound';
 
-export default Invalid;
+export { Invalid, NotFound };

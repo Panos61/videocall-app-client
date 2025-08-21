@@ -3,6 +3,6 @@ import Authorization from './Authorization';
 import Lobby from './Lobby';
 import Room from './Room';
 import PostCall from './PostCall';
-import Invalid from './Invalid';
+import { Invalid, NotFound } from './Invalid';
 
-export { Authorization, Home, Lobby, Room, PostCall, Invalid };
+export { Authorization, Home, Lobby, Room, PostCall, Invalid, NotFound };

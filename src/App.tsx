@@ -12,7 +12,15 @@ import ProtectedRoute from './utils/ProtectedRoute';
 
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { Home, Authorization, Lobby, Room, PostCall, Invalid } from './views';
+import {
+  Home,
+  Authorization,
+  Lobby,
+  Room,
+  PostCall,
+  Invalid,
+  NotFound,
+} from './views';
 
 const queryClient: QueryClient = new QueryClient();
 
@@ -53,6 +61,10 @@ const App = () => {
     {
       path: '/whoops',
       element: <Invalid />,
+    },
+    {
+      path: '*',
+      element: <NotFound />,
     },
   ]);
 
