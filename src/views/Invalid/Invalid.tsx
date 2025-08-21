@@ -1,8 +1,21 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCountdown } from 'usehooks-ts';
 import { Button } from '@/components/ui/button';
 
 const Invalid = () => {
   const navigate = useNavigate();
+
+  const [count, { startCountdown }] = useCountdown({
+    countStart: 60,
+  });
+
+  useEffect(() => {
+    startCountdown();
+    if (count === 0) {
+      navigate('/');
+    }
+  }, [startCountdown, count]);
 
   return (
     <div className='flex flex-col justify-center items-center gap-24'>
@@ -17,6 +30,9 @@ const Invalid = () => {
         </p>
       </div>
       <Button onClick={() => navigate('/')}>Return to home screen</Button>
+      <span className='mt-12 text-sm underline'>
+        Returning to home screen in {count} seconds.
+      </span>
     </div>
   );
 };
