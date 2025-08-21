@@ -41,6 +41,12 @@ api.interceptors.response.use(
 
     const originalRequest = error.config as CustomAxiosRequestConfig;
 
+    // check if room exists, else redirect to invalid page
+    if (error.response?.status === 404) {
+      window.location.href = '/whoops';
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
