@@ -33,7 +33,6 @@ import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 import {
   Chat,
   VideoTile,
-  Header,
   Toolbar,
   Participants,
   ShareScreenTile,
@@ -44,6 +43,7 @@ import {
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
 import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
+import Header from './Header';
 import TilePanel from './TilePanel';
 
 interface TrackInfo {
