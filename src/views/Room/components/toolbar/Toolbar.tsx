@@ -119,7 +119,7 @@ const Toolbar = ({
     'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer hover:scale-105';
 
   return (
-    <div className='flex items-center w-full h-[58px] px-24'>
+    <div className='flex items-center w-full px-24'>
       <div className='flex-1 mr-16'>
         <div className='flex items-center gap-8'>
           <Clock />
@@ -128,7 +128,7 @@ const Toolbar = ({
         </div>
       </div>
       <div className='flex-shrink-0'>
-        <div className='flex items-center justify-center gap-8 p-8 border border-t-0 border-zinc-700 rounded-12'>
+        <div className='flex items-center justify-center gap-8 p-8 border border-t-0 border-b-0 border-zinc-700 rounded-12'>
           <div
             className='flex items-center gap-4 p-4 border border-zinc-500 rounded-16 text-xs bg-zinc-800 hover:bg-zinc-600/20 duration-300 ease-in-out cursor-pointer'
             onClick={() => setIsFocusView(!isFocusView)}
