@@ -123,7 +123,7 @@ const Toolbar = ({
       <div className='flex-1 mr-16'>
         <div className='flex items-center gap-8'>
           <Clock />
-          <Separator orientation='vertical' className='h-28 text-zinc-300' />
+          <Separator orientation='vertical' className='h-28 bg-zinc-500' />
           <ConnectionStatus />
         </div>
       </div>
