@@ -45,6 +45,8 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
+        // check if the token is valid, else redirect to login
+        // if the token is valid or not expired, refresh the token
         const token = Cookie.get('rsCookie');
         if (!token) {
           Cookie.remove('rsCookie');
