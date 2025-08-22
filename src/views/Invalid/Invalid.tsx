@@ -13,7 +13,7 @@ const Invalid = () => {
   useEffect(() => {
     startCountdown();
     if (count === 0) {
-      navigate('/');
+      navigate('/', { replace: true });
     }
   }, [startCountdown, count]);
 
@@ -29,7 +29,9 @@ const Invalid = () => {
           https://localhost:3000/room/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
         </p>
       </div>
-      <Button onClick={() => navigate('/')}>Return to home screen</Button>
+      <Button onClick={() => navigate('/', { replace: true })}>
+        Return to home screen
+      </Button>
       <span className='mt-12 text-sm underline'>
         Returning to home screen in {count} seconds.
       </span>

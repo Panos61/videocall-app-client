@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useState } from 'react';
+import { useCountdown } from 'usehooks-ts';
 import Cookie from 'js-cookie';
 
 import { exitRoom } from '@/api';
@@ -19,9 +20,9 @@ import {
 const PostCall = () => {
   const navigate = useNavigate();
   const { id: roomID } = useParams<{ id: string }>();
-  
+
   if (!roomID) return null;
-  
+
   const [allowNavigation, setAllowNavigation] = useState(false);
 
   useNavigationBlocker({
@@ -53,8 +54,19 @@ const PostCall = () => {
     setTimeout(() => navigate(`/room/${roomID}`, { replace: true }), 0);
   };
 
+  const [count, { startCountdown }] = useCountdown({
+    countStart: 60,
+  });
+
+  useEffect(() => {
+    startCountdown();
+    if (count === 0) {
+      navigate('/', { replace: true });
+    }
+  }, [startCountdown, count]);
+
   return (
-    <div className='flex flex-col items-center gap-52 mt-72'>
+    <div className='flex flex-col items-center gap-48 mt-72'>
       <div className='flex flex-col items-center justify-center gap-36'>
         <h1 className='text-4xl'>You left the call</h1>
         <div className='flex items-center justify-center gap-12'>
@@ -67,6 +79,9 @@ const PostCall = () => {
             {isPending ? 'Exiting...' : 'Return to home screen'}
           </Button>
         </div>
+        <span className='text-sm underline'>
+          Returning to home screen in {count} seconds.
+        </span>
       </div>
       <div className='flex items-center justify-center gap-12'>
         <span className='text-sm'>
