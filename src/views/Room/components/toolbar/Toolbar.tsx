@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import { SettingsModal } from '@/components/elements';
 import { Separator } from '@/components/ui/separator';
+import Clock from './Clock';
+import ConnectionStatus from './ConnectionStatus';
 import Reactions from './Reactions';
 import RaiseHand from './RaiseHand';
 import ShareScreen from './ShareScreen';
@@ -117,70 +119,82 @@ const Toolbar = ({
     'flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer hover:scale-105';
 
   return (
-    <div className='flex justify-center items-center w-full h-60 px-4'>
-      <div className='flex items-center justify-center gap-8 p-8 border border-zinc-700 rounded-12'>
-        <div
-          className='flex items-center gap-4 p-4 border border-zinc-500 rounded-16 text-xs bg-zinc-800 hover:bg-zinc-600/20 duration-300 ease-in-out cursor-pointer'
-          onClick={() => setIsFocusView(!isFocusView)}
-        >
-          <div className='p-4 bg-white rounded-full'>
-            {isFocusView ? (
-              <LayoutGridIcon size={16} />
-            ) : (
-              <LayoutPanelLeftIcon size={16} />
-            )}
-          </div>
-          <span className='text-zinc-200'>
-            {isFocusView ? 'Focus view' : 'Tile view'}
-          </span>
-        </div>
-        <Separator orientation='vertical' className='h-28 bg-zinc-700' />
-        <div className={menuBtnCls} onClick={handleAudioState}>
-          {mediaState.audio ? (
-            <MicIcon size={16} />
-          ) : (
-            <MicOffIcon color='#dc2626' size={16} />
-          )}
-        </div>
-        <div className={menuBtnCls} onClick={handleVideoState}>
-          {mediaState.video ? (
-            <VideoIcon size={16} />
-          ) : (
-            <VideoOffIcon color='#dc2626' size={16} />
-          )}
-        </div>
-        <RaiseHand sessionID={sessionID} />
-        <Reactions sessionID={sessionID} />
-        <ShareScreen
-          sessionID={sessionID}
-          room={room as Room}
-          onScreenShareChange={onScreenShareChange}
-        />
-        <div
-          className={menuBtnCls}
-          onClick={() => setActivePanel(activePanel === 'chat' ? null : 'chat')}
-        >
-          <MessageCircleIcon size={16} className='text-violet-500' />
-        </div>
-        <div
-          className={menuBtnCls}
-          onClick={() => {
-            setActivePanel(
-              activePanel === 'participants' ? null : 'participants'
-            );
-            setIsChatExpanded(false);
-          }}
-        >
-          <UsersIcon size={16} />
-        </div>
-        <SettingsModal />
-        <div
-          className={classNames(menuBtnCls, '!bg-red-500')}
-          onClick={handleOnLeave}
-        >
-          <PhoneOffIcon size={16} color='white' />
+    <div className='flex items-center w-full px-24'>
+      <div className='flex-1 mr-16'>
+        <div className='flex items-center gap-8'>
+          <Clock />
+          <Separator orientation='vertical' className='h-28 bg-zinc-500' />
+          <ConnectionStatus />
         </div>
       </div>
+      <div className='flex-shrink-0'>
+        <div className='flex items-center justify-center gap-8 p-8 border border-t-0 border-b-0 border-zinc-700 rounded-12'>
+          <div
+            className='flex items-center gap-4 p-4 border border-zinc-500 rounded-16 text-xs bg-zinc-800 hover:bg-zinc-600/20 duration-300 ease-in-out cursor-pointer'
+            onClick={() => setIsFocusView(!isFocusView)}
+          >
+            <div className='p-4 bg-white rounded-full'>
+              {isFocusView ? (
+                <LayoutGridIcon size={16} />
+              ) : (
+                <LayoutPanelLeftIcon size={16} />
+              )}
+            </div>
+            <span className='text-zinc-200'>
+              {isFocusView ? 'Focus view' : 'Tile view'}
+            </span>
+          </div>
+          <Separator orientation='vertical' className='h-28 bg-zinc-700' />
+          <div className={menuBtnCls} onClick={handleAudioState}>
+            {mediaState.audio ? (
+              <MicIcon size={16} />
+            ) : (
+              <MicOffIcon color='#dc2626' size={16} />
+            )}
+          </div>
+          <div className={menuBtnCls} onClick={handleVideoState}>
+            {mediaState.video ? (
+              <VideoIcon size={16} />
+            ) : (
+              <VideoOffIcon color='#dc2626' size={16} />
+            )}
+          </div>
+          <RaiseHand sessionID={sessionID} />
+          <Reactions sessionID={sessionID} />
+          <ShareScreen
+            sessionID={sessionID}
+            room={room as Room}
+            onScreenShareChange={onScreenShareChange}
+          />
+          <div
+            className={menuBtnCls}
+            onClick={() =>
+              setActivePanel(activePanel === 'chat' ? null : 'chat')
+            }
+          >
+            <MessageCircleIcon size={16} className='text-violet-500' />
+          </div>
+          <div
+            className={menuBtnCls}
+            onClick={() => {
+              setActivePanel(
+                activePanel === 'participants' ? null : 'participants'
+              );
+              setIsChatExpanded(false);
+            }}
+          >
+            <UsersIcon size={16} />
+          </div>
+          <SettingsModal />
+          <div
+            className={classNames(menuBtnCls, '!bg-red-500')}
+            onClick={handleOnLeave}
+          >
+            <PhoneOffIcon size={16} color='white' />
+          </div>
+        </div>
+      </div>
+      <div className='flex-1'></div>
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { useEventsCtx } from '@/context';
-import { RaisedHand } from './gestures';
+import { RaisedHand } from '../components/gestures';
 import ShareScreenTab from './ShareScreenTab';
+import Timer from './Timer';
 
 interface Props {
   isSharingScreen: boolean;
@@ -29,12 +30,7 @@ const Header = ({ isSharingScreen, participantsCount }: Props) => {
       {isSharingScreen && (
         <ShareScreenTab participantsCount={participantsCount} />
       )}
-      <div className='flex items-center gap-8'>
-        <div className='text-xs text-gray-300'>00:00</div>
-        <span className='text-gray-300'>-</span>
-        <p className='text-xs text-white'>Call in progress</p>
-        <div className='size-8 rounded-full bg-green-500 animate-pulse'></div>
-      </div>
+      <Timer />
     </header>
   );
 };
