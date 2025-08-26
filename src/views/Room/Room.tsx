@@ -417,7 +417,7 @@ const Room = () => {
   }, [ws, isConnected, sendMessage]);
 
   useEffect(() => {
-    connectEvents(`/ws/user-events/${roomID}`, sessionID);
+    connectEvents(roomID, sessionID);
     if (!eventsWS) return;
 
     return () => {
