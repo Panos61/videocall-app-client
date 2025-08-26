@@ -69,7 +69,7 @@ const Room = () => {
   // Media Control Context: websocket connection for media device control
   const {
     connectMedia,
-    sendMediaUpdate,
+    sendMediaEvent,
     disconnectMedia,
     mediaState,
     remoteMediaStates,
@@ -232,7 +232,7 @@ const Room = () => {
     room.on(
       RoomEvent.ParticipantConnected,
       (participant: RemoteParticipant) => {
-        sendMediaUpdate(sessionID, mediaState);
+        sendMediaEvent(sessionID, mediaState);
         setRemoteParticipants((prevParticipants) => {
           const newMap = new Map(prevParticipants);
           newMap.set(participant.identity, participant);
@@ -361,8 +361,8 @@ const Room = () => {
         await room.connect(livekitUrl, lvkToken);
 
         // Only enable camera/mic if they were enabled in the lobby
-        // await room.localParticipant.setCameraEnabled(true);
-        // await room.localParticipant.setMicrophoneEnabled(true);
+        await room.localParticipant.setCameraEnabled(true);
+        await room.localParticipant.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
@@ -417,18 +417,18 @@ const Room = () => {
   }, [ws, isConnected, sendMessage]);
 
   useEffect(() => {
-    connectEvents(`/ws/user-events/${roomID}`);
+    connectEvents(`/ws/user-events/${roomID}`, sessionID);
     if (!eventsWS) return;
 
     return () => {
       disconnectEvents();
     };
-  }, [roomID]);
+  }, [roomID, sessionID]);
 
   useEffect(() => {
     const connect = async () => {
       try {
-        connectMedia(`/ws/media/${roomID}`, sessionID);
+        connectMedia(roomID, sessionID);
       } catch (error) {
         console.error('Failed to establish WebSocket connection:', error);
       }
@@ -535,6 +535,8 @@ const Room = () => {
     usernameSize = 'lg';
     iconSize = 20;
   }
+
+  console.log('remoteMediaStates ROOM', remoteMediaStates);
 
   return (
     <div className='h-screen bg-black flex flex-col'>

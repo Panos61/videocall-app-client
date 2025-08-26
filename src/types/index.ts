@@ -18,7 +18,8 @@ export interface SignallingMessage {
 
 export interface BaseEvent {
   type: string;
-  senderID: string;
+  senderID?: string;
+  sessionID?: string;
   payload: unknown;
 }
 
@@ -69,4 +70,13 @@ export interface UserEvent {
     participant_id: string;
     participant_name: string;
   };
+}
+
+export interface MediaControlState {
+  audio: boolean;
+  video: boolean;
+}
+
+export interface RemoteMediaControlState {
+  [sessionID: string]: MediaControlState;
 }

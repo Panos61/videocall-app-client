@@ -1,6 +1,10 @@
 import { createContext, useState, useRef } from 'react';
 import { BASE_WS_URL } from '@/utils/constants';
-import type { BaseEvent } from '@/types';
+import type {
+  BaseEvent,
+  MediaControlState,
+  RemoteMediaControlState,
+} from '@/types';
 
 interface Reaction {
   reaction_type: string;
@@ -20,7 +24,7 @@ interface ShareScreen {
 
 export interface Props {
   ws: WebSocket | null;
-  connectEvents: (roomID: string) => void;
+  connectEvents: (roomID: string, sessionID: string) => void;
   sendEvent: (event: BaseEvent) => void;
   disconnect: () => void;
   isConnected: boolean;
@@ -28,6 +32,7 @@ export interface Props {
     reactionEvents: Reaction[];
     raisedHandEvents: RaisedHand[];
     shareScreenEvents: ShareScreen[];
+    remoteMediaStates: RemoteMediaControlState;
   };
 }
 
@@ -41,14 +46,16 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
   const [reaction, setReaction] = useState<Reaction[]>([]);
   const [raisedHand, setRaisedHand] = useState<RaisedHand[]>([]);
   const [shareScreen, setShareScreen] = useState<ShareScreen[]>([]);
+  const [remoteMediaStates, setRemoteMediaStates] =
+    useState<RemoteMediaControlState>({});
 
-  const connectEvents = (roomID: string) => {
+  const connectEvents = (roomID: string, sessionID: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       if (ws.current) {
         ws.current.close();
       }
 
-      ws.current = new WebSocket(`${BASE_WS_URL}${roomID}`);
+      ws.current = new WebSocket(`${BASE_WS_URL}/ws/user-events/${roomID}`);
 
       ws.current.onopen = () => {
         setIsConnected(ws.current?.readyState === WebSocket.OPEN);
@@ -90,6 +97,16 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
                 )
               );
               break;
+            case 'media.control.updated':
+              console.log('media.control.updated', data);
+              if (data.session_id !== sessionID) {
+                setRemoteMediaStates((prev) => ({
+                  ...prev,
+                  [data.session_id as string]:
+                    data.payload as MediaControlState,
+                }));
+              }
+              break;
           }
         } catch (error) {
           console.error('Failed to parse incoming event:', error);
@@ -124,6 +141,7 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
           reactionEvents: reaction,
           raisedHandEvents: raisedHand,
           shareScreenEvents: shareScreen,
+          remoteMediaStates,
         },
       }}
     >
