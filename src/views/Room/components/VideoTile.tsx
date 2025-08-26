@@ -41,6 +41,7 @@ interface Props {
   remoteMediaStates: {
     [sessionID: string]: { audio: boolean; video: boolean };
   };
+  participantIDToSessionIDMap?: Map<string, string>;
 }
 
 const VideoTile = ({
@@ -52,6 +53,7 @@ const VideoTile = ({
   isLocal,
   mediaState,
   remoteMediaStates,
+  participantIDToSessionIDMap,
   responsiveSize = {
     avatarSize: 'lg',
     usernameSize: 'lg',

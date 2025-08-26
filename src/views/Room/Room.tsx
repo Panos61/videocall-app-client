@@ -536,8 +536,6 @@ const Room = () => {
     iconSize = 20;
   }
 
-  console.log('remoteMediaStates ROOM', remoteMediaStates);
-
   return (
     <div className='h-screen bg-black flex flex-col'>
       <Header
