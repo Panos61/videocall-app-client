@@ -1,4 +1,4 @@
-import { useEventsCtx } from './useEventsCtx';
-import { EventsProvider } from './EventsProvider';
+import { useUserEventsCtx } from './useUserEventsCtx';
+import { UserEventsProvider } from './UserEventsProvider';
 
-export { EventsProvider, useEventsCtx };
+export { UserEventsProvider, useUserEventsCtx };

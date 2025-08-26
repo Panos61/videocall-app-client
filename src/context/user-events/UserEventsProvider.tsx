@@ -37,9 +37,9 @@ export interface Props {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const EventsContext = createContext<Props | undefined>(undefined);
+export const UserEventsContext = createContext<Props | undefined>(undefined);
 
-export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
+export const UserEventsProvider = ({ children }: { children: React.ReactNode }) => {
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
@@ -122,6 +122,7 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const sendEvent = (event: BaseEvent) => {
+    console.log('sendEvent', event);
     if (isConnected && ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(event));
     } else {
@@ -130,7 +131,7 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <EventsContext.Provider
+    <UserEventsContext.Provider
       value={{
         ws: ws.current,
         connectEvents,
@@ -146,6 +147,6 @@ export const EventsProvider = ({ children }: { children: React.ReactNode }) => {
       }}
     >
       {children}
-    </EventsContext.Provider>
+    </UserEventsContext.Provider>
   );
 };

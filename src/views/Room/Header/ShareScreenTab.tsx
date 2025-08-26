@@ -1,4 +1,4 @@
-import { useEventsCtx, usePreferencesCtx } from '@/context';
+import { useUserEventsCtx, usePreferencesCtx } from '@/context';
 import { ScreenShare, LayoutGrid } from 'lucide-react';
 
 interface Props {
@@ -9,7 +9,7 @@ const ShareScreenTab = ({ participantsCount }: Props) => {
   const { setShareScreenView } = usePreferencesCtx();
   const {
     events: { shareScreenEvents },
-  } = useEventsCtx();
+  } = useUserEventsCtx();
 
   return (
     <div className='flex items-center gap-12'>

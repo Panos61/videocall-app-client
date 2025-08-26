@@ -25,7 +25,7 @@ import {
   useMediaControlCtx,
   useSettingsCtx,
   usePreferencesCtx,
-  useEventsCtx,
+  useUserEventsCtx,
 } from '@/context';
 import { exitRoom, getParticipants } from '@/api';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
@@ -65,7 +65,7 @@ const Room = () => {
     connectEvents,
     events: { reactionEvents, shareScreenEvents },
     disconnect: disconnectEvents,
-  } = useEventsCtx();
+  } = useUserEventsCtx();
   // Media Control Context: websocket connection for media device control
   const {
     connectMedia,
@@ -401,6 +401,10 @@ const Room = () => {
       setParticipants(participantsData.participantsInCall);
     }
   }, [participantsData, sessionID, remoteParticipants]);
+  
+  // useEffect(() => {
+  //   sendMediaEvent(sessionID, mediaState);
+  // }, [remoteParticipants]);
 
   useEffect(() => {
     connectSession(`/ws/signalling/${roomID}`);
@@ -426,7 +430,7 @@ const Room = () => {
   }, [roomID, sessionID]);
 
   useEffect(() => {
-    const connect = async () => {
+    const connectMediaControlEvents = async () => {
       try {
         connectMedia(roomID, sessionID);
       } catch (error) {
@@ -434,8 +438,7 @@ const Room = () => {
       }
     };
 
-    connect();
-
+    connectMediaControlEvents();
     return () => {
       disconnectMedia();
     };

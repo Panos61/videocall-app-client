@@ -1,4 +1,4 @@
-import { useEventsCtx } from '@/context';
+import { useUserEventsCtx } from '@/context';
 import { RaisedHand } from '../components/gestures';
 import ShareScreenTab from './ShareScreenTab';
 import Timer from './Timer';
@@ -11,7 +11,7 @@ interface Props {
 const Header = ({ isSharingScreen, participantsCount }: Props) => {
   const {
     events: { raisedHandEvents },
-  } = useEventsCtx();
+  } = useUserEventsCtx();
 
   const uniqueRaisedHandEvents = [
     ...new Set(raisedHandEvents.map((event) => event.username)),

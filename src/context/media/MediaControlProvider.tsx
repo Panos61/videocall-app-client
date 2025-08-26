@@ -5,7 +5,7 @@ import type {
   MediaControlState,
   RemoteMediaControlState,
 } from '@/types';
-import { useEventsCtx } from '../user-events/useEventsCtx';
+import { useUserEventsCtx } from '../user-events/useUserEventsCtx';
 
 export interface DevicePreferences {
   deviceId: string | undefined;
@@ -41,7 +41,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     sendEvent,
     isConnected,
     events: { remoteMediaStates },
-  } = useEventsCtx();
+  } = useUserEventsCtx();
 
   const [mediaState, setMediaState] = useState({ audio: false, video: false });
   const [audioDevice, setSelectedAudioDevice] =
@@ -68,7 +68,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     return () => {
       // Cleanup when component unmounts
-      disconnectMedia();
+      disconnect();
     };
   }, []);
 
@@ -82,7 +82,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
 
     const msg: BaseEvent = {
       type: 'media.control.updated',
-      sessionID: sessionID,
+      session_id: sessionID,
       payload: {
         audio: updatedState.audio,
         video: updatedState.video,
@@ -105,7 +105,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     if (isConnected && sessionID) {
       const msg: BaseEvent = {
         type: 'media.control.updated',
-        sessionID: sessionID,
+        session_id: sessionID,
         payload: {
           audio: updatedState.audio,
           video: updatedState.video,
@@ -122,7 +122,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     if (isConnected && sessionID) {
       const msg: BaseEvent = {
         type: 'media.control.updated',
-        sessionID: sessionID,
+        session_id: sessionID,
         payload: {
           audio: updatedState.audio,
           video: updatedState.video,
