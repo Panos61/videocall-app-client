@@ -575,7 +575,7 @@ const Room = () => {
                       )}
                       track={remoteTrack.track}
                       audioTracks={remoteAudioTracks}
-                      remoteSession={remoteTrack.participantIdentity}
+                      remoteIdentity={remoteTrack.participantIdentity}
                       isLocal={false}
                       remoteMediaStates={remoteMediaStates}
                     />
@@ -627,7 +627,7 @@ const Room = () => {
                             )}
                             track={remoteTrack.track}
                             audioTracks={remoteAudioTracks}
-                            remoteSession={remoteTrack.participantIdentity}
+                            remoteIdentity={remoteTrack.participantIdentity}
                             isLocal={false}
                             remoteMediaStates={remoteMediaStates}
                           />

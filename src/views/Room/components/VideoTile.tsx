@@ -34,14 +34,13 @@ interface Props {
   track: LocalVideoTrack | RemoteVideoTrack;
   audioTracks?: TrackInfo[];
   audioTrack?: LocalAudioTrack | RemoteAudioTrack;
-  remoteSession?: string;
+  remoteIdentity?: string;
   isLocal: boolean;
   responsiveSize?: ResponsiveSize;
   mediaState?: { audio: boolean; video: boolean };
   remoteMediaStates: {
     [sessionID: string]: { audio: boolean; video: boolean };
   };
-  participantIDToSessionIDMap?: Map<string, string>;
 }
 
 const VideoTile = ({
@@ -49,18 +48,17 @@ const VideoTile = ({
   participant,
   track,
   audioTracks,
-  remoteSession,
+  remoteIdentity,
   isLocal,
   mediaState,
   remoteMediaStates,
-  participantIDToSessionIDMap,
   responsiveSize = {
     avatarSize: 'lg',
     usernameSize: 'lg',
     iconSize: 20,
   },
 }: Props) => {
-  const videoID: string = isLocal ? 'local-video' : `${remoteSession}-video`;
+  const videoID: string = isLocal ? 'local-video' : `${remoteIdentity}-video`;
   const localVideoElement = useRef<HTMLVideoElement | null>(null);
   const remoteVideoElement = useRef<HTMLVideoElement | null>(null);
   const tileContainerRef = useRef<HTMLDivElement | null>(null);
@@ -105,7 +103,7 @@ const VideoTile = ({
     return () => {
       observer.unobserve(currentRef);
     };
-  }, [isLocal, shouldLoadVideo, participant?.username, remoteSession]);
+  }, [isLocal, shouldLoadVideo, participant?.username, remoteIdentity]);
 
   const renderLocalPreview = () => {
     if (track && mediaState?.video) {
@@ -135,9 +133,9 @@ const VideoTile = ({
   };
 
   const renderRemotePreview = () => {
-    if (!remoteSession || !participant) return;
+    if (!remoteIdentity || !participant) return;
 
-    if (shouldLoadVideo && track && remoteMediaStates[remoteSession]?.video) {
+    if (shouldLoadVideo && track && remoteMediaStates[remoteIdentity]?.video) {
       if (!shouldLoadVideo) {
         return (
           <div className='absolute inset-0 flex items-center justify-center size-full'>
@@ -151,7 +149,7 @@ const VideoTile = ({
           id={videoID}
           key={index}
           ref={setVideoRef}
-          muted={!remoteMediaStates[remoteSession]?.audio}
+          muted={!remoteMediaStates[remoteIdentity]?.audio}
           autoPlay
           className='absolute size-full object-cover'
         />
@@ -214,8 +212,8 @@ const VideoTile = ({
   useEffect(() => {
     const remoteVideoRef = remoteVideoElement.current;
 
-    if (remoteSession) {
-      const remoteVideoEnabled = remoteMediaStates[remoteSession]?.video;
+    if (remoteIdentity) {
+      const remoteVideoEnabled = remoteMediaStates[remoteIdentity]?.video;
       if (remoteVideoRef) {
         if (track && remoteVideoEnabled) {
           track.attach(remoteVideoRef);
@@ -230,19 +228,19 @@ const VideoTile = ({
         track.detach(remoteVideoRef);
       }
     };
-  }, [track, remoteMediaStates, remoteSession, isVideoMounted]);
+  }, [track, remoteMediaStates, remoteIdentity, isVideoMounted]);
 
   useEffect(() => {
-    if (!audioTracks || !remoteSession) return;
+    if (!audioTracks || !remoteIdentity) return;
 
     const participantAudioTrack = audioTracks.find(
-      (audioTrack) => audioTrack.participantIdentity === remoteSession
+      (audioTrack) => audioTrack.participantIdentity === remoteIdentity
     );
 
     if (
       audioElement.current &&
       participantAudioTrack &&
-      remoteMediaStates[remoteSession]?.audio
+      remoteMediaStates[remoteIdentity]?.audio
     ) {
       participantAudioTrack.track.attach(audioElement.current);
     }
@@ -252,17 +250,17 @@ const VideoTile = ({
         participantAudioTrack.track.detach(audioElement.current);
       }
     };
-  }, [audioTracks, remoteMediaStates, remoteSession]);
+  }, [audioTracks, remoteMediaStates, remoteIdentity]);
 
   const getAudioState = () => {
     if (isLocal) {
       return mediaState;
     }
 
-    if (!remoteSession || !participant) return { audio: false };
+    if (!remoteIdentity || !participant) return { audio: false };
 
     return {
-      audio: remoteMediaStates[remoteSession]?.audio,
+      audio: remoteMediaStates[remoteIdentity]?.audio,
     };
   };
 
