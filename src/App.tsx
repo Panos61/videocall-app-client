@@ -6,7 +6,7 @@ import {
   PreferencesProvider,
   SessionProvider,
   SettingsProvider,
-  EventsProvider,
+  UserEventsProvider,
 } from './context';
 import ProtectedRoute from './utils/ProtectedRoute';
 
@@ -72,7 +72,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
         <SettingsProvider>
-          <EventsProvider>
+          <UserEventsProvider>
             <PreferencesProvider>
               <MediaControlProvider>
                 <TooltipProvider>
@@ -81,7 +81,7 @@ const App = () => {
                 <Toaster />
               </MediaControlProvider>
             </PreferencesProvider>
-          </EventsProvider>
+          </UserEventsProvider>
         </SettingsProvider>
       </SessionProvider>
     </QueryClientProvider>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Room, RemoteTrackPublication, Track } from 'livekit-client';
 import classNames from 'classnames';
-import { useEventsCtx } from '@/context';
+import { useUserEventsCtx } from '@/context';
 import { ScreenShare, ScreenShareOff } from 'lucide-react';
 
 interface Props {
@@ -11,7 +11,7 @@ interface Props {
 }
 
 const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
-  const { sendEvent } = useEventsCtx();
+  const { sendEvent } = useUserEventsCtx();
   const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {

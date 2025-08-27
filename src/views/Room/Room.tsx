@@ -25,7 +25,7 @@ import {
   useMediaControlCtx,
   useSettingsCtx,
   usePreferencesCtx,
-  useEventsCtx,
+  useUserEventsCtx,
 } from '@/context';
 import { exitRoom, getParticipants } from '@/api';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
@@ -65,11 +65,11 @@ const Room = () => {
     connectEvents,
     events: { reactionEvents, shareScreenEvents },
     disconnect: disconnectEvents,
-  } = useEventsCtx();
+  } = useUserEventsCtx();
   // Media Control Context: websocket connection for media device control
   const {
     connectMedia,
-    sendMediaUpdate,
+    sendMediaEvent,
     disconnectMedia,
     mediaState,
     remoteMediaStates,
@@ -232,7 +232,7 @@ const Room = () => {
     room.on(
       RoomEvent.ParticipantConnected,
       (participant: RemoteParticipant) => {
-        sendMediaUpdate(sessionID, mediaState);
+        sendMediaEvent(sessionID, mediaState);
         setRemoteParticipants((prevParticipants) => {
           const newMap = new Map(prevParticipants);
           newMap.set(participant.identity, participant);
@@ -361,8 +361,8 @@ const Room = () => {
         await room.connect(livekitUrl, lvkToken);
 
         // Only enable camera/mic if they were enabled in the lobby
-        // await room.localParticipant.setCameraEnabled(true);
-        // await room.localParticipant.setMicrophoneEnabled(true);
+        await room.localParticipant.setCameraEnabled(true);
+        await room.localParticipant.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
@@ -401,6 +401,10 @@ const Room = () => {
       setParticipants(participantsData.participantsInCall);
     }
   }, [participantsData, sessionID, remoteParticipants]);
+  
+  // useEffect(() => {
+  //   sendMediaEvent(sessionID, mediaState);
+  // }, [remoteParticipants]);
 
   useEffect(() => {
     connectSession(`/ws/signalling/${roomID}`);
@@ -417,25 +421,24 @@ const Room = () => {
   }, [ws, isConnected, sendMessage]);
 
   useEffect(() => {
-    connectEvents(`/ws/user-events/${roomID}`);
+    connectEvents(roomID, sessionID);
     if (!eventsWS) return;
 
     return () => {
       disconnectEvents();
     };
-  }, [roomID]);
+  }, [roomID, sessionID]);
 
   useEffect(() => {
-    const connect = async () => {
+    const connectMediaControlEvents = async () => {
       try {
-        connectMedia(`/ws/media/${roomID}`, sessionID);
+        connectMedia(roomID, sessionID);
       } catch (error) {
         console.error('Failed to establish WebSocket connection:', error);
       }
     };
 
-    connect();
-
+    connectMediaControlEvents();
     return () => {
       disconnectMedia();
     };
@@ -575,7 +578,7 @@ const Room = () => {
                       )}
                       track={remoteTrack.track}
                       audioTracks={remoteAudioTracks}
-                      remoteSession={remoteTrack.participantIdentity}
+                      remoteIdentity={remoteTrack.participantIdentity}
                       isLocal={false}
                       remoteMediaStates={remoteMediaStates}
                     />
@@ -627,7 +630,7 @@ const Room = () => {
                             )}
                             track={remoteTrack.track}
                             audioTracks={remoteAudioTracks}
-                            remoteSession={remoteTrack.participantIdentity}
+                            remoteIdentity={remoteTrack.participantIdentity}
                             isLocal={false}
                             remoteMediaStates={remoteMediaStates}
                           />

@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useHover } from 'usehooks-ts';
 import { SmilePlusIcon } from 'lucide-react';
-import { useEventsCtx } from '@/context';
+import { useUserEventsCtx } from '@/context';
 
 const REACTIONS = [
   {
@@ -42,7 +42,7 @@ const REACTIONS = [
 ];
 
 const Reactions = ({ sessionID }: { sessionID: string }) => {
-  const { sendEvent } = useEventsCtx();
+  const { sendEvent } = useUserEventsCtx();
 
   const hoverRef = useRef<HTMLDivElement>(null);
   const isHovering = useHover(hoverRef);

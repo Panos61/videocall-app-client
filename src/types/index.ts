@@ -1,12 +1,3 @@
-export interface Participant {
-  id: string;
-  username: string;
-  isHost: boolean;
-  avatar_src: string;
-  jwt: string;
-  session_id: string;
-}
-
 export interface SignallingMessage {
   type: string;
   sessionID: string;
@@ -18,8 +9,18 @@ export interface SignallingMessage {
 
 export interface BaseEvent {
   type: string;
-  senderID: string;
+  senderID?: string;
+  session_id?: string;
   payload: unknown;
+}
+
+export interface Participant {
+  id: string;
+  username: string;
+  isHost: boolean;
+  avatar_src: string;
+  jwt: string;
+  session_id: string;
 }
 
 export interface CreateRoom {
@@ -69,4 +70,13 @@ export interface UserEvent {
     participant_id: string;
     participant_name: string;
   };
+}
+
+export interface MediaControlState {
+  audio: boolean;
+  video: boolean;
+}
+
+export interface RemoteMediaControlState {
+  [sessionID: string]: MediaControlState;
 }

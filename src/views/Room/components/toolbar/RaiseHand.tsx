@@ -1,8 +1,8 @@
 import { HandIcon } from 'lucide-react';
-import { useEventsCtx } from '@/context';
+import { useUserEventsCtx } from '@/context';
 
 const RaiseHand = ({ sessionID }: { sessionID: string }) => {
-  const { sendEvent } = useEventsCtx();
+  const { sendEvent } = useUserEventsCtx();
 
   const handleRaiseHand = () => {
     sendEvent({

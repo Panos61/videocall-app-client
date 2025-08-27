@@ -7,7 +7,7 @@ import {
   RemoteVideoTrack,
   Track,
 } from 'livekit-client';
-import { useEventsCtx } from '@/context';
+import { useUserEventsCtx } from '@/context';
 import classNames from 'classnames';
 
 interface TrackInfo {
@@ -29,7 +29,7 @@ const ShareScreenTile = ({ isTilePanel, screenShareTrack }: Props) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const {
     events: { shareScreenEvents },
-  } = useEventsCtx();
+  } = useUserEventsCtx();
 
   useEffect(() => {
     const videoElement = videoRef.current;
