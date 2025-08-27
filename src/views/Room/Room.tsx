@@ -59,11 +59,13 @@ interface TrackInfo {
 const Room = () => {
   // Signalling Context: websocket connection for session/livekit token exchange
   const { ws, connectSession, isConnected, sendMessage } = useSessionCtx();
+  // Settings Context: websocket connection for settings
+  const { connectSettings, settings, disconnect } = useSettingsCtx();
   // Events Context: websocket connection for user events
   const {
     ws: eventsWS,
     connectEvents,
-    events: { reactionEvents, shareScreenEvents },
+    events: { shareScreenEvents },
     disconnect: disconnectEvents,
   } = useUserEventsCtx();
   // Media Control Context: websocket connection for media device control
@@ -107,9 +109,6 @@ const Room = () => {
   const { sessionID } = location.state || {};
 
   if (!roomID || !sessionID) return null;
-
-  // Settings Context: websocket connection for settings
-  const { connectSettings, settings, disconnect } = useSettingsCtx();
 
   useNavigationBlocker({
     message:
@@ -162,7 +161,6 @@ const Room = () => {
         track.kind === Track.Kind.Video &&
         publication.source === Track.Source.ScreenShare
       ) {
-        console.log('Screen share track detected:', track);
         setScreenShareTrack({
           track: track as RemoteVideoTrack,
           participantIdentity: participant.identity,
@@ -401,10 +399,6 @@ const Room = () => {
       setParticipants(participantsData.participantsInCall);
     }
   }, [participantsData, sessionID, remoteParticipants]);
-  
-  // useEffect(() => {
-  //   sendMediaEvent(sessionID, mediaState);
-  // }, [remoteParticipants]);
 
   useEffect(() => {
     connectSession(`/ws/signalling/${roomID}`);
@@ -470,15 +464,6 @@ const Room = () => {
 
     return participants.find((p) => p.session_id === remoteSession);
   };
-
-  // Transform reactions to match ReactionData interface
-  const transformedReactions =
-    reactionEvents &&
-    reactionEvents.map((r, index) => ({
-      id: `${r.username}-${Date.now()}-${index}`,
-      emoji: r.reaction_type,
-      username: r.username,
-    }));
 
   const handleScreenShareChange = useCallback(
     (isSharing: boolean, track?: any) => {
@@ -604,7 +589,7 @@ const Room = () => {
           <ResizableHandle withHandle hidden={!isFocusView} />
           <ResizablePanel defaultSize={70} minSize={30}>
             <div className='h-full relative overflow-hidden'>
-              <ReactionWrapper reactions={transformedReactions} />
+              <ReactionWrapper />
               <div className={videoContainerCls}>
                 {shareScreenEvents.length > 0 && screenShareTrack && (
                   <div className='h-full p-8 overscroll-auto'>

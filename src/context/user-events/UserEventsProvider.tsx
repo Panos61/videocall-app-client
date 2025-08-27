@@ -6,7 +6,8 @@ import type {
   RemoteMediaControlState,
 } from '@/types';
 
-interface Reaction {
+export interface Reaction {
+  id: string;
   reaction_type: string;
   username: string;
 }
@@ -75,7 +76,13 @@ export const UserEventsProvider = ({ children }: { children: React.ReactNode }) 
           // Process received events and update state
           switch (data.type) {
             case 'reaction.sent':
-              setReaction((prev) => [...prev, data.payload as Reaction]);
+              setReaction((prev) => [
+                ...prev,
+                {
+                  ...(data.payload as Omit<Reaction, 'id'>),
+                  id: `${data.session_id}-${Date.now()}`,
+                },
+              ]);
               setTimeout(() => {
                 setReaction((prev) => prev.slice(1));
               }, 5000);

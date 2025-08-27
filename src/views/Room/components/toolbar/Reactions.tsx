@@ -58,7 +58,7 @@ const Reactions = ({ sessionID }: { sessionID: string }) => {
   };
 
   const menu = (
-    <div className='absolute bottom-full left-[140px] -translate-x-1/2 flex items-center justify-between gap-8 p-4 w-[280px] rounded-8 bg-white shadow-elevation-low'>
+    <div className='absolute bottom-full left-[120px] -translate-x-1/2 flex items-center justify-between gap-8 p-4 w-[280px] rounded-8 bg-white shadow-elevation-low'>
       {REACTIONS.map((reaction) => (
         <div
           key={reaction.id}
