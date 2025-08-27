@@ -9,39 +9,44 @@ interface Props {
 }
 
 const Reaction = ({ emoji, id, username, onAnimationEnd }: Props) => {
-  const [shouldRemove, setShouldRemove] = useState(false);
+  const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
   // Random values for more natural balloon-like movement
-  const randomX = Math.random() * 200 - 100; // -100 to 100px horizontal drift
-  const randomRotation = Math.random() * 20 - 10; // -10 to 10 degrees rotation
-  const randomDuration = 5 + Math.random() * 3; // 5-8 seconds duration
-  const randomDelay = Math.random() * 0.3; // 0-0.3s delay
+  const randomXEnd = Math.random() * 100 - 50; // -50px to 50px horizontal drift
+  const randomDuration = 8 + Math.random() * 4; // 8-12 seconds duration
+
+  const handleAnimationEnd = (event: React.AnimationEvent) => {
+    // onAnimationEnd fires for both 'float-in' and 'float-out'
+    // We only want to remove the component after the 'float-out' animation
+    if (event.animationName === 'float-out') {
+      onAnimationEnd(id);
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setShouldRemove(true);
-      setTimeout(() => onAnimationEnd(id), 300); // Wait for fade out
-    }, randomDuration * 1000);
+      setIsAnimatingOut(true);
+    }, randomDuration * 1000 - 500); // Start fade out 500ms before end
 
     return () => clearTimeout(timer);
   }, [id, onAnimationEnd, randomDuration]);
 
   const cls = classNames(
-    'absolute bottom-20 left-1/2 transform -translate-x-1/2 pointer-events-none transition-all duration-300',
+    'absolute bottom-20 left-1/2 pointer-events-none',
     {
-      'opacity-0': shouldRemove,
-      'opacity-100': !shouldRemove,
+      'animate-float-in': !isAnimatingOut,
+      'animate-float-out': isAnimatingOut,
     }
   );
 
   return (
     <div
       className={cls}
+      onAnimationEnd={handleAnimationEnd}
       style={
         {
-          animation: `floatUp ${randomDuration}s ease-out ${randomDelay}s forwards`,
-          '--random-x': `${randomX}px`,
-          '--random-rotation': `${randomRotation}deg`,
+          '--random-x-end': `${randomXEnd}px`,
+          '--duration': `${randomDuration}s`,
         } as React.CSSProperties & { [key: string]: string }
       }
     >
@@ -53,42 +58,34 @@ const Reaction = ({ emoji, id, username, onAnimationEnd }: Props) => {
       </div>
       <style>
         {`
-          @keyframes floatUp {
+          @keyframes float-in {
             0% {
-              transform: translate(-50%, 0) translateX(0) rotate(0deg) scale(0.8);
+              transform: translate(-50%, 0) scale(0.6);
               opacity: 0;
-            }
-            5% {
-              opacity: 1;
-              transform: translate(-50%, -20px) translateX(calc(var(--random-x) * 0.1)) rotate(calc(var(--random-rotation) * 0.1)) scale(1);
             }
             15% {
-              transform: translate(-50%, -70px) translateX(calc(var(--random-x) * 0.25)) rotate(calc(var(--random-rotation) * 0.25)) scale(1.02);
-            }
-            30% {
-              transform: translate(-50%, -150px) translateX(calc(var(--random-x) * 0.45)) rotate(calc(var(--random-rotation) * 0.45)) scale(1);
-            }
-            45% {
-              transform: translate(-50%, -250px) translateX(calc(var(--random-x) * 0.65)) rotate(calc(var(--random-rotation) * 0.65)) scale(0.98);
-            }
-            60% {
-              transform: translate(-50%, -360px) translateX(calc(var(--random-x) * 0.8)) rotate(calc(var(--random-rotation) * 0.8)) scale(0.95);
-            }
-            75% {
-              transform: translate(-50%, -470px) translateX(calc(var(--random-x) * 0.9)) rotate(calc(var(--random-rotation) * 0.9)) scale(0.9);
-            }
-            85% {
-              transform: translate(-50%, -550px) translateX(calc(var(--random-x) * 0.95)) rotate(calc(var(--random-rotation) * 0.95)) scale(0.85);
-              opacity: 0.8;
-            }
-            95% {
-              transform: translate(-50%, -620px) translateX(var(--random-x)) rotate(var(--random-rotation)) scale(0.7);
-              opacity: 0.4;
+              transform: translate(-50%, -100px) scale(1);
+              opacity: 1;
             }
             100% {
-              transform: translate(-50%, -650px) translateX(var(--random-x)) rotate(var(--random-rotation)) scale(0.6);
+              transform: translate(calc(-50% + var(--random-x-end)), -100vh) scale(1);
+              opacity: 1;
+            }
+          }
+          @keyframes float-out {
+            0% {
+              opacity: 1;
+            }
+            100% {
+              transform: translate(calc(-50% + var(--random-x-end)), -700px) rotate(var(--random-rotate-end)) scale(1);
               opacity: 0;
             }
+          }
+          .animate-float-in {
+            animation: float-in var(--duration) ease-out forwards;
+          }
+          .animate-float-out {
+            animation: float-out 0.5s ease-out forwards;
           }
         `}
       </style>
