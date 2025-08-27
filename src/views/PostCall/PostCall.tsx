@@ -61,7 +61,7 @@ const PostCall = () => {
   useEffect(() => {
     startCountdown();
     if (count === 0) {
-      navigate('/', { replace: true });
+      exitRoomMutation();
     }
   }, [startCountdown, count]);
 
