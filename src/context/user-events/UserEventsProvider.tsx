@@ -122,7 +122,6 @@ export const UserEventsProvider = ({ children }: { children: React.ReactNode }) 
   };
 
   const sendEvent = (event: BaseEvent) => {
-    console.log('sendEvent', event);
     if (isConnected && ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(event));
     } else {

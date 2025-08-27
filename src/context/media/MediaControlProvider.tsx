@@ -100,8 +100,6 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     const updatedState = { ...mediaState, audio: enabled };
     setMediaState(updatedState);
 
-    console.log('updatedState', updatedState);
-
     if (isConnected && sessionID) {
       const msg: BaseEvent = {
         type: 'media.control.updated',
