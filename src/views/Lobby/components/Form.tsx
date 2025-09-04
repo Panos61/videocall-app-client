@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import Cookie from 'js-cookie';
 
 import { setParticipantCallData, setSession, startCall } from '@/api';
+import { useSystemEventsCtx } from '@/context';
 
 import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,8 @@ const Form = ({
   avatarSrc,
   isCallActive,
 }: Props) => {
+  const { sendSystemEvent } = useSystemEventsCtx();
+
   const {
     register,
     watch,
@@ -61,6 +64,11 @@ const Form = ({
         await startCall(roomID);
       }
 
+      sendSystemEvent({
+        type: 'user.joined',
+        session_id: sessionID,
+        payload: {},
+      });
       navigate(`/room/${roomID}/call`, {
         state: { roomID: roomID, sessionID: sessionID },
         replace: true,

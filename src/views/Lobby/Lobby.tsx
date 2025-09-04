@@ -13,7 +13,11 @@ import {
   getRoomInfo,
   exitRoom,
 } from '@/api';
-import { useMediaControlCtx, useSettingsCtx } from '@/context';
+import {
+  useMediaControlCtx,
+  useSettingsCtx,
+  useSystemEventsCtx,
+} from '@/context';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 import {
   Actions,
@@ -28,6 +32,7 @@ import {
 const Lobby = () => {
   const { pathname } = useLocation();
 
+  const { connectSystemEvents } = useSystemEventsCtx();
   const {
     mediaState,
     setAudioState,
@@ -80,6 +85,10 @@ const Lobby = () => {
     },
     allowedPaths: ['/call'],
   });
+
+  useEffect(() => {
+    connectSystemEvents(roomID);
+  }, [roomID, connectSystemEvents]);
 
   useEffect(() => {
     participantsWS.current = new WebSocket(
@@ -270,8 +279,8 @@ const Lobby = () => {
               />
               <StrictMode roomID={roomID} isHost={isHost} />
               {isCallActive && (
-              <Participants
-                guests={guests}
+                <Participants
+                  guests={guests}
                   participants={participants}
                   participantsInCall={participantsInCall}
                 />
