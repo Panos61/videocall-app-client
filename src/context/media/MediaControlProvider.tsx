@@ -36,9 +36,9 @@ export const MediaControlContext = createContext<CtxProps | undefined>(
 
 export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
   const {
-    connectEvents,
-    disconnect,
-    sendEvent,
+    connectUserEvents,
+    disconnectUserEvents,
+    sendUserEvent,
     isConnected,
     events: { remoteMediaStates },
   } = useUserEventsCtx();
@@ -58,17 +58,17 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
   const connectMedia = (roomID: string, sessionID: string) => {
     // Clean up any existing connection
     disconnectMedia();
-    connectEvents(roomID, sessionID);
+    connectUserEvents(roomID, sessionID);
   };
 
   const disconnectMedia = () => {
-    disconnect();
+    disconnectUserEvents();
   };
 
   useEffect(() => {
     return () => {
       // Cleanup when component unmounts
-      disconnect();
+      disconnectUserEvents();
     };
   }, []);
 
@@ -90,7 +90,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     };
 
     try {
-      sendEvent(msg);
+      sendUserEvent(msg);
     } catch (error) {
       console.error('Failed to send media update:', error);
     }
@@ -109,7 +109,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
           video: updatedState.video,
         },
       };
-      sendEvent(msg);
+      sendUserEvent(msg);
     }
   };
 
@@ -126,7 +126,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
           video: updatedState.video,
         },
       };
-      sendEvent(msg);
+      sendUserEvent(msg);
     }
   };
 

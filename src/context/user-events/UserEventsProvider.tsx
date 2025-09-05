@@ -25,9 +25,9 @@ interface ShareScreen {
 
 export interface Props {
   ws: WebSocket | null;
-  connectEvents: (roomID: string, sessionID: string) => void;
-  sendEvent: (event: BaseEvent) => void;
-  disconnect: () => void;
+  connectUserEvents: (roomID: string, sessionID: string) => void;
+  sendUserEvent: (event: BaseEvent) => void;
+  disconnectUserEvents: () => void;
   isConnected: boolean;
   events: {
     reactionEvents: Reaction[];
@@ -40,7 +40,11 @@ export interface Props {
 // eslint-disable-next-line react-refresh/only-export-components
 export const UserEventsContext = createContext<Props | undefined>(undefined);
 
-export const UserEventsProvider = ({ children }: { children: React.ReactNode }) => {
+export const UserEventsProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
@@ -50,7 +54,7 @@ export const UserEventsProvider = ({ children }: { children: React.ReactNode }) 
   const [remoteMediaStates, setRemoteMediaStates] =
     useState<RemoteMediaControlState>({});
 
-  const connectEvents = (roomID: string, sessionID: string) => {
+  const connectUserEvents = (roomID: string, sessionID: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       if (ws.current) {
         ws.current.close();
@@ -122,13 +126,13 @@ export const UserEventsProvider = ({ children }: { children: React.ReactNode }) 
     }
   };
 
-  const disconnect = () => {
+  const disconnectUserEvents = () => {
     ws.current?.close();
     ws.current = null;
     setIsConnected(false);
   };
 
-  const sendEvent = (event: BaseEvent) => {
+  const sendUserEvent = (event: BaseEvent) => {
     if (isConnected && ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(event));
     } else {
@@ -140,9 +144,9 @@ export const UserEventsProvider = ({ children }: { children: React.ReactNode }) 
     <UserEventsContext.Provider
       value={{
         ws: ws.current,
-        connectEvents,
-        sendEvent,
-        disconnect,
+        connectUserEvents,
+        sendUserEvent,
+        disconnectUserEvents,
         isConnected,
         events: {
           reactionEvents: reaction,

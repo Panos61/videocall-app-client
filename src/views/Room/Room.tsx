@@ -64,9 +64,9 @@ const Room = () => {
   // Events Context: websocket connection for user events
   const {
     ws: eventsWS,
-    connectEvents,
+    connectUserEvents,
     events: { shareScreenEvents },
-    disconnect: disconnectEvents,
+    disconnectUserEvents,
   } = useUserEventsCtx();
   // Media Control Context: websocket connection for media device control
   const {
@@ -415,11 +415,11 @@ const Room = () => {
   }, [ws, isConnected, sendMessage]);
 
   useEffect(() => {
-    connectEvents(roomID, sessionID);
+    connectUserEvents(roomID, sessionID);
     if (!eventsWS) return;
 
     return () => {
-      disconnectEvents();
+      disconnectUserEvents();
     };
   }, [roomID, sessionID]);
 

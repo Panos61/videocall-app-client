@@ -35,13 +35,13 @@ const REACTIONS = [
 ];
 
 const Reactions = ({ sessionID }: { sessionID: string }) => {
-  const { sendEvent } = useUserEventsCtx();
+  const { sendUserEvent } = useUserEventsCtx();
 
   const hoverRef = useRef<HTMLDivElement>(null);
   const isHovering = useHover(hoverRef);
 
   const handleSendReaction = (emoji: string) => {
-    sendEvent({
+    sendUserEvent({
       type: 'reaction.sent',
       senderID: sessionID,
       payload: {
