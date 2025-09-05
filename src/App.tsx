@@ -80,7 +80,7 @@ const App = () => {
                   <TooltipProvider>
                     <RouterProvider router={router} />
                   </TooltipProvider>
-                  <Toaster />
+                  {/* <Toaster /> */}
                 </PreferencesProvider>
               </MediaControlProvider>
             </UserEventsProvider>
