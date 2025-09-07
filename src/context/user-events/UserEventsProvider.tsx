@@ -1,4 +1,4 @@
-import { createContext, useState, useRef } from 'react';
+import { createContext, useState, useRef, useMemo } from 'react';
 import { BASE_WS_URL } from '@/utils/constants';
 import type {
   BaseEvent,
@@ -63,7 +63,7 @@ export const UserEventsProvider = ({
       ws.current = new WebSocket(`${BASE_WS_URL}/ws/user-events/${roomID}`);
 
       ws.current.onopen = () => {
-        setIsConnected(ws.current?.readyState === WebSocket.OPEN);
+        setIsConnected(true);
       };
 
       ws.current.onclose = () => {
@@ -109,13 +109,25 @@ export const UserEventsProvider = ({
               );
               break;
             case 'media.control.updated':
-              console.log('media.control.updated', data);
               if (data.session_id !== sessionID) {
-                setRemoteMediaStates((prev) => ({
-                  ...prev,
-                  [data.session_id as string]:
-                    data.payload as MediaControlState,
-                }));
+                setRemoteMediaStates((prev) => {
+                  const newState = {
+                    ...prev,
+                    [data.session_id as string]:
+                      data.payload as MediaControlState,
+                  };
+                  return newState;
+                });
+              }
+              break;
+            // todo: refactor this
+            case 'sync.media':
+              if (data.session_id !== sessionID) {
+                const receivedState = data.payload as RemoteMediaControlState;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { [sessionID]: myState, ...otherUsersState } =
+                  receivedState;
+                setRemoteMediaStates(otherUsersState);
               }
               break;
           }
@@ -133,29 +145,44 @@ export const UserEventsProvider = ({
   };
 
   const sendUserEvent = (event: BaseEvent) => {
-    if (isConnected && ws.current && ws.current.readyState === WebSocket.OPEN) {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(event));
     } else {
       console.warn('WebSocket not ready, message not sent:', event);
     }
   };
 
+  const events = useMemo(
+    () => ({
+      reactionEvents: reaction,
+      raisedHandEvents: raisedHand,
+      shareScreenEvents: shareScreen,
+      remoteMediaStates,
+    }),
+    [reaction, raisedHand, shareScreen, remoteMediaStates]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      ws: ws.current,
+      isConnected,
+      events,
+      connectUserEvents,
+      sendUserEvent,
+      disconnectUserEvents,
+    }),
+    [
+      ws.current,
+      isConnected,
+      events,
+      connectUserEvents,
+      sendUserEvent,
+      disconnectUserEvents,
+    ]
+  );
+
   return (
-    <UserEventsContext.Provider
-      value={{
-        ws: ws.current,
-        connectUserEvents,
-        sendUserEvent,
-        disconnectUserEvents,
-        isConnected,
-        events: {
-          reactionEvents: reaction,
-          raisedHandEvents: raisedHand,
-          shareScreenEvents: shareScreen,
-          remoteMediaStates,
-        },
-      }}
-    >
+    <UserEventsContext.Provider value={contextValue}>
       {children}
     </UserEventsContext.Provider>
   );

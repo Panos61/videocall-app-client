@@ -19,13 +19,17 @@ import {
 import classNames from 'classnames';
 import { useResizeObserver } from 'usehooks-ts';
 
-import type { Participant, SignallingMessage } from '@/types';
+import type {
+  SignallingMessage,
+  RemoteMediaControlState,
+  Participant,
+} from '@/types';
 import {
   useSessionCtx,
+  useUserEventsCtx,
   useMediaControlCtx,
   useSettingsCtx,
   usePreferencesCtx,
-  useUserEventsCtx,
 } from '@/context';
 import { exitRoom, getParticipants } from '@/api';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
@@ -65,13 +69,13 @@ const Room = () => {
   const {
     ws: eventsWS,
     connectUserEvents,
+    sendUserEvent,
     events: { shareScreenEvents },
     disconnectUserEvents,
   } = useUserEventsCtx();
   // Media Control Context: websocket connection for media device control
   const {
     connectMedia,
-    sendMediaEvent,
     disconnectMedia,
     mediaState,
     remoteMediaStates,
@@ -84,6 +88,16 @@ const Room = () => {
   } = useMediaControlCtx();
   const { isChatExpanded, shareScreenView, setShareScreenView, isFocusView } =
     usePreferencesCtx();
+
+  const remoteMediaStatesRef = useRef(remoteMediaStates);
+  useEffect(() => {
+    remoteMediaStatesRef.current = remoteMediaStates;
+  }, [remoteMediaStates]);
+
+  const mediaStateRef = useRef(mediaState);
+  useEffect(() => {
+    mediaStateRef.current = mediaState;
+  }, [mediaState]);
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
@@ -130,6 +144,52 @@ const Room = () => {
     },
     allowedPaths: ['/post-call'],
   });
+
+  useEffect(() => {
+    connectSession(`/ws/signalling/${roomID}`);
+
+    if (isConnected) sendMessage({ type: 'connect', sessionID });
+    if (!ws) return;
+
+    ws.onmessage = (event: MessageEvent) => {
+      const data: SignallingMessage = JSON.parse(event.data);
+      const lvkToken = data?.token;
+
+      setLvkToken(lvkToken);
+    };
+  }, [ws, isConnected, sendMessage]);
+
+  useEffect(() => {
+    connectUserEvents(roomID, sessionID);
+    if (!eventsWS) return;
+
+    return () => {
+      disconnectUserEvents();
+    };
+  }, [roomID, sessionID]);
+
+  useEffect(() => {
+    const connectMediaControlEvents = async () => {
+      try {
+        connectMedia(roomID, sessionID);
+      } catch (error) {
+        console.error('Failed to establish WebSocket connection:', error);
+      }
+    };
+
+    connectMediaControlEvents();
+    return () => {
+      disconnectMedia();
+    };
+  }, [roomID, sessionID]);
+
+  useEffect(() => {
+    connectSettings(roomID);
+
+    return () => {
+      disconnect();
+    };
+  }, [roomID, connectSettings]);
 
   // Setup LiveKit room & event listeners
   useEffect(() => {
@@ -227,19 +287,46 @@ const Room = () => {
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
 
-    room.on(
-      RoomEvent.ParticipantConnected,
-      (participant: RemoteParticipant) => {
-        sendMediaEvent(sessionID, mediaState);
-        setRemoteParticipants((prevParticipants) => {
-          const newMap = new Map(prevParticipants);
-          newMap.set(participant.identity, participant);
-          return newMap;
-        });
+    const handleParticipantConnected = (participant: RemoteParticipant) => {
+      // Everyone tries to send, but server only allows leader
+      const fullRoomState: RemoteMediaControlState = {
+        ...remoteMediaStatesRef.current,
+        [sessionID]: mediaStateRef.current,
+      };
 
-        refetchParticipants();
-      }
-    );
+      sendUserEvent({
+        type: 'sync.media',
+        session_id: sessionID,
+        payload: fullRoomState,
+      });
+
+      setRemoteParticipants((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(participant.identity, participant);
+        return newMap;
+      });
+      refetchParticipants();
+    };
+
+    const handleConnected = () => {
+      sendUserEvent({
+        type: 'media.control.updated',
+        session_id: sessionID,
+        payload: {
+          audio: mediaStateRef.current.audio,
+          video: mediaStateRef.current.video,
+        },
+      });
+
+      sendUserEvent({
+        type: 'sync.media',
+        session_id: sessionID,
+        payload: {},
+      });
+    };
+
+    room.on(RoomEvent.ParticipantConnected, handleParticipantConnected);
+    room.on(RoomEvent.Connected, handleConnected);
 
     room.on(
       RoomEvent.ParticipantDisconnected,
@@ -298,6 +385,8 @@ const Room = () => {
       );
       room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
       room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+      room.off(RoomEvent.ParticipantConnected, handleParticipantConnected);
+      room.off(RoomEvent.Connected, handleConnected);
       room.disconnect();
     };
   }, []);
@@ -354,7 +443,6 @@ const Room = () => {
 
         // Pre-warm connection
         room?.prepareConnection(livekitUrl, lvkToken);
-
         // Connect to room
         await room.connect(livekitUrl, lvkToken);
 
@@ -400,54 +488,7 @@ const Room = () => {
     }
   }, [participantsData, sessionID, remoteParticipants]);
 
-  useEffect(() => {
-    connectSession(`/ws/signalling/${roomID}`);
-
-    if (isConnected) sendMessage({ type: 'connect', sessionID });
-    if (!ws) return;
-
-    ws.onmessage = (event: MessageEvent) => {
-      const data: SignallingMessage = JSON.parse(event.data);
-      const lvkToken = data?.token;
-
-      setLvkToken(lvkToken);
-    };
-  }, [ws, isConnected, sendMessage]);
-
-  useEffect(() => {
-    connectUserEvents(roomID, sessionID);
-    if (!eventsWS) return;
-
-    return () => {
-      disconnectUserEvents();
-    };
-  }, [roomID, sessionID]);
-
-  useEffect(() => {
-    const connectMediaControlEvents = async () => {
-      try {
-        connectMedia(roomID, sessionID);
-      } catch (error) {
-        console.error('Failed to establish WebSocket connection:', error);
-      }
-    };
-
-    connectMediaControlEvents();
-    return () => {
-      disconnectMedia();
-    };
-  }, [roomID, sessionID]);
-
-  useEffect(() => {
-    connectSettings(roomID);
-
-    return () => {
-      disconnect();
-    };
-  }, [roomID, connectSettings]);
-
   const hasInvitePermission = settings?.invite_permission || false;
-
   const localParticipant: Participant | undefined = participants.find(
     (p) => p.session_id == sessionID
   );
