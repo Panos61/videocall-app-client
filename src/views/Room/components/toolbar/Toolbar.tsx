@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import { leaveCall } from '@/api';
 import {
   useSessionCtx,
+  useSystemEventsCtx,
   useMediaControlCtx,
   usePreferencesCtx,
 } from '@/context';
@@ -51,6 +52,7 @@ const Toolbar = ({
   onScreenShareChange,
 }: Props) => {
   const { sendMessage, disconnect } = useSessionCtx();
+  const { sendSystemEvent } = useSystemEventsCtx();
   const { videoTrack, setVideoTrack } = useMediaControlCtx();
   const { setIsChatExpanded, setIsFocusView, isFocusView } =
     usePreferencesCtx();
@@ -87,6 +89,12 @@ const Toolbar = ({
       if (room) {
         await room.disconnect();
       }
+
+      sendSystemEvent({
+        type: 'user.left',
+        session_id: sessionID,
+        payload: {},
+      });
 
       if (videoTrack) {
         videoTrack.stop();

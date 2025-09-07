@@ -2,11 +2,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import {
+  SessionProvider,
+  SystemEventsProvider,
+  UserEventsProvider,
+  SettingsProvider,
   MediaControlProvider,
   PreferencesProvider,
-  SessionProvider,
-  SettingsProvider,
-  UserEventsProvider,
 } from './context';
 import ProtectedRoute from './utils/ProtectedRoute';
 
@@ -71,18 +72,20 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <SessionProvider>
-        <SettingsProvider>
-          <UserEventsProvider>
-            <PreferencesProvider>
+        <SystemEventsProvider>
+          <SettingsProvider>
+            <UserEventsProvider>
               <MediaControlProvider>
-                <TooltipProvider>
-                  <RouterProvider router={router} />
-                </TooltipProvider>
-                <Toaster />
+                <PreferencesProvider>
+                  <TooltipProvider>
+                    <RouterProvider router={router} />
+                  </TooltipProvider>
+                  {/* <Toaster /> */}
+                </PreferencesProvider>
               </MediaControlProvider>
-            </PreferencesProvider>
-          </UserEventsProvider>
-        </SettingsProvider>
+            </UserEventsProvider>
+          </SettingsProvider>
+        </SystemEventsProvider>
       </SessionProvider>
     </QueryClientProvider>
   );

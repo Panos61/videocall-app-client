@@ -11,7 +11,7 @@ interface Props {
 }
 
 const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
-  const { sendEvent } = useUserEventsCtx();
+  const { sendUserEvent } = useUserEventsCtx();
   const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
@@ -72,7 +72,7 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
         await room.localParticipant.setScreenShareEnabled(false);
         setIsSharing(false);
 
-        sendEvent({
+        sendUserEvent({
           type: 'share_screen.ended',
           senderID: sessionID,
           payload: {
@@ -107,7 +107,7 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
           }
         }, 200);
 
-        sendEvent({
+        sendUserEvent({
           type: 'share_screen.started',
           senderID: sessionID,
           payload: {

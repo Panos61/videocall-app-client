@@ -1,4 +1,4 @@
-import { createContext, useState, useRef } from 'react';
+import { createContext, useState, useRef, useMemo } from 'react';
 import { BASE_WS_URL } from '@/utils/constants';
 import type {
   BaseEvent,
@@ -25,9 +25,9 @@ interface ShareScreen {
 
 export interface Props {
   ws: WebSocket | null;
-  connectEvents: (roomID: string, sessionID: string) => void;
-  sendEvent: (event: BaseEvent) => void;
-  disconnect: () => void;
+  connectUserEvents: (roomID: string, sessionID: string) => void;
+  sendUserEvent: (event: BaseEvent) => void;
+  disconnectUserEvents: () => void;
   isConnected: boolean;
   events: {
     reactionEvents: Reaction[];
@@ -40,7 +40,11 @@ export interface Props {
 // eslint-disable-next-line react-refresh/only-export-components
 export const UserEventsContext = createContext<Props | undefined>(undefined);
 
-export const UserEventsProvider = ({ children }: { children: React.ReactNode }) => {
+export const UserEventsProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
@@ -50,7 +54,7 @@ export const UserEventsProvider = ({ children }: { children: React.ReactNode }) 
   const [remoteMediaStates, setRemoteMediaStates] =
     useState<RemoteMediaControlState>({});
 
-  const connectEvents = (roomID: string, sessionID: string) => {
+  const connectUserEvents = (roomID: string, sessionID: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       if (ws.current) {
         ws.current.close();
@@ -59,7 +63,7 @@ export const UserEventsProvider = ({ children }: { children: React.ReactNode }) 
       ws.current = new WebSocket(`${BASE_WS_URL}/ws/user-events/${roomID}`);
 
       ws.current.onopen = () => {
-        setIsConnected(ws.current?.readyState === WebSocket.OPEN);
+        setIsConnected(true);
       };
 
       ws.current.onclose = () => {
@@ -105,13 +109,25 @@ export const UserEventsProvider = ({ children }: { children: React.ReactNode }) 
               );
               break;
             case 'media.control.updated':
-              console.log('media.control.updated', data);
               if (data.session_id !== sessionID) {
-                setRemoteMediaStates((prev) => ({
-                  ...prev,
-                  [data.session_id as string]:
-                    data.payload as MediaControlState,
-                }));
+                setRemoteMediaStates((prev) => {
+                  const newState = {
+                    ...prev,
+                    [data.session_id as string]:
+                      data.payload as MediaControlState,
+                  };
+                  return newState;
+                });
+              }
+              break;
+            // todo: refactor this
+            case 'sync.media':
+              if (data.session_id !== sessionID) {
+                const receivedState = data.payload as RemoteMediaControlState;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { [sessionID]: myState, ...otherUsersState } =
+                  receivedState;
+                setRemoteMediaStates(otherUsersState);
               }
               break;
           }
@@ -122,36 +138,51 @@ export const UserEventsProvider = ({ children }: { children: React.ReactNode }) 
     }
   };
 
-  const disconnect = () => {
+  const disconnectUserEvents = () => {
     ws.current?.close();
     ws.current = null;
     setIsConnected(false);
   };
 
-  const sendEvent = (event: BaseEvent) => {
-    if (isConnected && ws.current && ws.current.readyState === WebSocket.OPEN) {
+  const sendUserEvent = (event: BaseEvent) => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(event));
     } else {
       console.warn('WebSocket not ready, message not sent:', event);
     }
   };
 
+  const events = useMemo(
+    () => ({
+      reactionEvents: reaction,
+      raisedHandEvents: raisedHand,
+      shareScreenEvents: shareScreen,
+      remoteMediaStates,
+    }),
+    [reaction, raisedHand, shareScreen, remoteMediaStates]
+  );
+
+  const contextValue = useMemo(
+    () => ({
+      ws: ws.current,
+      isConnected,
+      events,
+      connectUserEvents,
+      sendUserEvent,
+      disconnectUserEvents,
+    }),
+    [
+      ws.current,
+      isConnected,
+      events,
+      connectUserEvents,
+      sendUserEvent,
+      disconnectUserEvents,
+    ]
+  );
+
   return (
-    <UserEventsContext.Provider
-      value={{
-        ws: ws.current,
-        connectEvents,
-        sendEvent,
-        disconnect,
-        isConnected,
-        events: {
-          reactionEvents: reaction,
-          raisedHandEvents: raisedHand,
-          shareScreenEvents: shareScreen,
-          remoteMediaStates,
-        },
-      }}
-    >
+    <UserEventsContext.Provider value={contextValue}>
       {children}
     </UserEventsContext.Provider>
   );

@@ -6,49 +6,42 @@ import { useUserEventsCtx } from '@/context';
 const REACTIONS = [
   {
     id: 1,
-    type: 'like',
     emoji: '👍',
   },
   {
     id: 2,
-    type: 'dislike',
     emoji: '👎',
   },
   {
     id: 3,
-    type: 'laugh',
     emoji: '😀',
   },
   {
     id: 4,
-    type: 'sad',
     emoji: '😢',
   },
   {
     id: 5,
-    type: 'heart',
     emoji: '❤️',
   },
   {
     id: 6,
-    type: 'celebrate',
     emoji: '🎉',
   },
   {
     id: 7,
-    type: 'cat',
     emoji: '🐈',
   },
 ];
 
 const Reactions = ({ sessionID }: { sessionID: string }) => {
-  const { sendEvent } = useUserEventsCtx();
+  const { sendUserEvent } = useUserEventsCtx();
 
   const hoverRef = useRef<HTMLDivElement>(null);
   const isHovering = useHover(hoverRef);
 
   const handleSendReaction = (emoji: string) => {
-    sendEvent({
+    sendUserEvent({
       type: 'reaction.sent',
       senderID: sessionID,
       payload: {

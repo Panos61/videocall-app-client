@@ -5,6 +5,7 @@ import { useCountdown } from 'usehooks-ts';
 import Cookie from 'js-cookie';
 
 import { exitRoom } from '@/api';
+import { useSystemEventsCtx } from '@/context';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,8 @@ import {
 } from 'lucide-react';
 
 const PostCall = () => {
+  const { disconnectSystemEvents } = useSystemEventsCtx();
+  
   const navigate = useNavigate();
   const { id: roomID } = useParams<{ id: string }>();
 
@@ -29,6 +32,7 @@ const PostCall = () => {
     message:
       'Are you sure you want to leave the room? All your data will be deleted.',
     onBeforeLeave: () => {
+      disconnectSystemEvents();
       exitRoom(roomID);
     },
     shouldBlock: !allowNavigation,
@@ -38,11 +42,13 @@ const PostCall = () => {
   const { mutate: exitRoomMutation, isPending } = useMutation({
     mutationFn: () => exitRoom(roomID),
     onSuccess: () => {
+      disconnectSystemEvents();
       setAllowNavigation(true);
       setTimeout(() => navigate('/', { replace: true }), 0);
       Cookie.remove('rsCookie');
     },
     onError: () => {
+      disconnectSystemEvents();
       setAllowNavigation(true);
       setTimeout(() => navigate('/', { replace: true }), 0);
       Cookie.remove('rsCookie');

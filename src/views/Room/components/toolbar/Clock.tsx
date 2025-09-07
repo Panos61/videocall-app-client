@@ -13,7 +13,7 @@ const Clock = () => {
   }, []);
 
   return (
-    <div className='w-72 text-md lg:text-lg text-white font-medium'>
+    <div className='w-auto text-md lg:text-lg text-white font-medium'>
       {format(currentTime, 'h:mm aa')}
     </div>
   );
