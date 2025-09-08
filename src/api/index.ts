@@ -128,6 +128,14 @@ export const exitRoom = async (roomID: string): Promise<boolean> => {
   return response.data;
 };
 
+export const getLvkToken = async (roomID: string, sessionID: string): Promise<string> => {
+  const response = await api.post<string>(`/lvk-token/${roomID}`, {
+    session_id: sessionID,
+  });
+  
+  return response.data;
+}
+
 export const getCallState = async (roomID: string): Promise<CallState> => {
   const response = await api.get<CallState>(`/call/${roomID}`);
   return response.data;
@@ -177,7 +185,6 @@ export const setParticipantCallData = async (
 export const getSettings = async (roomID: string) => {
   try {
     const response = await api.get<Settings>(`/settings/${roomID}`);
-
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 400) {

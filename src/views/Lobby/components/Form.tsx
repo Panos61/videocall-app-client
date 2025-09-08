@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Cookie from 'js-cookie';
@@ -55,13 +56,18 @@ const Form = ({
   const roomID = pathname.split('/')[2];
   const jwt = Cookie.get('rsCookie');
 
+  const { mutate: startCallMutation, isPending: isStartingCall } = useMutation({
+    mutationFn: () => startCall(roomID),
+    retry: true,
+  });
+
   const handleStartCall = async () => {
     try {
       const sessionID: string = await setSession(roomID, jwt);
       await setParticipantCallData(roomID, formUsername, avatarSrc, jwt);
 
       if (isHost) {
-        await startCall(roomID);
+        startCallMutation();
       }
 
       sendSystemEvent({
@@ -97,7 +103,13 @@ const Form = ({
     }
   };
 
-  const isDisabled = !isValid || (!isCallActive && !isHost);
+  const isDisabled = !isValid || (!isCallActive && !isHost) || isStartingCall;
+  const renderText = () => {
+    if (isStartingCall) {
+      return 'Starting call...';
+    }
+    return isHost ? 'Start Call' : 'Join Call';
+  };
 
   return (
     <>
@@ -127,7 +139,7 @@ const Form = ({
         disabled={isDisabled}
         onClick={handleStartCall}
       >
-        {isHost ? 'Start Call' : 'Join Call'}
+        {renderText()}
       </Button>
       {!isCallActive && !isHost && (
         <div className='flex justify-center mt-8'>

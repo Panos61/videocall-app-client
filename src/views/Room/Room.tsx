@@ -19,19 +19,14 @@ import {
 import classNames from 'classnames';
 import { useResizeObserver } from 'usehooks-ts';
 
-import type {
-  SignallingMessage,
-  RemoteMediaControlState,
-  Participant,
-} from '@/types';
+import type { RemoteMediaControlState, Participant } from '@/types';
 import {
-  useSessionCtx,
   useUserEventsCtx,
   useMediaControlCtx,
   useSettingsCtx,
   usePreferencesCtx,
 } from '@/context';
-import { exitRoom, getParticipants } from '@/api';
+import { exitRoom, getLvkToken, getParticipants } from '@/api';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import {
@@ -46,6 +41,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
+import RoomLoader from './RoomLoader';
 import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
 import Header from './Header';
 import TilePanel from './TilePanel';
@@ -61,8 +57,6 @@ interface TrackInfo {
 }
 
 const Room = () => {
-  // Signalling Context: websocket connection for session/livekit token exchange
-  const { ws, connectSession, isConnected, sendMessage } = useSessionCtx();
   // Settings Context: websocket connection for settings
   const { connectSettings, settings, disconnect } = useSettingsCtx();
   // Events Context: websocket connection for user events
@@ -109,9 +103,7 @@ const Room = () => {
   const [participants, setParticipants] = useState<Participant[]>([]);
 
   const livekitRoom = useRef<LivekitRoom | null>(null);
-  const [lvkToken, setLvkToken] = useState<SignallingMessage['token'] | null>(
-    null
-  );
+  const [lvkToken, setLvkToken] = useState<string>();
   const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
   const [remoteAudioTracks, setRemoteAudioTracks] = useState<TrackInfo[]>([]);
   const [screenShareTrack, setScreenShareTrack] = useState<TrackInfo | null>(
@@ -138,26 +130,29 @@ const Room = () => {
         audioTrack.stop();
       }
 
-      sendMessage({ type: 'disconnect', sessionID });
       disconnect();
       exitRoom(roomID);
     },
     allowedPaths: ['/post-call'],
   });
 
+  const {
+    data: lvkTokenData,
+    isLoading: isLvkTokenLoading,
+    isError: isLvkTokenError,
+  } = useQuery({
+    queryKey: ['lvkToken', roomID],
+    queryFn: () => getLvkToken(roomID as string, sessionID),
+    enabled: !!roomID,
+  });
+
   useEffect(() => {
-    connectSession(`/ws/signalling/${roomID}`);
+    if (lvkTokenData) {
+      setLvkToken(lvkTokenData);
+    }
+  }, [lvkTokenData]);
 
-    if (isConnected) sendMessage({ type: 'connect', sessionID });
-    if (!ws) return;
-
-    ws.onmessage = (event: MessageEvent) => {
-      const data: SignallingMessage = JSON.parse(event.data);
-      const lvkToken = data?.token;
-
-      setLvkToken(lvkToken);
-    };
-  }, [ws, isConnected, sendMessage]);
+  console.log('lvkToken', lvkTokenData);
 
   useEffect(() => {
     connectUserEvents(roomID, sessionID);
@@ -370,7 +365,7 @@ const Room = () => {
       setRemoteTracks([]);
       setRemoteAudioTracks([]);
       setParticipants([]);
-      setLvkToken(null);
+      setLvkToken(undefined);
       setVideoTrack(null);
       setAudioTrack(null);
       setAudioState(false);
@@ -563,6 +558,10 @@ const Room = () => {
     avatarSize = 'md';
     usernameSize = 'lg';
     iconSize = 20;
+  }
+
+  if (!isLvkTokenLoading) {
+    return <RoomLoader hasError={isLvkTokenError} />;
   }
 
   return (
