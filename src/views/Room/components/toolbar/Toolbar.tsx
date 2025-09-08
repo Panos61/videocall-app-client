@@ -5,7 +5,6 @@ import classNames from 'classnames';
 
 import { leaveCall } from '@/api';
 import {
-  useSessionCtx,
   useSystemEventsCtx,
   useMediaControlCtx,
   usePreferencesCtx,
@@ -51,7 +50,6 @@ const Toolbar = ({
   setActivePanel,
   onScreenShareChange,
 }: Props) => {
-  const { sendMessage, disconnect } = useSessionCtx();
   const { sendSystemEvent } = useSystemEventsCtx();
   const { videoTrack, setVideoTrack } = useMediaControlCtx();
   const { setIsChatExpanded, setIsFocusView, isFocusView } =
@@ -104,9 +102,6 @@ const Toolbar = ({
       // Reset media state in context
       setAudioState(false, sessionID);
       setVideoState(false, sessionID);
-
-      sendMessage({ type: 'disconnect', sessionID });
-      disconnect();
       await leaveCall(roomID, jwt);
 
       navigate(`/room/${roomID}/post-call`, {
