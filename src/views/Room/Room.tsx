@@ -600,6 +600,7 @@ const Room = () => {
                   remoteTrack.track.kind === 'video' && (
                     <VideoTile
                       key={remoteTrack.track.sid}
+                      isTilePanel={true}
                       index={index}
                       responsiveSize={{
                         avatarSize,
@@ -620,6 +621,7 @@ const Room = () => {
               })}
               <VideoTile
                 key='local-video'
+                isTilePanel={true}
                 responsiveSize={{
                   avatarSize,
                   usernameSize,

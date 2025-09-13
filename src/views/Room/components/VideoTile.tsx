@@ -7,9 +7,10 @@ import {
   Track,
 } from 'livekit-client';
 import classNames from 'classnames';
-import { MicIcon, MicOffIcon } from 'lucide-react';
+import { HandIcon, MicIcon, MicOffIcon } from 'lucide-react';
 
 import type { Participant } from '@/types';
+import { useUserEventsCtx } from '@/context';
 import { Avatar, LoadingSpinner } from '@/components/elements';
 
 interface TrackInfo {
@@ -30,6 +31,7 @@ interface ResponsiveSize {
 
 interface Props {
   index?: number;
+  isTilePanel?: boolean;
   participant: Participant | undefined;
   track: LocalVideoTrack | RemoteVideoTrack;
   audioTracks?: TrackInfo[];
@@ -45,6 +47,7 @@ interface Props {
 
 const VideoTile = ({
   index,
+  isTilePanel,
   participant,
   track,
   audioTracks,
@@ -58,6 +61,10 @@ const VideoTile = ({
     iconSize: 20,
   },
 }: Props) => {
+  const {
+    events: { raisedHandEvents },
+  } = useUserEventsCtx();
+
   const videoID: string = isLocal ? 'local-video' : `${remoteIdentity}-video`;
   const localVideoElement = useRef<HTMLVideoElement | null>(null);
   const remoteVideoElement = useRef<HTMLVideoElement | null>(null);
@@ -264,6 +271,19 @@ const VideoTile = ({
     };
   };
 
+  // todo: refactor this
+  const isRaisedHand = raisedHandEvents.some(
+    (event) => event.username === participant?.username
+  );
+
+  const videoTileCls = classNames(
+    'relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr',
+    {
+      'transition-transform duration-1000 ease-out': !isRaisedHand,
+      'border border-yellow-500': isRaisedHand,
+    }
+  );
+
   const usernameCls = classNames(
     'absolute bottom-4 right-12 px-12 py-4 rounded-md text-white bg-black bg-opacity-45 z-50',
     {
@@ -273,10 +293,13 @@ const VideoTile = ({
   );
 
   return (
-    <div
-      ref={tileContainerRef}
-      className='relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr transition-all duration-1000 ease-out'
-    >
+    <div ref={tileContainerRef} className={videoTileCls}>
+      {isRaisedHand && !isTilePanel && (
+        <HandIcon
+          size={24}
+          className='text-yellow-500 absolute top-12 right-12'
+        />
+      )}
       {isLocal ? renderLocalPreview() : renderRemotePreview()}
       <div className={usernameCls}>{participant?.username}</div>
       <div className='absolute bottom-4 left-12 py-4 z-50'>
