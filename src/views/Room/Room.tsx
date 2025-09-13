@@ -135,8 +135,6 @@ const Room = () => {
     allowedPaths: ['/post-call'],
   });
 
-  console.log('sessionID', sessionID);
-
   const {
     data: lvkTokenData,
     isLoading: isLvkTokenLoading,
