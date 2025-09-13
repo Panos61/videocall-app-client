@@ -1,12 +1,3 @@
-export interface SignallingMessage {
-  type: string;
-  sessionID: string;
-  token?: string;
-  description?: string;
-  candidate?: string;
-  to?: string;
-}
-
 export interface BaseEvent {
   type: string;
   senderID?: string;

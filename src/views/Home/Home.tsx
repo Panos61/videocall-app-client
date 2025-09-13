@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Cookie from 'js-cookie';
@@ -27,22 +28,24 @@ const Home = () => {
   );
   const [roomID, setRoomID] = useState<string | undefined>(undefined);
 
-  const handleCreateRoom = async () => {
-    try {
-      const response = await createRoom();
-      const { id, participants } = response;
+  const { mutate: createRoomMutation, isPending: isCreatingRoom } = useMutation(
+    {
+      mutationFn: () => createRoom(),
+      onSuccess: (data) => {
+        const { id, participants } = data;
+        Cookie.set('rsCookie', participants.jwt);
+        navigate(`/room/${id}`);
 
-      Cookie.set('rsCookie', participants.jwt);
-      navigate(`/room/${id}`);
-
-      toast({
-        title: 'Created a room! 🎉',
-        description: 'You can now join in. 🚀',
-      });
-    } catch (error) {
-      console.error('err: ', error);
+        toast({
+          title: 'Created a room! 🎉',
+          description: 'You can now join in. 🚀',
+        });
+      },
+      onError: (error) => {
+        console.error('err: ', error);
+      },
     }
-  };
+  );
 
   const renderInvalidInputWarning = () => {
     if (errors.invitationCode) {
@@ -109,11 +112,12 @@ const Home = () => {
           </p>
           <div className='flex items-center gap-12'>
             <Button
-              onClick={handleCreateRoom}
+              onClick={() => createRoomMutation()}
+              disabled={isCreatingRoom}
               className='px-24 text-white rounded-xl'
             >
               <PlusIcon className='mr-8 size-20' />
-              Create Room
+              {isCreatingRoom ? 'Creating room...' : 'Create Room'}
             </Button>
             <Separator orientation='vertical' className='h-28 bg-gray-300' />
             <div className='flex flex-col gap-4'>

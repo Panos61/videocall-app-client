@@ -2,7 +2,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
 import {
-  SessionProvider,
   SystemEventsProvider,
   UserEventsProvider,
   SettingsProvider,
@@ -11,7 +10,7 @@ import {
 } from './context';
 import ProtectedRoute from './utils/ProtectedRoute';
 
-import { Toaster } from '@/components/ui/toaster';
+// import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   Home,
@@ -71,22 +70,20 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SessionProvider>
-        <SystemEventsProvider>
-          <SettingsProvider>
-            <UserEventsProvider>
-              <MediaControlProvider>
-                <PreferencesProvider>
-                  <TooltipProvider>
-                    <RouterProvider router={router} />
-                  </TooltipProvider>
-                  {/* <Toaster /> */}
-                </PreferencesProvider>
-              </MediaControlProvider>
-            </UserEventsProvider>
-          </SettingsProvider>
-        </SystemEventsProvider>
-      </SessionProvider>
+      <SystemEventsProvider>
+        <SettingsProvider>
+          <UserEventsProvider>
+            <MediaControlProvider>
+              <PreferencesProvider>
+                <TooltipProvider>
+                  <RouterProvider router={router} />
+                </TooltipProvider>
+                {/* <Toaster /> */}
+              </PreferencesProvider>
+            </MediaControlProvider>
+          </UserEventsProvider>
+        </SettingsProvider>
+      </SystemEventsProvider>
     </QueryClientProvider>
   );
 };
