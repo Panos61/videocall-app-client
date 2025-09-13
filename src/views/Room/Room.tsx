@@ -41,7 +41,7 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
-import RoomLoader from './RoomLoader';
+// import RoomLoader from './RoomLoader';
 import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
 import Header from './Header';
 import TilePanel from './TilePanel';
@@ -137,7 +137,7 @@ const Room = () => {
 
   const {
     data: lvkTokenData,
-    isLoading: isLvkTokenLoading,
+    // isLoading: isLvkTokenLoading,
     isError: isLvkTokenError,
     // refetch: refetchLvkToken,
   } = useQuery({
@@ -568,9 +568,9 @@ const Room = () => {
     iconSize = 20;
   }
 
-  if (isLvkTokenLoading || isLvkTokenError) {
-    return <RoomLoader hasError={isLvkTokenError} />;
-  }
+  // if (isLvkTokenLoading || isLvkTokenError) {
+  //   return <RoomLoader hasError={isLvkTokenError} />;
+  // }
 
   return (
     <div className='h-screen bg-black flex flex-col'>
