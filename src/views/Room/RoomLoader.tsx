@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { useCountdown } from 'usehooks-ts';
@@ -8,9 +8,14 @@ import { exitRoom } from '@/api';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import { LoadingSpinner } from '@/components/elements';
-import { Button } from '@/components/ui/button';
+// import { Button } from '@/components/ui/button';
 
-const RoomLoader = ({ hasError }: { hasError: boolean }) => {
+interface Props {
+  hasError?: boolean;
+  onRetry?: () => void;
+}
+
+const RoomLoader = ({ hasError }: Props) => {
   const navigate = useNavigate();
   const { id: roomID } = useParams();
 
@@ -53,22 +58,22 @@ const RoomLoader = ({ hasError }: { hasError: boolean }) => {
 
   return (
     <div className='h-screen flex flex-col gap-24 items-center justify-center text-center bg-zinc-900'>
-      {hasError && (
+      {!hasError && (
         <>
-          <LoadingSpinner size='lg' />
           <h1 className='text-slate-200 text-2xl font-medium animate-pulse'>
             Connecting to room...
           </h1>
+          <LoadingSpinner size='lg' />
         </>
       )}
-      {!hasError && (
+      {hasError && (
         <div className='flex flex-col items-center gap-12 mt-24'>
           <p className='text-slate-200 text-sm'>
             Failed to connect to room. Please try again.
           </p>
-          <Button variant='secondary' onClick={() => window.location.reload()}>
-            Reload
-          </Button>
+          {/* <Button variant='secondary' onClick={onRetry}>
+            Try again
+          </Button> */}
           <span className='mt-32 text-slate-200 text-sm underline'>
             Returning to home screen in {count} seconds.
           </span>

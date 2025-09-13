@@ -113,8 +113,7 @@ const Room = () => {
   const location = useLocation();
   const { id: roomID } = useParams<{ id: string }>();
   const { sessionID } = location.state || {};
-
-  if (!roomID || !sessionID) return null;
+  // const [searchParams, setSearchParams] = useSearchParams();
 
   useNavigationBlocker({
     message:
@@ -131,31 +130,42 @@ const Room = () => {
       }
 
       disconnect();
-      exitRoom(roomID);
+      if (roomID) exitRoom(roomID);
     },
     allowedPaths: ['/post-call'],
   });
+
+  console.log('sessionID', sessionID);
 
   const {
     data: lvkTokenData,
     isLoading: isLvkTokenLoading,
     isError: isLvkTokenError,
+    // refetch: refetchLvkToken,
   } = useQuery({
     queryKey: ['lvkToken', roomID],
     queryFn: () => getLvkToken(roomID as string, sessionID),
-    enabled: !!roomID,
+    enabled: !!roomID && !!sessionID,
   });
+
+  // useEffect(() => {
+  //   if (searchParams.get('retry')) {
+  //     refetchLvkToken();
+  //     searchParams.delete('retry');
+  //     setSearchParams(searchParams, { replace: false });
+  //   }
+  // }, [searchParams, refetchLvkToken, setSearchParams]);
 
   useEffect(() => {
     if (lvkTokenData) {
       setLvkToken(lvkTokenData);
+    } else if (isLvkTokenError) {
+      setLvkToken(undefined);
     }
-  }, [lvkTokenData]);
-
-  console.log('lvkToken', lvkTokenData);
+  }, [lvkTokenData, isLvkTokenError]);
 
   useEffect(() => {
-    connectUserEvents(roomID, sessionID);
+    if (roomID && sessionID) connectUserEvents(roomID, sessionID);
     if (!eventsWS) return;
 
     return () => {
@@ -166,7 +176,7 @@ const Room = () => {
   useEffect(() => {
     const connectMediaControlEvents = async () => {
       try {
-        connectMedia(roomID, sessionID);
+        if (roomID && sessionID) connectMedia(roomID, sessionID);
       } catch (error) {
         console.error('Failed to establish WebSocket connection:', error);
       }
@@ -179,7 +189,7 @@ const Room = () => {
   }, [roomID, sessionID]);
 
   useEffect(() => {
-    connectSettings(roomID);
+    if (roomID && sessionID) connectSettings(roomID);
 
     return () => {
       disconnect();
@@ -474,7 +484,7 @@ const Room = () => {
 
   const { data: participantsData, refetch: refetchParticipants } = useQuery({
     queryKey: ['call-participants', roomID],
-    queryFn: () => getParticipants(roomID),
+    queryFn: () => getParticipants(roomID as string),
   });
 
   useEffect(() => {
@@ -560,8 +570,8 @@ const Room = () => {
     iconSize = 20;
   }
 
-  if (!isLvkTokenLoading) {
-    return <RoomLoader hasError={isLvkTokenError} />;
+  if (isLvkTokenLoading || isLvkTokenError) {
+    return <RoomLoader hasError />;
   }
 
   return (
