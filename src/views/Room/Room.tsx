@@ -569,7 +569,7 @@ const Room = () => {
   }
 
   if (isLvkTokenLoading || isLvkTokenError) {
-    return <RoomLoader hasError />;
+    return <RoomLoader hasError={isLvkTokenError} />;
   }
 
   return (

@@ -103,13 +103,13 @@ const Form = ({
     }
   };
 
-  const isDisabled = !isValid || (!isCallActive && !isHost) || isStartingCall;
   const renderText = () => {
     if (isStartingCall) {
       return 'Starting call...';
     }
     return isHost ? 'Start Call' : 'Join Call';
   };
+  const isDisabled = !isValid || (!isCallActive && !isHost) || isStartingCall;
 
   return (
     <>
