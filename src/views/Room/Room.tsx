@@ -590,7 +590,7 @@ const Room = () => {
               {shareScreenEvents.length > 0 && screenShareTrack && (
                 <div className='h-full overscroll-auto'>
                   <ShareScreenTile
-                    isTilePanel={true}
+                    isTilePanel
                     screenShareTrack={screenShareTrack}
                   />
                 </div>
@@ -600,6 +600,7 @@ const Room = () => {
                   remoteTrack.track.kind === 'video' && (
                     <VideoTile
                       key={remoteTrack.track.sid}
+                      isTilePanel
                       index={index}
                       responsiveSize={{
                         avatarSize,
@@ -620,6 +621,7 @@ const Room = () => {
               })}
               <VideoTile
                 key='local-video'
+                isTilePanel={true}
                 responsiveSize={{
                   avatarSize,
                   usernameSize,
@@ -658,6 +660,7 @@ const Room = () => {
                           <VideoTile
                             key={remoteTrack.track.sid}
                             index={index}
+                            isTilePanel={false}
                             participant={remoteParticipant(
                               remoteTrack.participantIdentity
                             )}
@@ -673,6 +676,7 @@ const Room = () => {
                     {(remoteTracks.length === 0 || !isFocusView) && (
                       <VideoTile
                         key='local-video'
+                        isTilePanel={false}
                         participant={localParticipant}
                         track={videoTrack as LocalVideoTrack}
                         isLocal={true}
