@@ -567,7 +567,8 @@ const Room = () => {
     usernameSize = 'lg';
     iconSize = 20;
   }
-
+  
+  // todo: refactor this loader
   // if (isLvkTokenLoading || isLvkTokenError) {
   //   return <RoomLoader hasError={isLvkTokenError} />;
   // }
