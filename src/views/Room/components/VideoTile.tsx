@@ -271,7 +271,7 @@ const VideoTile = ({
     };
   };
 
-  // todo: refactor this
+  // todo: refactor this logic - -> O(n) -> O(1) + bug on remote video tile
   const isRaisedHand = raisedHandEvents.some(
     (event) => event.username === participant?.username
   );
