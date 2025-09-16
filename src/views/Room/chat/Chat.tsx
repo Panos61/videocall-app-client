@@ -1,5 +1,4 @@
 import { useState, useRef } from 'react';
-import { useHover } from 'usehooks-ts';
 
 import { usePreferencesCtx } from '@/context';
 
@@ -11,6 +10,7 @@ import {
   SendHorizonalIcon,
   SmilePlus,
 } from 'lucide-react';
+import Message from './Message';
 import Sidebar from '../Sidebar';
 
 interface Props {
@@ -22,10 +22,10 @@ const Chat = ({ open, onClose }: Props) => {
   const { isChatExpanded, setIsChatExpanded } = usePreferencesCtx();
   const [messages, setMessages] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
+  const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(
+    null
+  );
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const hoverRef = useRef(null);
-  const isHover = useHover(hoverRef);
 
   const sendMessage = () => {
     if (inputValue.trim()) {
@@ -72,21 +72,7 @@ const Chat = ({ open, onClose }: Props) => {
           <div className='flex-1 py-4 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-white'>
             <div className='flex flex-col gap-8'>
               {messages.map((message, index) => (
-                <div
-                  key={index}
-                  ref={hoverRef}
-                  className='flex items-center gap-4'
-                >
-                  <div className='p-8 w-[74%] h-auto bg-green-100 rounded-lg text-sm break-all'>
-                    {message}
-                  </div>
-                  {isHover && (
-                    <SmilePlus
-                      size={16}
-                      className='text-gray-400 cursor-pointer duration-150 hover:text-gray-600'
-                    />
-                  )}
-                </div>
+                <Message key={index} message={message} index={index} />
               ))}
             </div>
           </div>
