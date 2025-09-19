@@ -1,16 +1,10 @@
-import { useState, useRef } from 'react';
-import { useHover } from 'usehooks-ts';
-
+import { useState, useRef, useEffect } from 'react';
 import { usePreferencesCtx } from '@/context';
 
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
-import {
-  ChevronLeft,
-  ChevronRight,
-  SendHorizonalIcon,
-  SmilePlus,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, SendHorizonalIcon } from 'lucide-react';
+import Message from './Message';
 import Sidebar from '../Sidebar';
 
 interface Props {
@@ -20,12 +14,10 @@ interface Props {
 
 const Chat = ({ open, onClose }: Props) => {
   const { isChatExpanded, setIsChatExpanded } = usePreferencesCtx();
+
   const [messages, setMessages] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const hoverRef = useRef(null);
-  const isHover = useHover(hoverRef);
 
   const sendMessage = () => {
     if (inputValue.trim()) {
@@ -43,6 +35,16 @@ const Chat = ({ open, onClose }: Props) => {
       sendMessage();
     }
   };
+
+  const messagesEndRef = useRef<null | HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   return (
     <Sidebar title='Conversation' open={open} onClose={onClose}>
@@ -72,23 +74,18 @@ const Chat = ({ open, onClose }: Props) => {
           <div className='flex-1 py-4 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-white'>
             <div className='flex flex-col gap-8'>
               {messages.map((message, index) => (
-                <div
-                  key={index}
-                  ref={hoverRef}
-                  className='flex items-center gap-4'
-                >
-                  <div className='p-8 w-[74%] h-auto bg-green-100 rounded-lg text-sm break-all'>
-                    {message}
-                  </div>
-                  {isHover && (
-                    <SmilePlus
-                      size={16}
-                      className='text-gray-400 cursor-pointer duration-150 hover:text-gray-600'
-                    />
-                  )}
-                </div>
+                <>
+                  <Message key={index} message={message} index={index} />
+                  {/* <Message
+                    key={index}
+                    isLocal={false}
+                    message={message}
+                    index={index}
+                  /> */}
+                </>
               ))}
             </div>
+            <div ref={messagesEndRef} />
           </div>
           <div className='flex gap-4 w-full'>
             <textarea
