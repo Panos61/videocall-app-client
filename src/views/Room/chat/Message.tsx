@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
-import { SmilePlus } from 'lucide-react';
+import { CircleCheckBigIcon } from 'lucide-react';
+import Expires from './Expires';
+import React from './React';
 
-const Message = ({message, index }: { message: string; index: number }) => {
+const Message = ({ message, index }: { message: string; index: number }) => {
   const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(
     null
   );
@@ -14,6 +16,7 @@ const Message = ({message, index }: { message: string; index: number }) => {
         <span className='text-xs text-gray-500'>
           {format(new Date(), 'HH:mm')}
         </span>
+        <CircleCheckBigIcon size={14} className='text-green-700' />
       </div>
       <div
         key={index}
@@ -24,12 +27,8 @@ const Message = ({message, index }: { message: string; index: number }) => {
         <div className='p-8 w-[74%] h-auto bg-green-100 rounded-lg text-sm break-all'>
           {message}
         </div>
-        {hoveredMessageIndex === index && (
-          <SmilePlus
-            size={16}
-            className='text-gray-400 cursor-pointer duration-150 hover:text-gray-600'
-          />
-        )}
+        {hoveredMessageIndex === index && <React />}
+        <Expires />
       </div>
     </div>
   );
