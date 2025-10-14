@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { CircleCheckBigIcon } from 'lucide-react';
-import Expires from './Expires';
-import React from './React';
+import Expires from './expires';
+import React from './react';
 
 const Message = ({ message, index }: { message: string; index: number }) => {
   const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(

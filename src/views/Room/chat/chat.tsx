@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
 import { usePreferencesCtx } from '@/context';
+import { BASE_WS_URL } from '@/utils/constants';
 
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ChevronLeft, ChevronRight, SendHorizonalIcon } from 'lucide-react';
-import Message from './Message';
+import Message from './components/message';
 import Sidebar from '../Sidebar';
 
 interface Props {
@@ -14,18 +16,84 @@ interface Props {
 
 const Chat = ({ open, onClose }: Props) => {
   const { isChatExpanded, setIsChatExpanded } = usePreferencesCtx();
+  const { id: roomID } = useParams<{ id: string }>();
 
   const [messages, setMessages] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState('');
+
+  const chatWS = useRef<WebSocket | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const sendMessage = () => {
-    if (inputValue.trim()) {
-      setMessages([...messages, inputValue.trim()]);
-      setInputValue('');
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto';
+  const connectChatWebSocket = useCallback(() => {
+    if (!roomID) return;
+
+    if (!chatWS.current || chatWS.current.readyState !== WebSocket.OPEN) {
+      if (chatWS.current) {
+        chatWS.current.close();
       }
+
+      chatWS.current = new WebSocket(`${BASE_WS_URL}/ws/chat/${roomID}`);
+
+      chatWS.current.onopen = () => {
+        console.log('Chat WebSocket opened');
+      };
+
+      chatWS.current.onclose = () => {
+        console.log('Chat WebSocket closed');
+        chatWS.current = null;
+      };
+
+      chatWS.current.onerror = () => {
+        console.log('Chat WebSocket error');
+      };
+
+      chatWS.current.onmessage = (event: MessageEvent) => {
+        try {
+          const data = JSON.parse(event.data);
+          console.log('data', data);
+          setMessages((prev) => [...prev, data.payload]);
+          // switch (data.type) {
+          //   case 'user.joined':
+          //     setUserJoined(true);
+          //     break;
+          //   case 'user.left':
+          //     setUserLeft(true);
+          //     break;
+          // }
+        } catch (error) {
+          console.error('Failed to parse incoming event:', error);
+        }
+      };
+    }
+  }, [roomID]);
+  console.log('messages', messages);
+
+  useEffect(() => {
+    connectChatWebSocket();
+
+    // Cleanup function
+    return () => {
+      if (chatWS.current?.readyState === WebSocket.OPEN) {
+        chatWS.current.close();
+      }
+      chatWS.current = null;
+    };
+  }, [connectChatWebSocket]);
+
+  console.log(chatWS.current?.readyState);
+
+  const sendMessage = () => {
+    const text = inputValue.trim();
+    if (!text) return;
+
+    const ws = chatWS.current;
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+    ws.send(JSON.stringify({ payload: text }));
+    setInputValue('');
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
     }
   };
 
@@ -37,7 +105,6 @@ const Chat = ({ open, onClose }: Props) => {
   };
 
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -62,11 +129,17 @@ const Chat = ({ open, onClose }: Props) => {
                   <ChevronLeft size={20} className='text-violet-600' />
                 )}
               </div>
-              <div className='flex items-center gap-4'>
-                <p className='self-center text-xs text-slate-800'>
-                  Let everyone send messages
-                </p>
-                <Switch />
+              <div className='flex items-center'>
+                <div className='flex items-center gap-8 mr-8'>
+                  <p className='self-center text-xs text-slate-800'>
+                    Let everyone send messages
+                  </p>
+                  <Switch />
+                </div>
+                {/* <Separator orientation='vertical' className='h-6 bg-gray-200' />
+                <div className='p-8 rounded-4 hover:scale-125 duration-300 cursor-pointer'>
+                  <SettingsIcon size={16} className='text-violet-600' />
+                </div> */}
               </div>
             </div>
             <Separator className='mt-4' />
@@ -74,18 +147,10 @@ const Chat = ({ open, onClose }: Props) => {
           <div className='flex-1 py-4 w-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-white'>
             <div className='flex flex-col gap-8'>
               {messages.map((message, index) => (
-                <>
-                  <Message key={index} message={message} index={index} />
-                  {/* <Message
-                    key={index}
-                    isLocal={false}
-                    message={message}
-                    index={index}
-                  /> */}
-                </>
+                <Message key={index} message={message} index={index} />
               ))}
             </div>
-            <div ref={messagesEndRef} />
+            {messages.length > 0 && <div ref={messagesEndRef} />}
           </div>
           <div className='flex gap-4 w-full'>
             <textarea
