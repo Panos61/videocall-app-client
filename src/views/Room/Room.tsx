@@ -104,11 +104,14 @@ const Room = () => {
 
   const livekitRoom = useRef<LivekitRoom | null>(null);
   const [lvkToken, setLvkToken] = useState<string>();
+  
   const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
   const [remoteAudioTracks, setRemoteAudioTracks] = useState<TrackInfo[]>([]);
   const [screenShareTrack, setScreenShareTrack] = useState<TrackInfo | null>(
     null
   );
+  const [activeSpeakers, setActiveSpeakers] = useState<string[]>([]);
+  
 
   const location = useLocation();
   const { id: roomID } = useParams<{ id: string }>();
@@ -289,6 +292,11 @@ const Room = () => {
 
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+    
+    room.on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
+      console.log('active speakers:', speakers.map((s) => s.identity));
+      setActiveSpeakers(speakers.map((s) => s.identity));
+    });
 
     const handleParticipantConnected = (participant: RemoteParticipant) => {
       // Everyone tries to send, but server only allows leader
@@ -450,8 +458,8 @@ const Room = () => {
         await room.connect(livekitUrl, lvkToken);
 
         // Only enable camera/mic if they were enabled in the lobby
-        // await room.localParticipant.setCameraEnabled(true);
-        // await room.localParticipant.setMicrophoneEnabled(true);
+        await room.localParticipant.setCameraEnabled(true);
+        await room.localParticipant.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
@@ -615,6 +623,7 @@ const Room = () => {
                       audioTracks={remoteAudioTracks}
                       remoteIdentity={remoteTrack.participantIdentity}
                       isLocal={false}
+                      isActiveSpeaker={activeSpeakers.includes(remoteTrack.participantIdentity)}
                       remoteMediaStates={remoteMediaStates}
                     />
                   )
@@ -633,6 +642,7 @@ const Room = () => {
                 isLocal={true}
                 mediaState={mediaState}
                 audioTracks={remoteAudioTracks}
+                isActiveSpeaker={activeSpeakers.includes(sessionID)}
                 remoteMediaStates={remoteMediaStates}
               />
             </TilePanel>
@@ -669,6 +679,7 @@ const Room = () => {
                             audioTracks={remoteAudioTracks}
                             remoteIdentity={remoteTrack.participantIdentity}
                             isLocal={false}
+                            isActiveSpeaker={activeSpeakers.includes(remoteTrack.participantIdentity)}
                             remoteMediaStates={remoteMediaStates}
                           />
                         )
@@ -683,6 +694,7 @@ const Room = () => {
                         isLocal={true}
                         mediaState={mediaState}
                         audioTracks={remoteAudioTracks}
+                        isActiveSpeaker={activeSpeakers.includes(sessionID)}
                         remoteMediaStates={remoteMediaStates}
                       />
                     )}
