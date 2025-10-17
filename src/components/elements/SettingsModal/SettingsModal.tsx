@@ -4,7 +4,7 @@ import Cookie from 'js-cookie';
 import classNames from 'classnames';
 
 import type { Participant } from '@/types';
-import { getMe } from '@/api';
+import { getMe } from '@/api/client';
 import { useSettingsCtx } from '@/context';
 
 import { Lock, SettingsIcon } from 'lucide-react';
@@ -18,17 +18,17 @@ import {
 import { Separator } from '@/components/ui/separator';
 
 import { AccessWarning } from './AccessWarning';
+import { ChatSettings } from './ChatSettings';
 import { MediaSettings } from './MediaSettings';
 import { InvitationSettings } from './InvitationSettings';
 import { Permissions } from './Permissions';
 
-type Tab = 'media' | 'invitation' | 'permissions';
+type Tab = 'media' | 'invitation' | 'chat' | 'permissions';
 
 export const SettingsModal = () => {
   const { settings } = useSettingsCtx();
 
   const [activeTab, setActiveTab] = useState<Tab>('invitation');
-
   const [meData, setMeData] = useState<Participant | null>(null);
 
   const { pathname } = useLocation();
@@ -71,6 +71,8 @@ export const SettingsModal = () => {
             />
           )
         );
+      case 'chat':
+        return <ChatSettings />;
       case 'permissions':
         return <Permissions />;
       default:
@@ -86,6 +88,8 @@ export const SettingsModal = () => {
         return isHost
           ? 'Manage room invitation settings and permissions'
           : 'View current invitation settings set by the host';
+      case 'chat':
+        return 'Configure conversation settings';
       case 'permissions':
         return isHost
           ? 'Manage various permissions for room members'
@@ -148,6 +152,12 @@ export const SettingsModal = () => {
               onClick={() => setActiveTab('invitation')}
             >
               <span className='text-sm'>Invitation</span>
+            </div>
+            <div
+              className={menuBtnCls(activeTab === 'chat')}
+              onClick={() => setActiveTab('chat')}
+            >
+              <span className='text-sm'>Conversation</span>
             </div>
             <div
               className={menuBtnCls(activeTab === 'permissions')}

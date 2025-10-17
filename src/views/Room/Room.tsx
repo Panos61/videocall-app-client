@@ -26,11 +26,10 @@ import {
   useSettingsCtx,
   usePreferencesCtx,
 } from '@/context';
-import { exitRoom, getLvkToken, getParticipants } from '@/api';
+import { exitRoom, getLvkToken, getParticipants } from '@/api/client';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import {
-  Chat,
   VideoTile,
   Toolbar,
   Participants,
@@ -41,9 +40,10 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
-// import RoomLoader from './RoomLoader';
-import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
+import Chat from './chat';
 import Header from './Header';
+import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
+// import RoomLoader from './RoomLoader';
 import TilePanel from './TilePanel';
 
 interface TrackInfo {
@@ -95,7 +95,7 @@ const Room = () => {
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
-  >('participants');
+  >('chat');
 
   const [remoteParticipants, setRemoteParticipants] = useState<
     Map<string, RemoteParticipant>
@@ -450,8 +450,8 @@ const Room = () => {
         await room.connect(livekitUrl, lvkToken);
 
         // Only enable camera/mic if they were enabled in the lobby
-        await room.localParticipant.setCameraEnabled(true);
-        await room.localParticipant.setMicrophoneEnabled(true);
+        // await room.localParticipant.setCameraEnabled(true);
+        // await room.localParticipant.setMicrophoneEnabled(true);
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
@@ -567,7 +567,8 @@ const Room = () => {
     usernameSize = 'lg';
     iconSize = 20;
   }
-
+  
+  // todo: refactor this loader
   // if (isLvkTokenLoading || isLvkTokenError) {
   //   return <RoomLoader hasError={isLvkTokenError} />;
   // }

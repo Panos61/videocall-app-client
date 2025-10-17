@@ -12,7 +12,7 @@ import {
   getParticipants,
   getRoomInfo,
   exitRoom,
-} from '@/api';
+} from '@/api/client';
 import {
   useMediaControlCtx,
   useSettingsCtx,

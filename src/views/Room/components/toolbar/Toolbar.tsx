@@ -3,7 +3,7 @@ import Cookie from 'js-cookie';
 import { Room } from 'livekit-client';
 import classNames from 'classnames';
 
-import { leaveCall } from '@/api';
+import { leaveCall } from '@/api/client';
 import {
   useSystemEventsCtx,
   useMediaControlCtx,
