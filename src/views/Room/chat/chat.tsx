@@ -26,52 +26,39 @@ const Chat = ({ open, onClose }: Props) => {
 
   const connectChatWebSocket = useCallback(() => {
     if (!roomID) return;
+    if (chatWS.current) return;
+    const ws: WebSocket = new WebSocket(`${BASE_WS_URL}/ws/chat/${roomID}`);
+    chatWS.current = ws;
+    console.log('ws readyState ', ws.readyState);
 
-    if (!chatWS.current || chatWS.current.readyState !== WebSocket.OPEN) {
-      if (chatWS.current) {
-        chatWS.current.close();
+    ws.onopen = () => {
+      console.log('chat socket has opened!');
+    };
+
+    ws.onclose = () => {
+      console.warn('Chat WebSocket closed');
+    };
+
+    ws.onerror = () => {
+      console.error('chat socket has closed!');
+    };
+
+    ws.onmessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+        setMessages((prev) => [...prev, data.payload]);
+        console.log('message data', data);
+      } catch (error) {
+        console.error(error);
       }
-
-      chatWS.current = new WebSocket(`${BASE_WS_URL}/ws/chat/${roomID}`);
-
-      chatWS.current.onopen = () => {
-        console.log('Chat WebSocket opened');
-      };
-
-      chatWS.current.onclose = () => {
-        console.log('Chat WebSocket closed');
-        chatWS.current = null;
-      };
-
-      chatWS.current.onerror = () => {
-        console.log('Chat WebSocket error');
-      };
-
-      chatWS.current.onmessage = (event: MessageEvent) => {
-        try {
-          const data = JSON.parse(event.data);
-          console.log('data', data);
-          setMessages((prev) => [...prev, data.payload]);
-          // switch (data.type) {
-          //   case 'user.joined':
-          //     setUserJoined(true);
-          //     break;
-          //   case 'user.left':
-          //     setUserLeft(true);
-          //     break;
-          // }
-        } catch (error) {
-          console.error('Failed to parse incoming event:', error);
-        }
-      };
-    }
+    };
   }, [roomID]);
+
   console.log('messages', messages);
 
   useEffect(() => {
     connectChatWebSocket();
 
-    // Cleanup function
     return () => {
       if (chatWS.current?.readyState === WebSocket.OPEN) {
         chatWS.current.close();
