@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { parse } from 'date-fns';
-import { getCallState } from '@/api';
+import { getCallState } from '@/api/api';
 
 const Timer = () => {
   const { id: roomID } = useParams();

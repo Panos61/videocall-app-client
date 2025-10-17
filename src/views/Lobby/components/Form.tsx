@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import Cookie from 'js-cookie';
 
-import { setParticipantCallData, setSession, startCall } from '@/api';
+import { setParticipantCallData, setSession, startCall } from '@/api/api';
 import { useSystemEventsCtx } from '@/context';
 
 import { AlertCircle } from 'lucide-react';

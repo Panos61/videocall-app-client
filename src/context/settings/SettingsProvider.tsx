@@ -1,7 +1,7 @@
 import { createContext, useRef, useState, useCallback } from 'react';
 
 import type { Settings } from '@/types';
-import { getSettings } from '@/api';
+import { getSettings } from '@/api/api';
 import { BASE_WS_URL } from '@/utils/constants';
 
 export interface Props {

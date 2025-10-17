@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import { capitalize } from 'lodash';
 
 import type { Settings } from '@/types';
-import { updateSettings } from '@/api';
+import { updateSettings } from '@/api/api';
 import { useSettingsCtx } from '@/context';
 
 import { Form, FormField, FormItem, FormControl } from '@/components/ui/form';

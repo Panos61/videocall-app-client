@@ -26,7 +26,7 @@ import {
   useSettingsCtx,
   usePreferencesCtx,
 } from '@/context';
-import { exitRoom, getLvkToken, getParticipants } from '@/api';
+import { exitRoom, getLvkToken, getParticipants } from '@/api/api';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import {
@@ -95,7 +95,7 @@ const Room = () => {
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
-  >('participants');
+  >('chat');
 
   const [remoteParticipants, setRemoteParticipants] = useState<
     Map<string, RemoteParticipant>

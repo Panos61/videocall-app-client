@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, LogInIcon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { createRoom } from '@/api';
+import { createRoom } from '@/api/api';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
