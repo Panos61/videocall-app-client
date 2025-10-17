@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Cookie from 'js-cookie';
 
-import { validateInvitation, joinRoom } from '@/api/api';
+import { validateInvitation, joinRoom } from '@/api/client';
 
 import { CircleCheckBig, CircleX, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';

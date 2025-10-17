@@ -5,7 +5,7 @@ import { useLocation } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
 import { useCopyToClipboard } from 'usehooks-ts';
 
-import { getInvitationCode } from '@/api/api';
+import { getInvitationCode } from '@/api/client';
 import { connectSSE } from '@/api/sse';
 
 import { Button } from '@/components/ui/button';

@@ -4,7 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useCountdown } from 'usehooks-ts';
 import Cookie from 'js-cookie';
 
-import { exitRoom } from '@/api/api';
+import { exitRoom } from '@/api/client';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import { LoadingSpinner } from '@/components/elements';

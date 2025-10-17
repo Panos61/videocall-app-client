@@ -26,7 +26,7 @@ import {
   useSettingsCtx,
   usePreferencesCtx,
 } from '@/context';
-import { exitRoom, getLvkToken, getParticipants } from '@/api/api';
+import { exitRoom, getLvkToken, getParticipants } from '@/api/client';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import {

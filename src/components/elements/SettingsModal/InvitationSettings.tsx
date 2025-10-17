@@ -6,7 +6,7 @@ import classNames from 'classnames';
 import { InfoIcon } from 'lucide-react';
 
 import type { Settings } from '@/types';
-import { updateSettings } from '@/api/api';
+import { updateSettings } from '@/api/client';
 
 import { Form, FormControl, FormItem, FormField } from '@/components/ui/form';
 import { FormLabel } from '@/components/ui/form';

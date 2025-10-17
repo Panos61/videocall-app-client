@@ -4,7 +4,7 @@ import Cookie from 'js-cookie';
 import classNames from 'classnames';
 
 import type { Participant } from '@/types';
-import { getMe } from '@/api/api';
+import { getMe } from '@/api/client';
 import { useSettingsCtx } from '@/context';
 
 import { Lock, SettingsIcon } from 'lucide-react';

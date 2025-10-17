@@ -9,16 +9,23 @@ import { ChevronLeft, ChevronRight, SendHorizonalIcon } from 'lucide-react';
 import Message from './components/message';
 import Sidebar from '../Sidebar';
 
-interface Props {
+interface ChatProps {
   open: boolean;
   onClose: () => void;
 }
 
-const Chat = ({ open, onClose }: Props) => {
+interface MessageData {
+  id: string;
+  payload: string;
+  timestamp: number;
+}
+
+const Chat = ({ open, onClose }: ChatProps) => {
   const { isChatExpanded, setIsChatExpanded } = usePreferencesCtx();
   const { id: roomID } = useParams<{ id: string }>();
 
   const [messages, setMessages] = useState<string[]>([]);
+  const [messageData, setMessageData] = useState<MessageData[]>([]);
   const [inputValue, setInputValue] = useState('');
 
   const chatWS = useRef<WebSocket | null>(null);
@@ -27,9 +34,9 @@ const Chat = ({ open, onClose }: Props) => {
   const connectChatWebSocket = useCallback(() => {
     if (!roomID) return;
     if (chatWS.current) return;
+
     const ws: WebSocket = new WebSocket(`${BASE_WS_URL}/ws/chat/${roomID}`);
     chatWS.current = ws;
-    console.log('ws readyState ', ws.readyState);
 
     ws.onopen = () => {
       console.log('chat socket has opened!');
@@ -45,16 +52,17 @@ const Chat = ({ open, onClose }: Props) => {
 
     ws.onmessage = (event: MessageEvent) => {
       try {
-        const data = JSON.parse(event.data);
+        const data: MessageData = JSON.parse(event.data);
         setMessages((prev) => [...prev, data.payload]);
-        console.log('message data', data);
+        setMessageData((prev) => [...prev, data]);
+        console.log('message data:', data);
       } catch (error) {
         console.error(error);
       }
     };
   }, [roomID]);
 
-  console.log('messages', messages);
+  console.log('messages:', messages);
 
   useEffect(() => {
     connectChatWebSocket();
@@ -67,7 +75,8 @@ const Chat = ({ open, onClose }: Props) => {
     };
   }, [connectChatWebSocket]);
 
-  console.log(chatWS.current?.readyState);
+  console.log('ws readyState:', chatWS.current?.readyState);
+  console.log('messageData:', messageData);
 
   const sendMessage = () => {
     const text = inputValue.trim();
