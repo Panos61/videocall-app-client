@@ -23,11 +23,13 @@ import {
 } from 'lucide-react';
 import { SettingsModal } from '@/components/elements';
 import { Separator } from '@/components/ui/separator';
-import Clock from './Clock';
-import ConnectionStatus from './ConnectionStatus';
-import Reactions from './Reactions';
-import RaiseHand from './RaiseHand';
-import ShareScreen from './ShareScreen';
+import {
+  Clock,
+  ConnectionStatus,
+  Reactions,
+  RaiseHand,
+  ShareScreen,
+} from './components';
 
 interface Props {
   sessionID: string;
