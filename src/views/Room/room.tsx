@@ -29,13 +29,10 @@ import {
 import { exitRoom, getLvkToken, getParticipants } from '@/api/client';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
-import {
-  VideoTile,
-  Participants,
-  ShareScreenTile,
-} from './components';
+import { VideoTile, Participants, ShareScreenTile } from './components';
 import Chat from './chat';
 import Header from './header';
+import TilePanel from './tile-panel';
 import Toolbar from './toolbar';
 import {
   ResizableHandle,
@@ -44,7 +41,6 @@ import {
 } from '@/components/ui/resizable';
 import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
 // import RoomLoader from './room-loader';
-import TilePanel from './tile-panel';
 
 interface TrackInfo {
   track:
@@ -362,18 +358,6 @@ const Room = () => {
       }
     );
 
-    room.on(RoomEvent.TrackMuted, (publication, participant) => {
-      if (publication.kind === Track.Kind.Video) {
-        console.log('Video track muted for', participant.identity);
-      }
-    });
-
-    room.on(RoomEvent.TrackUnmuted, (publication, participant) => {
-      if (publication.kind === Track.Kind.Video) {
-        console.log('Video track unmuted for', participant.identity);
-      }
-    });
-
     room.on(RoomEvent.Disconnected, () => {
       setRemoteParticipants(new Map());
       setRemoteTracks([]);
@@ -455,9 +439,28 @@ const Room = () => {
         // Connect to room
         await room.connect(livekitUrl, lvkToken);
 
-        // Only enable camera/mic if they were enabled in the lobby
+        // Always enable camera/mic to ensure tracks are published, then mute if needed
         await room.localParticipant.setCameraEnabled(true);
         await room.localParticipant.setMicrophoneEnabled(true);
+
+        // If media was disabled in lobby, mute the tracks after publishing
+        if (!mediaState.video) {
+          const videoPublication = room.localParticipant.getTrackPublication(
+            Track.Source.Camera
+          );
+          if (videoPublication && videoPublication.track) {
+            videoPublication.track.mute();
+          }
+        }
+
+        if (!mediaState.audio) {
+          const audioPublication = room.localParticipant.getTrackPublication(
+            Track.Source.Microphone
+          );
+          if (audioPublication && audioPublication.track) {
+            audioPublication.track.mute();
+          }
+        }
 
         // Get any existing participants in the room
         if (room?.remoteParticipants) {
