@@ -1,7 +1,7 @@
 import { useUserEventsCtx } from '@/context';
 import { RaisedHand } from '../components/gestures';
-import ShareScreenTab from './ShareScreenTab';
-import Timer from './Timer';
+import ShareScreenTab from './sharescreen-tab';
+import Timer from './timer';
 
 interface Props {
   isSharingScreen: boolean;

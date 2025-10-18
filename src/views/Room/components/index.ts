@@ -1,6 +1,5 @@
-import Participants from './Participants';
-import Toolbar from './toolbar';
-import VideoTile from './VideoTile';
-import ShareScreenTile from './ShareScreenTile';
+import Participants from './participants';
+import VideoTile from './video-tile';
+import ShareScreenTile from './sharescreen-tile';
 
-export { Participants, Toolbar, VideoTile, ShareScreenTile };
+export { Participants, VideoTile, ShareScreenTile };

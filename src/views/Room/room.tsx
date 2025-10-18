@@ -31,20 +31,20 @@ import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import {
   VideoTile,
-  Toolbar,
   Participants,
   ShareScreenTile,
 } from './components';
+import Chat from './chat';
+import Header from './header';
+import Toolbar from './toolbar';
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from '@/components/ui/resizable';
-import Chat from './chat';
-import Header from './Header';
 import ReactionWrapper from './components/gestures/Reaction/ReactionWrapper';
-// import RoomLoader from './RoomLoader';
-import TilePanel from './TilePanel';
+// import RoomLoader from './room-loader';
+import TilePanel from './tile-panel';
 
 interface TrackInfo {
   track:

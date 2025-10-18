@@ -6,8 +6,8 @@ import { BASE_WS_URL } from '@/utils/constants';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ChevronLeft, ChevronRight, SendHorizonalIcon } from 'lucide-react';
+import Sidebar from '../sidebar';
 import Message from './components/message';
-import Sidebar from '../Sidebar';
 
 interface ChatProps {
   open: boolean;

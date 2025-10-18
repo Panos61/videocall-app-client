@@ -9,7 +9,7 @@ import {
 import type { Participant } from '@/types';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, InviteModal } from '@/components/elements';
-import Sidebar from '../Sidebar';
+import Sidebar from '../sidebar';
 
 interface Props {
   open: boolean;
