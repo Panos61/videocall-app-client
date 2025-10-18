@@ -60,7 +60,7 @@ const StrictMode = ({ roomID, isHost }: Props) => {
     updateStrictMode.mutate(formValue as Settings);
   };
 
-  const renderForm = () => {
+  const renderSwitch = () => {
     return (
       <>
         <div className='flex items-center gap-8'>
@@ -153,7 +153,7 @@ const StrictMode = ({ roomID, isHost }: Props) => {
             </span>
           </div>
         </div>
-        {isHost ? renderForm() : renderNonHostText()}
+        {isHost ? renderSwitch() : renderNonHostText()}
       </div>
       <span className='text-xs text-gray-500 font-light'>
         Strict mode, when set by the host, restricts participant actions to

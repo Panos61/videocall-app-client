@@ -240,8 +240,8 @@ const Lobby = () => {
 
   return (
     <>
-      <div className='grid grid-cols-4 gap-48 p-56 h-screen sm:bg-gradient-to-br from-white via-white to-orange-300'>
-        <div className='col-span-4 sm:col-span-1 flex items-center justify-center'>
+      <div className='grid grid-cols-4 gap-48 p-56 h-screen md:bg-gradient-to-br from-white via-white to-orange-300'>
+        <div className='col-span-4 md:col-span-1 flex items-center justify-center'>
           <div className='flex flex-col items-center gap-32 size-full'>
             <h1 className='text-3xl font-mono mt-48'>[placeholder]</h1>
             <div className='flex flex-col flex-1 justify-center'>
@@ -290,7 +290,7 @@ const Lobby = () => {
             </div>
           </div>
         </div>
-        <div className='col-span-4 sm:col-span-3 hidden sm:block'>
+        <div className='col-span-4 md:col-span-3 hidden md:block'>
           <Preview
             username={formUsername}
             mediaState={mediaState}
