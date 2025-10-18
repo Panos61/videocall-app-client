@@ -1,9 +1,17 @@
-import Actions from './Actions';
-import Form from './Form';
-import Info from './Info';
-import MediaPermissions from './MediaPermissions';
-import Participants from './Participants';
-import Preview from './Preview';
-import StrictMode from './StrictMode';
+import Actions from './actions';
+import Form from './form';
+import Info from './info';
+import MediaPermissions from './media-permissions';
+import Participants from './participants';
+import Preview from './preview';
+import StrictMode from './strict-mode';
 
-export { Actions, Form, Info, MediaPermissions, Participants, Preview, StrictMode };
+export {
+  Actions,
+  Form,
+  Info,
+  MediaPermissions,
+  Participants,
+  Preview,
+  StrictMode,
+};
