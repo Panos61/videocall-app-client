@@ -240,7 +240,7 @@ const Lobby = () => {
 
   return (
     <>
-      <div className='grid grid-cols-4 gap-48 p-24 h-screen sm:bg-gradient-to-br from-white via-white to-orange-300'>
+      <div className='grid grid-cols-4 gap-48 p-56 h-screen sm:bg-gradient-to-br from-white via-white to-orange-300'>
         <div className='col-span-4 sm:col-span-1 flex items-center justify-center'>
           <div className='flex flex-col items-center gap-32 size-full'>
             <h1 className='text-3xl font-mono mt-48'>[placeholder]</h1>
