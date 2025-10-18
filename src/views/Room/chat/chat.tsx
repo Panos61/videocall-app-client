@@ -55,14 +55,14 @@ const Chat = ({ open, onClose }: ChatProps) => {
         const data: MessageData = JSON.parse(event.data);
         setMessages((prev) => [...prev, data.payload]);
         setMessageData((prev) => [...prev, data]);
-        console.log('message data:', data);
+        // console.log('message data:', data);
       } catch (error) {
         console.error(error);
       }
     };
   }, [roomID]);
 
-  console.log('messages:', messages);
+  // console.log('messages:', messages);
 
   useEffect(() => {
     connectChatWebSocket();
@@ -75,8 +75,8 @@ const Chat = ({ open, onClose }: ChatProps) => {
     };
   }, [connectChatWebSocket]);
 
-  console.log('ws readyState:', chatWS.current?.readyState);
-  console.log('messageData:', messageData);
+  // console.log('ws readyState:', chatWS.current?.readyState);
+  // console.log('messageData:', messageData);
 
   const sendMessage = () => {
     const text = inputValue.trim();

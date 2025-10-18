@@ -1,3 +1,4 @@
+import classNames from 'classnames';
 import {
   LockIcon,
   MicIcon,
@@ -20,6 +21,7 @@ interface Props {
   remoteMediaStates: {
     [sessionID: string]: { audio: boolean; video: boolean };
   };
+  isActiveSpeaker: boolean;
   onClose: () => void;
 }
 
@@ -31,6 +33,7 @@ const Participants = ({
   mediaState,
   remoteMediaStates,
   sessionID,
+  isActiveSpeaker,
   onClose,
 }: Props) => {
   const getMediaState = (remoteSession: string, participant: Participant) => {
@@ -46,6 +49,16 @@ const Participants = ({
       video: remoteMediaStates[remoteSession]?.video ?? false,
     };
   };
+
+  const getCls = (participant: Participant, isActiveSpeaker: boolean) =>
+    classNames(
+      'flex items-center gap-8 py-4 px-8 rounded-12 cursor-default duration-500',
+      {
+        'bg-orange-200/75': participant.isHost && !isActiveSpeaker,
+        'hover:bg-orange-300': participant.isHost,
+        'bg-green-200/75': isActiveSpeaker,
+      }
+    );
 
   return (
     <Sidebar title='Participants' open={open} onClose={onClose}>
@@ -64,15 +77,8 @@ const Participants = ({
         </p>
         <Separator className='mb-12 bg-gray-700 outline' />
         <div className='flex flex-col gap-4 py-8 px-12 mx-4 bg-white rounded-16'>
-          {participants.map((participant, i) => (
-            <div
-              key={i}
-              className={`flex items-center gap-8 py-4 px-8 rounded-12 cursor-default duration-500 ${
-                participant.isHost && 'bg-orange-200/75'
-              } ${
-                participant.isHost ? 'hover:bg-orange-300' : 'hover:bg-gray-200'
-              }`}
-            >
+          {participants.map((participant) => (
+            <div key={participant.id} className={getCls(participant, isActiveSpeaker)}>
               <Avatar size='sm' src={participant.avatar_src} />
               <div className='flex items-center gap-4'>
                 <p className='text-sm text-black break-all'>

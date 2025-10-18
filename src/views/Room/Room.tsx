@@ -95,7 +95,7 @@ const Room = () => {
 
   const [activePanel, setActivePanel] = useState<
     'participants' | 'chat' | null
-  >('chat');
+  >('participants');
 
   const [remoteParticipants, setRemoteParticipants] = useState<
     Map<string, RemoteParticipant>
@@ -104,14 +104,13 @@ const Room = () => {
 
   const livekitRoom = useRef<LivekitRoom | null>(null);
   const [lvkToken, setLvkToken] = useState<string>();
-  
+
   const [remoteTracks, setRemoteTracks] = useState<TrackInfo[]>([]);
   const [remoteAudioTracks, setRemoteAudioTracks] = useState<TrackInfo[]>([]);
   const [screenShareTrack, setScreenShareTrack] = useState<TrackInfo | null>(
     null
   );
   const [activeSpeakers, setActiveSpeakers] = useState<string[]>([]);
-  
 
   const location = useLocation();
   const { id: roomID } = useParams<{ id: string }>();
@@ -292,9 +291,8 @@ const Room = () => {
 
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
-    
+
     room.on(RoomEvent.ActiveSpeakersChanged, (speakers) => {
-      console.log('active speakers:', speakers.map((s) => s.identity));
       setActiveSpeakers(speakers.map((s) => s.identity));
     });
 
@@ -575,7 +573,7 @@ const Room = () => {
     usernameSize = 'lg';
     iconSize = 20;
   }
-  
+
   // todo: refactor this loader
   // if (isLvkTokenLoading || isLvkTokenError) {
   //   return <RoomLoader hasError={isLvkTokenError} />;
@@ -604,29 +602,29 @@ const Room = () => {
                   />
                 </div>
               )}
-              {remoteTracks.map((remoteTrack, index) => {
+              {remoteTracks.map((remoteTrack: TrackInfo, index: number) => {
                 return (
-                  remoteTrack.track.kind === 'video' && (
-                    <VideoTile
-                      key={remoteTrack.track.sid}
-                      isTilePanel
-                      index={index}
-                      responsiveSize={{
-                        avatarSize,
-                        usernameSize,
-                        iconSize,
-                      }}
-                      participant={remoteParticipant(
-                        remoteTrack.participantIdentity
-                      )}
-                      track={remoteTrack.track}
-                      audioTracks={remoteAudioTracks}
-                      remoteIdentity={remoteTrack.participantIdentity}
-                      isLocal={false}
-                      isActiveSpeaker={activeSpeakers.includes(remoteTrack.participantIdentity)}
-                      remoteMediaStates={remoteMediaStates}
-                    />
-                  )
+                  <VideoTile
+                    key={remoteTrack.track.sid}
+                    isTilePanel
+                    index={index}
+                    responsiveSize={{
+                      avatarSize,
+                      usernameSize,
+                      iconSize,
+                    }}
+                    participant={remoteParticipant(
+                      remoteTrack.participantIdentity
+                    )}
+                    track={remoteTrack.track as RemoteVideoTrack}
+                    audioTracks={remoteAudioTracks}
+                    remoteIdentity={remoteTrack.participantIdentity}
+                    isLocal={false}
+                    isActiveSpeaker={activeSpeakers.includes(
+                      remoteTrack.participantIdentity
+                    )}
+                    remoteMediaStates={remoteMediaStates}
+                  />
                 );
               })}
               <VideoTile
@@ -679,7 +677,9 @@ const Room = () => {
                             audioTracks={remoteAudioTracks}
                             remoteIdentity={remoteTrack.participantIdentity}
                             isLocal={false}
-                            isActiveSpeaker={activeSpeakers.includes(remoteTrack.participantIdentity)}
+                            isActiveSpeaker={activeSpeakers.includes(
+                              remoteTrack.participantIdentity
+                            )}
                             remoteMediaStates={remoteMediaStates}
                           />
                         )
@@ -712,6 +712,7 @@ const Room = () => {
           sessionID={sessionID}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}
+          isActiveSpeaker={activeSpeakers.includes(sessionID)}
           onClose={() => setActivePanel(null)}
         />
         <Chat
