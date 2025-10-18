@@ -31,6 +31,7 @@ interface ResponsiveSize {
 
 interface Props {
   index?: number;
+  isActiveSpeaker: boolean;
   isTilePanel?: boolean;
   participant: Participant | undefined;
   track: LocalVideoTrack | RemoteVideoTrack;
@@ -53,6 +54,7 @@ const VideoTile = ({
   audioTracks,
   remoteIdentity,
   isLocal,
+  isActiveSpeaker,
   mediaState,
   remoteMediaStates,
   responsiveSize = {
@@ -280,7 +282,8 @@ const VideoTile = ({
     'relative flex items-center justify-center size-full rounded-8 overflow-hidden bg-zinc-900 text-gr',
     {
       'transition-transform duration-1000 ease-out': !isRaisedHand,
-      'border border-yellow-500': isRaisedHand,
+      'outline outline-yellow-500': isRaisedHand,
+      'outline outline-green-500': isActiveSpeaker,
     }
   );
 
