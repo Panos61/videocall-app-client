@@ -60,49 +60,6 @@ const StrictMode = ({ roomID, isHost }: Props) => {
     updateStrictMode.mutate(formValue as Settings);
   };
 
-  const renderSwitch = () => {
-    return (
-      <>
-        <div className='flex items-center gap-8'>
-          <Label
-            htmlFor='strict_mode'
-            className='text-sm text-gray-400 font-light whitespace-nowrap'
-          >
-            {form.watch('strict_mode') ? 'Enabled' : 'Disabled'}
-          </Label>
-          <Form {...form}>
-            <FormField
-              control={form.control}
-              name='strict_mode'
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <Switch
-                      id='strict_mode'
-                      checked={field.value}
-                      onCheckedChange={(value: boolean) => {
-                        handleSettingChange('strict_mode', value);
-                      }}
-                      className='mt-4'
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </Form>
-        </div>
-      </>
-    );
-  };
-
-  const renderNonHostText = () => {
-    return (
-      <span className='text-sm text-gray-400 font-light whitespace-nowrap'>
-        {capitalize(settings?.strict_mode ? 'enabled' : 'disabled')}
-      </span>
-    );
-  };
-
   const renderTooltipText = () => {
     if (isHost) {
       return (
@@ -153,7 +110,40 @@ const StrictMode = ({ roomID, isHost }: Props) => {
             </span>
           </div>
         </div>
-        {isHost ? renderSwitch() : renderNonHostText()}
+        {isHost ? (
+          <div className='flex items-center gap-8'>
+            <Label
+              htmlFor='strict_mode'
+              className='text-sm text-gray-400 font-light whitespace-nowrap'
+            >
+              {form.watch('strict_mode') ? 'Enabled' : 'Disabled'}
+            </Label>
+            <Form {...form}>
+              <FormField
+                control={form.control}
+                name='strict_mode'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Switch
+                        id='strict_mode'
+                        checked={field.value}
+                        onCheckedChange={(value: boolean) => {
+                          handleSettingChange('strict_mode', value);
+                        }}
+                        className='mt-4'
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            </Form>
+          </div>
+        ) : (
+          <span className='text-sm text-gray-400 font-light whitespace-nowrap'>
+            {capitalize(settings?.strict_mode ? 'enabled' : 'disabled')}
+          </span>
+        )}
       </div>
       <span className='text-xs text-gray-500 font-light'>
         Strict mode, when set by the host, restricts participant actions to
