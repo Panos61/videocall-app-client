@@ -240,12 +240,10 @@ const Lobby = () => {
 
   return (
     <>
-      <div className='grid grid-cols-4 h-screen bg-gradient-to-br from-white via-white to-orange-300'>
-        <div className='col-span-1 flex items-center justify-center'>
-          <div className='flex flex-col gap-32 w-full h-screen mx-48'>
-            <div className='flex items-center justify-center gap-24 mt-48'>
-              <h1 className='text-3xl font-mono'>[placeholder]</h1>
-            </div>
+      <div className='grid grid-cols-4 gap-48 p-24 h-screen sm:bg-gradient-to-br from-white via-white to-orange-300'>
+        <div className='col-span-4 sm:col-span-1 flex items-center justify-center'>
+          <div className='flex flex-col items-center gap-32 size-full'>
+            <h1 className='text-3xl font-mono mt-48'>[placeholder]</h1>
             <div className='flex flex-col flex-1 justify-center'>
               <h3 className='mb-20 text-center text-xl font-semibold tracking-tight'>
                 {isHost ? 'Start Call' : 'Join Call'}
@@ -292,7 +290,7 @@ const Lobby = () => {
             </div>
           </div>
         </div>
-        <div className='col-span-3 flex items-center mr-48 mt-48 mb-24'>
+        <div className='col-span-4 sm:col-span-3 hidden sm:block'>
           <Preview
             username={formUsername}
             mediaState={mediaState}

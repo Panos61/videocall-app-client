@@ -1,7 +1,7 @@
 import type { Participant } from '@/types';
 import { Crown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
-import ParticipantsModal from './ParticipantsModal';
+import ParticipantsModal from './participants-modal';
 
 interface Props {
   guests: Participant[];
