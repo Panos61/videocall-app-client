@@ -23,12 +23,6 @@ interface TrackInfo {
   kind: Track.Kind;
 }
 
-interface ResponsiveSize {
-  avatarSize: 'sm' | 'md' | 'lg';
-  usernameSize: 'sm' | 'lg';
-  iconSize: 16 | 20;
-}
-
 interface Props {
   index?: number;
   isActiveSpeaker: boolean;
@@ -39,7 +33,7 @@ interface Props {
   audioTrack?: LocalAudioTrack | RemoteAudioTrack;
   remoteIdentity?: string;
   isLocal: boolean;
-  responsiveSize?: ResponsiveSize;
+  responsiveWidth?: number;
   mediaState?: { audio: boolean; video: boolean };
   remoteMediaStates: {
     [sessionID: string]: { audio: boolean; video: boolean };
@@ -55,13 +49,9 @@ const VideoTile = ({
   remoteIdentity,
   isLocal,
   isActiveSpeaker,
+  responsiveWidth,
   mediaState,
   remoteMediaStates,
-  responsiveSize = {
-    avatarSize: 'lg',
-    usernameSize: 'lg',
-    iconSize: 20,
-  },
 }: Props) => {
   const {
     events: { raisedHandEvents },
@@ -78,7 +68,35 @@ const VideoTile = ({
   const [shouldLoadVideo, setShouldLoadVideo] = useState(isLocal);
   const isIntersectingRef = useRef(false);
 
-  const { avatarSize, usernameSize, iconSize } = responsiveSize;
+  const calculateResponsiveSize = useCallback(() => {
+    let avatarSize: 'sm' | 'md' | 'lg' = 'lg';
+    let usernameSize: 'sm' | 'lg' = 'lg';
+    let iconSize: 16 | 20 = 20;
+
+    // Only apply responsive sizing for panel tiles
+    if (!isTilePanel) {
+      return { avatarSize, usernameSize, iconSize };
+    }
+
+    responsiveWidth = responsiveWidth || 0;
+    if (responsiveWidth < 185) {
+      avatarSize = 'sm';
+      usernameSize = 'sm';
+      iconSize = 16;
+    } else if (responsiveWidth < 250) {
+      avatarSize = 'md';
+      usernameSize = 'sm';
+      iconSize = 16;
+    } else if (responsiveWidth < 590) {
+      avatarSize = 'md';
+      usernameSize = 'lg';
+      iconSize = 20;
+    }
+
+    return { avatarSize, usernameSize, iconSize };
+  }, [responsiveWidth, isTilePanel]);
+
+  const { avatarSize, usernameSize, iconSize } = calculateResponsiveSize();
 
   const setVideoRef = useCallback((element: HTMLVideoElement | null) => {
     remoteVideoElement.current = element;
@@ -312,7 +330,6 @@ const VideoTile = ({
           <MicOffIcon color='#dc2626' className={`size-${iconSize}`} />
         )}
       </div>
-      {/* <audio ref={audioElement} autoPlay style={{ display: 'none' }} /> */}
     </div>
   );
 };

@@ -15,6 +15,7 @@ import {
   AudioPresets,
   LocalAudioTrack,
   RemoteAudioTrack,
+  ConnectionState,
 } from 'livekit-client';
 import classNames from 'classnames';
 import { useResizeObserver } from 'usehooks-ts';
@@ -428,6 +429,10 @@ const Room = () => {
           return;
         }
 
+        if (room.state === ConnectionState.Connected) {
+          return;
+        }
+
         const livekitUrl: string = import.meta.env.VITE_LIVEKIT_CLOUD_URL;
         if (!livekitUrl) {
           console.error('LiveKit URL is not set');
@@ -556,26 +561,9 @@ const Room = () => {
 
   // Adjust video tile conponents (avatar, username, icons) size based on width of tile panel (only for tile panel video tiles)
   const tilePanelRef = useRef<HTMLDivElement>(null);
-  const { width = 0 } = useResizeObserver({
+  const { width: responsiveWidth = 0 } = useResizeObserver({
     ref: tilePanelRef,
   });
-
-  let avatarSize: 'sm' | 'md' | 'lg' = 'lg';
-  let usernameSize: 'sm' | 'lg' = 'lg';
-  let iconSize: 16 | 20 = 20;
-  if (width < 205) {
-    avatarSize = 'sm';
-    usernameSize = 'sm';
-    iconSize = 16;
-  } else if (width < 250) {
-    avatarSize = 'md';
-    usernameSize = 'sm';
-    iconSize = 16;
-  } else if (width < 590) {
-    avatarSize = 'md';
-    usernameSize = 'lg';
-    iconSize = 20;
-  }
 
   // todo: refactor this loader
   // if (isLvkTokenLoading || isLvkTokenError) {
@@ -611,11 +599,7 @@ const Room = () => {
                     key={remoteTrack.track.sid}
                     isTilePanel
                     index={index}
-                    responsiveSize={{
-                      avatarSize,
-                      usernameSize,
-                      iconSize,
-                    }}
+                    responsiveWidth={responsiveWidth || 0}
                     participant={remoteParticipant(
                       remoteTrack.participantIdentity
                     )}
@@ -633,12 +617,8 @@ const Room = () => {
               <VideoTile
                 key='local-video'
                 isTilePanel={true}
-                responsiveSize={{
-                  avatarSize,
-                  usernameSize,
-                  iconSize,
-                }}
                 participant={localParticipant}
+                responsiveWidth={responsiveWidth || 0}
                 track={videoTrack as LocalVideoTrack}
                 isLocal={true}
                 mediaState={mediaState}
