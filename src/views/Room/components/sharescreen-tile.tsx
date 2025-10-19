@@ -21,11 +21,11 @@ interface TrackInfo {
 }
 
 interface Props {
-  isTilePanel: boolean;
+  isSidePanel: boolean;
   screenShareTrack: TrackInfo | null;
 }
 
-const ShareScreenTile = ({ isTilePanel, screenShareTrack }: Props) => {
+const ShareScreenTile = ({ isSidePanel, screenShareTrack }: Props) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const {
     events: { shareScreenEvents },
@@ -53,8 +53,8 @@ const ShareScreenTile = ({ isTilePanel, screenShareTrack }: Props) => {
   const tileInfoCls = classNames(
     'absolute bottom-4 right-12 flex items-center gap-8 px-12 py-4 rounded-md text-sm text-white bg-black z-50',
     {
-      'bg-black/45': isTilePanel,
-      'bg-black': !isTilePanel,
+      'bg-black/45': isSidePanel,
+      'bg-black': !isSidePanel,
     }
   );
 
@@ -68,11 +68,11 @@ const ShareScreenTile = ({ isTilePanel, screenShareTrack }: Props) => {
         className='absolute size-full object-cover'
       />
       <div className={tileInfoCls}>
-        {!isTilePanel && (
+        {!isSidePanel && (
           <span>{shareScreenEvents[0].username}'s shared screen</span>
         )}
         <ScreenShareIcon
-          size={isTilePanel ? 12 : 20}
+          size={isSidePanel ? 12 : 20}
           className='text-green-500'
         />
       </div>

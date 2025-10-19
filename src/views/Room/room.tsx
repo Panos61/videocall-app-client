@@ -15,6 +15,7 @@ import {
   AudioPresets,
   LocalAudioTrack,
   RemoteAudioTrack,
+  ConnectionState,
 } from 'livekit-client';
 import classNames from 'classnames';
 import { useResizeObserver } from 'usehooks-ts';
@@ -29,6 +30,7 @@ import {
 import { exitRoom, getLvkToken, getParticipants } from '@/api/client';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
+import { useOrderedTiles } from './useOrderedTiles';
 import { VideoTile, Participants, ShareScreenTile } from './components';
 import Chat from './chat';
 import Header from './header';
@@ -428,6 +430,10 @@ const Room = () => {
           return;
         }
 
+        if (room.state === ConnectionState.Connected) {
+          return;
+        }
+
         const livekitUrl: string = import.meta.env.VITE_LIVEKIT_CLOUD_URL;
         if (!livekitUrl) {
           console.error('LiveKit URL is not set');
@@ -556,26 +562,11 @@ const Room = () => {
 
   // Adjust video tile conponents (avatar, username, icons) size based on width of tile panel (only for tile panel video tiles)
   const tilePanelRef = useRef<HTMLDivElement>(null);
-  const { width = 0 } = useResizeObserver({
+  const { width: responsiveWidth = 0 } = useResizeObserver({
     ref: tilePanelRef,
   });
-
-  let avatarSize: 'sm' | 'md' | 'lg' = 'lg';
-  let usernameSize: 'sm' | 'lg' = 'lg';
-  let iconSize: 16 | 20 = 20;
-  if (width < 205) {
-    avatarSize = 'sm';
-    usernameSize = 'sm';
-    iconSize = 16;
-  } else if (width < 250) {
-    avatarSize = 'md';
-    usernameSize = 'sm';
-    iconSize = 16;
-  } else if (width < 590) {
-    avatarSize = 'md';
-    usernameSize = 'lg';
-    iconSize = 20;
-  }
+  // Order the side panel video tiles based of active speakers
+  const sidePanelOrder = useOrderedTiles({ activeSpeakers, remoteTracks });
 
   // todo: refactor this loader
   // if (isLvkTokenLoading || isLvkTokenError) {
@@ -600,22 +591,18 @@ const Room = () => {
               {shareScreenEvents.length > 0 && screenShareTrack && (
                 <div className='h-full overscroll-auto'>
                   <ShareScreenTile
-                    isTilePanel
+                    isSidePanel
                     screenShareTrack={screenShareTrack}
                   />
                 </div>
               )}
-              {remoteTracks.map((remoteTrack: TrackInfo, index: number) => {
+              {sidePanelOrder.map((remoteTrack: TrackInfo, index: number) => {
                 return (
                   <VideoTile
-                    key={remoteTrack.track.sid}
-                    isTilePanel
+                    key={`${remoteTrack.participantIdentity}-${index}`}
+                    isSidePanel
                     index={index}
-                    responsiveSize={{
-                      avatarSize,
-                      usernameSize,
-                      iconSize,
-                    }}
+                    responsiveWidth={responsiveWidth || 0}
                     participant={remoteParticipant(
                       remoteTrack.participantIdentity
                     )}
@@ -632,13 +619,9 @@ const Room = () => {
               })}
               <VideoTile
                 key='local-video'
-                isTilePanel={true}
-                responsiveSize={{
-                  avatarSize,
-                  usernameSize,
-                  iconSize,
-                }}
+                isSidePanel={true}
                 participant={localParticipant}
+                responsiveWidth={responsiveWidth || 0}
                 track={videoTrack as LocalVideoTrack}
                 isLocal={true}
                 mediaState={mediaState}
@@ -656,7 +639,7 @@ const Room = () => {
                 {shareScreenEvents.length > 0 && screenShareTrack && (
                   <div className='h-full p-8 overscroll-auto'>
                     <ShareScreenTile
-                      isTilePanel={false}
+                      isSidePanel={false}
                       screenShareTrack={screenShareTrack}
                     />
                   </div>
@@ -672,7 +655,7 @@ const Room = () => {
                           <VideoTile
                             key={remoteTrack.track.sid}
                             index={index}
-                            isTilePanel={false}
+                            isSidePanel={false}
                             participant={remoteParticipant(
                               remoteTrack.participantIdentity
                             )}
@@ -691,7 +674,7 @@ const Room = () => {
                     {(remoteTracks.length === 0 || !isFocusView) && (
                       <VideoTile
                         key='local-video'
-                        isTilePanel={false}
+                        isSidePanel={false}
                         participant={localParticipant}
                         track={videoTrack as LocalVideoTrack}
                         isLocal={true}

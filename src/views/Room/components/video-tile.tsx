@@ -23,23 +23,17 @@ interface TrackInfo {
   kind: Track.Kind;
 }
 
-interface ResponsiveSize {
-  avatarSize: 'sm' | 'md' | 'lg';
-  usernameSize: 'sm' | 'lg';
-  iconSize: 16 | 20;
-}
-
 interface Props {
   index?: number;
   isActiveSpeaker: boolean;
-  isTilePanel?: boolean;
+  isSidePanel?: boolean;
   participant: Participant | undefined;
   track: LocalVideoTrack | RemoteVideoTrack;
   audioTracks?: TrackInfo[];
   audioTrack?: LocalAudioTrack | RemoteAudioTrack;
   remoteIdentity?: string;
   isLocal: boolean;
-  responsiveSize?: ResponsiveSize;
+  responsiveWidth?: number;
   mediaState?: { audio: boolean; video: boolean };
   remoteMediaStates: {
     [sessionID: string]: { audio: boolean; video: boolean };
@@ -48,20 +42,16 @@ interface Props {
 
 const VideoTile = ({
   index,
-  isTilePanel,
+  isSidePanel,
   participant,
   track,
   audioTracks,
   remoteIdentity,
   isLocal,
   isActiveSpeaker,
+  responsiveWidth,
   mediaState,
   remoteMediaStates,
-  responsiveSize = {
-    avatarSize: 'lg',
-    usernameSize: 'lg',
-    iconSize: 20,
-  },
 }: Props) => {
   const {
     events: { raisedHandEvents },
@@ -78,7 +68,34 @@ const VideoTile = ({
   const [shouldLoadVideo, setShouldLoadVideo] = useState(isLocal);
   const isIntersectingRef = useRef(false);
 
-  const { avatarSize, usernameSize, iconSize } = responsiveSize;
+  const calculateResponsiveSize = () => {
+    let avatarSize: 'sm' | 'md' | 'lg' = 'lg';
+    let usernameSize: 'sm' | 'lg' = 'lg';
+    let iconSize: 16 | 20 = 20;
+    // Only apply responsive sizing for panel tiles
+    if (!isSidePanel) {
+      return { avatarSize, usernameSize, iconSize };
+    }
+
+    responsiveWidth = responsiveWidth || 0;
+    if (responsiveWidth < 185) {
+      avatarSize = 'sm';
+      usernameSize = 'sm';
+      iconSize = 16;
+    } else if (responsiveWidth < 250) {
+      avatarSize = 'md';
+      usernameSize = 'sm';
+      iconSize = 16;
+    } else if (responsiveWidth < 590) {
+      avatarSize = 'md';
+      usernameSize = 'lg';
+      iconSize = 20;
+    }
+    
+    return { avatarSize, usernameSize, iconSize };
+  };
+
+  const { avatarSize, usernameSize, iconSize } = calculateResponsiveSize();
 
   const setVideoRef = useCallback((element: HTMLVideoElement | null) => {
     remoteVideoElement.current = element;
@@ -166,7 +183,7 @@ const VideoTile = ({
     }
 
     const loadingCls = classNames(
-      'absolute inset-0 size-full  flex items-center justify-center duration-1000',
+      'absolute inset-0 size-full flex items-center justify-center duration-1000',
       {
         'bg-zinc-800': !shouldLoadVideo,
         'bg-zinc-900': shouldLoadVideo,
@@ -176,7 +193,9 @@ const VideoTile = ({
     return (
       <div className={loadingCls}>
         <div className='flex flex-col items-center gap-4'>
-          {!shouldLoadVideo && <LoadingSpinner size='lg' />}
+          {!shouldLoadVideo && (
+            <LoadingSpinner size={isSidePanel ? 'md' : 'lg'} />
+          )}
           {shouldLoadVideo && (
             <Avatar
               src={participant.avatar_src}
@@ -297,10 +316,10 @@ const VideoTile = ({
 
   return (
     <div ref={tileContainerRef} className={videoTileCls}>
-      {isRaisedHand && !isTilePanel && (
+      {isRaisedHand && (
         <HandIcon
-          size={24}
-          className='text-yellow-500 absolute top-12 right-12'
+          size={isSidePanel ? 16 : 24}
+          className='absolute top-12 right-12 text-yellow-500'
         />
       )}
       {isLocal ? renderLocalPreview() : renderRemotePreview()}
@@ -312,7 +331,6 @@ const VideoTile = ({
           <MicOffIcon color='#dc2626' className={`size-${iconSize}`} />
         )}
       </div>
-      {/* <audio ref={audioElement} autoPlay style={{ display: 'none' }} /> */}
     </div>
   );
 };
