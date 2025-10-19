@@ -1,4 +1,4 @@
-import Invalid from './Invalid';
-import NotFound from './NotFound';
+import Invalid from './invalid';
+import NotFound from './not-found';
 
 export { Invalid, NotFound };
