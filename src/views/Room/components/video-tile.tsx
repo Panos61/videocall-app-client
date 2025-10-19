@@ -320,7 +320,7 @@ const VideoTile = ({
       {isRaisedHand && (
         <HandIcon
           size={isSidePanel ? 16 : 24}
-          className='text-yellow-500 absolute top-12 right-12'
+          className='absolute top-12 right-12 text-yellow-500'
         />
       )}
       {isLocal ? renderLocalPreview() : renderRemotePreview()}
