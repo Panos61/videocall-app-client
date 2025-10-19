@@ -26,7 +26,7 @@ interface TrackInfo {
 interface Props {
   index?: number;
   isActiveSpeaker: boolean;
-  isTilePanel?: boolean;
+  isSidePanel?: boolean;
   participant: Participant | undefined;
   track: LocalVideoTrack | RemoteVideoTrack;
   audioTracks?: TrackInfo[];
@@ -42,7 +42,7 @@ interface Props {
 
 const VideoTile = ({
   index,
-  isTilePanel,
+  isSidePanel,
   participant,
   track,
   audioTracks,
@@ -74,7 +74,7 @@ const VideoTile = ({
     let iconSize: 16 | 20 = 20;
 
     // Only apply responsive sizing for panel tiles
-    if (!isTilePanel) {
+    if (!isSidePanel) {
       return { avatarSize, usernameSize, iconSize };
     }
 
@@ -94,7 +94,7 @@ const VideoTile = ({
     }
 
     return { avatarSize, usernameSize, iconSize };
-  }, [responsiveWidth, isTilePanel]);
+  }, [responsiveWidth, isSidePanel]);
 
   const { avatarSize, usernameSize, iconSize } = calculateResponsiveSize();
 
@@ -184,7 +184,7 @@ const VideoTile = ({
     }
 
     const loadingCls = classNames(
-      'absolute inset-0 size-full  flex items-center justify-center duration-1000',
+      'absolute inset-0 size-full flex items-center justify-center duration-1000',
       {
         'bg-zinc-800': !shouldLoadVideo,
         'bg-zinc-900': shouldLoadVideo,
@@ -194,7 +194,9 @@ const VideoTile = ({
     return (
       <div className={loadingCls}>
         <div className='flex flex-col items-center gap-4'>
-          {!shouldLoadVideo && <LoadingSpinner size='lg' />}
+          {!shouldLoadVideo && (
+            <LoadingSpinner size={isSidePanel ? 'md' : 'lg'} />
+          )}
           {shouldLoadVideo && (
             <Avatar
               src={participant.avatar_src}
@@ -315,7 +317,7 @@ const VideoTile = ({
 
   return (
     <div ref={tileContainerRef} className={videoTileCls}>
-      {isRaisedHand && !isTilePanel && (
+      {isRaisedHand && !isSidePanel && (
         <HandIcon
           size={24}
           className='text-yellow-500 absolute top-12 right-12'

@@ -588,7 +588,7 @@ const Room = () => {
               {shareScreenEvents.length > 0 && screenShareTrack && (
                 <div className='h-full overscroll-auto'>
                   <ShareScreenTile
-                    isTilePanel
+                    isSidePanel
                     screenShareTrack={screenShareTrack}
                   />
                 </div>
@@ -597,7 +597,7 @@ const Room = () => {
                 return (
                   <VideoTile
                     key={remoteTrack.track.sid}
-                    isTilePanel
+                    isSidePanel
                     index={index}
                     responsiveWidth={responsiveWidth || 0}
                     participant={remoteParticipant(
@@ -616,7 +616,7 @@ const Room = () => {
               })}
               <VideoTile
                 key='local-video'
-                isTilePanel={true}
+                isSidePanel={true}
                 participant={localParticipant}
                 responsiveWidth={responsiveWidth || 0}
                 track={videoTrack as LocalVideoTrack}
@@ -636,7 +636,7 @@ const Room = () => {
                 {shareScreenEvents.length > 0 && screenShareTrack && (
                   <div className='h-full p-8 overscroll-auto'>
                     <ShareScreenTile
-                      isTilePanel={false}
+                      isSidePanel={false}
                       screenShareTrack={screenShareTrack}
                     />
                   </div>
@@ -652,7 +652,7 @@ const Room = () => {
                           <VideoTile
                             key={remoteTrack.track.sid}
                             index={index}
-                            isTilePanel={false}
+                            isSidePanel={false}
                             participant={remoteParticipant(
                               remoteTrack.participantIdentity
                             )}
@@ -671,7 +671,7 @@ const Room = () => {
                     {(remoteTracks.length === 0 || !isFocusView) && (
                       <VideoTile
                         key='local-video'
-                        isTilePanel={false}
+                        isSidePanel={false}
                         participant={localParticipant}
                         track={videoTrack as LocalVideoTrack}
                         isLocal={true}
