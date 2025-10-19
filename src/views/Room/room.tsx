@@ -30,6 +30,7 @@ import {
 import { exitRoom, getLvkToken, getParticipants } from '@/api/client';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
+import { useOrderedTiles } from './useOrderedTiles';
 import { VideoTile, Participants, ShareScreenTile } from './components';
 import Chat from './chat';
 import Header from './header';
@@ -564,6 +565,8 @@ const Room = () => {
   const { width: responsiveWidth = 0 } = useResizeObserver({
     ref: tilePanelRef,
   });
+  // Order the side panel video tiles based of active speakers
+  const sidePanelOrder = useOrderedTiles({ activeSpeakers, remoteTracks });
 
   // todo: refactor this loader
   // if (isLvkTokenLoading || isLvkTokenError) {
@@ -593,10 +596,10 @@ const Room = () => {
                   />
                 </div>
               )}
-              {remoteTracks.map((remoteTrack: TrackInfo, index: number) => {
+              {sidePanelOrder.map((remoteTrack: TrackInfo, index: number) => {
                 return (
                   <VideoTile
-                    key={remoteTrack.track.sid}
+                    key={`${remoteTrack.participantIdentity}-${index}`}
                     isSidePanel
                     index={index}
                     responsiveWidth={responsiveWidth || 0}
