@@ -317,9 +317,9 @@ const VideoTile = ({
 
   return (
     <div ref={tileContainerRef} className={videoTileCls}>
-      {isRaisedHand && !isSidePanel && (
+      {isRaisedHand && (
         <HandIcon
-          size={24}
+          size={isSidePanel ? 16 : 24}
           className='text-yellow-500 absolute top-12 right-12'
         />
       )}
