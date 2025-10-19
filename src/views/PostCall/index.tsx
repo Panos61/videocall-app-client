@@ -1,3 +1,3 @@
-import PostCall from './PostCall';
+import PostCall from './post-call';
 
 export default PostCall;
