@@ -68,11 +68,10 @@ const VideoTile = ({
   const [shouldLoadVideo, setShouldLoadVideo] = useState(isLocal);
   const isIntersectingRef = useRef(false);
 
-  const calculateResponsiveSize = useCallback(() => {
+  const calculateResponsiveSize = () => {
     let avatarSize: 'sm' | 'md' | 'lg' = 'lg';
     let usernameSize: 'sm' | 'lg' = 'lg';
     let iconSize: 16 | 20 = 20;
-
     // Only apply responsive sizing for panel tiles
     if (!isSidePanel) {
       return { avatarSize, usernameSize, iconSize };
@@ -92,9 +91,9 @@ const VideoTile = ({
       usernameSize = 'lg';
       iconSize = 20;
     }
-
+    
     return { avatarSize, usernameSize, iconSize };
-  }, [responsiveWidth, isSidePanel]);
+  };
 
   const { avatarSize, usernameSize, iconSize } = calculateResponsiveSize();
 
