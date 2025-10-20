@@ -285,7 +285,6 @@ const Room = () => {
     };
 
     room.localParticipant.on('trackPublished', handleLocalTrackPublished);
-    room.localParticipant.on('trackUnpublished', handleLocalTrackUnpublished);
 
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
@@ -374,10 +373,6 @@ const Room = () => {
 
     return () => {
       room.localParticipant.off('trackPublished', handleLocalTrackPublished);
-      room.localParticipant.off(
-        'trackUnpublished',
-        handleLocalTrackUnpublished
-      );
       room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
       room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.off(RoomEvent.ParticipantConnected, handleParticipantConnected);
@@ -403,18 +398,6 @@ const Room = () => {
       setRemoteAudioTracks((prev) =>
         prev.filter((t) => t.track.sid !== track.sid)
       );
-    }
-  };
-
-  const handleLocalTrackUnpublished = () => {
-    // Check if screen share track still exists
-    const screenSharePublication = Array.from(
-      livekitRoom.current?.localParticipant?.videoTrackPublications.values() ||
-        []
-    ).find((pub) => pub.source === Track.Source.ScreenShare);
-
-    if (!screenSharePublication) {
-      setScreenShareTrack(null);
     }
   };
 
@@ -446,8 +429,8 @@ const Room = () => {
         await room.connect(livekitUrl, lvkToken);
 
         // Always enable camera/mic to ensure tracks are published, then mute if needed
-        await room.localParticipant.setCameraEnabled(true);
-        await room.localParticipant.setMicrophoneEnabled(true);
+        // await room.localParticipant.setCameraEnabled(true);
+        // await room.localParticipant.setMicrophoneEnabled(true);
 
         // If media was disabled in lobby, mute the tracks after publishing
         if (!mediaState.video) {
@@ -546,6 +529,35 @@ const Room = () => {
     }
   }, [shareScreenEvents, setShareScreenView]);
 
+  // Check if screen share has ended via native browser controls
+  useEffect(() => {
+    if (!screenShareTrack || !livekitRoom.current?.localParticipant) return;
+
+    const checkScreenShareStatus = () => {
+      const screenSharePublication = Array.from(
+        livekitRoom.current?.localParticipant?.videoTrackPublications.values() ||
+          []
+      ).find((pub) => pub.source === Track.Source.ScreenShare);
+
+      if (!screenSharePublication) {
+        // Screen share was stopped via browser native controls
+        sendUserEvent({
+          type: 'share_screen.ended',
+          senderID: sessionID,
+          payload: {
+            active: false,
+            trackSid: screenShareTrack.track.sid,
+            username: localParticipant?.username || 'Unknown',
+          },
+        });
+        setScreenShareTrack(null);
+      }
+    };
+
+    const interval = setInterval(checkScreenShareStatus, 1000);
+    return () => clearInterval(interval);
+  }, [screenShareTrack, sessionID, localParticipant, sendUserEvent]);
+
   const videoContainerCls = classNames(
     'mx-4 mb-12 h-full transition-all duration-300 ease-in-out',
     {
@@ -636,7 +648,7 @@ const Room = () => {
             <div className='h-full relative overflow-hidden'>
               <ReactionWrapper />
               <div className={videoContainerCls}>
-                {shareScreenEvents.length > 0 && screenShareTrack && (
+                {shareScreenView !== 'participants' && screenShareTrack && (
                   <div className='h-full p-8 overscroll-auto'>
                     <ShareScreenTile
                       isSidePanel={false}

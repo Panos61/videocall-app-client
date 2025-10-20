@@ -7,8 +7,8 @@ import {
   RemoteVideoTrack,
   Track,
 } from 'livekit-client';
-import { useUserEventsCtx } from '@/context';
 import classNames from 'classnames';
+import { useUserEventsCtx } from '@/context';
 
 interface TrackInfo {
   track:
@@ -20,12 +20,15 @@ interface TrackInfo {
   kind: Track.Kind;
 }
 
-interface Props {
+interface ShareScreenTileProps {
   isSidePanel: boolean;
   screenShareTrack: TrackInfo | null;
 }
 
-const ShareScreenTile = ({ isSidePanel, screenShareTrack }: Props) => {
+const ShareScreenTile = ({
+  isSidePanel,
+  screenShareTrack,
+}: ShareScreenTileProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const {
     events: { shareScreenEvents },
@@ -65,10 +68,10 @@ const ShareScreenTile = ({ isSidePanel, screenShareTrack }: Props) => {
         autoPlay
         playsInline
         muted
-        className='absolute size-full object-cover'
+        className='absolute size-full object-contain'
       />
       <div className={tileInfoCls}>
-        {!isSidePanel && (
+        {!isSidePanel && shareScreenEvents.length > 0 && (
           <span>{shareScreenEvents[0].username}'s shared screen</span>
         )}
         <ScreenShareIcon
