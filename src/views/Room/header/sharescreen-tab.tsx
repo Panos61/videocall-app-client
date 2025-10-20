@@ -20,7 +20,7 @@ const ShareScreenTab = ({ participantsCount }: Props) => {
         <span>Participants ({participantsCount})</span>
         <LayoutGrid size={16} className='text-white' />
       </div>
-      {shareScreenEvents.map((event) => (
+      {shareScreenEvents && shareScreenEvents.map((event) => (
         <div
           key={event.trackSid}
           className='flex items-center gap-8 p-8 outline outline-zinc-800 rounded-8 text-sm text-white bg-green-700/20 hover:bg-green-600/25 duration-300 ease-in-out cursor-pointer'

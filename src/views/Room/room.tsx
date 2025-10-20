@@ -636,7 +636,7 @@ const Room = () => {
             <div className='h-full relative overflow-hidden'>
               <ReactionWrapper />
               <div className={videoContainerCls}>
-                {shareScreenEvents.length > 0 && screenShareTrack && (
+                {shareScreenView !== 'participants' && screenShareTrack && (
                   <div className='h-full p-8 overscroll-auto'>
                     <ShareScreenTile
                       isSidePanel={false}

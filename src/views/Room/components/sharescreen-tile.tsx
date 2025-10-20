@@ -20,12 +20,12 @@ interface TrackInfo {
   kind: Track.Kind;
 }
 
-interface Props {
+interface ShareScreenTileProps {
   isSidePanel: boolean;
   screenShareTrack: TrackInfo | null;
 }
 
-const ShareScreenTile = ({ isSidePanel, screenShareTrack }: Props) => {
+const ShareScreenTile = ({ isSidePanel, screenShareTrack }: ShareScreenTileProps) => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const {
     events: { shareScreenEvents },
@@ -65,7 +65,7 @@ const ShareScreenTile = ({ isSidePanel, screenShareTrack }: Props) => {
         autoPlay
         playsInline
         muted
-        className='absolute size-full object-cover'
+        className='absolute size-full object-contain'
       />
       <div className={tileInfoCls}>
         {!isSidePanel && (
