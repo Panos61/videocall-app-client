@@ -115,7 +115,7 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
           senderID: sessionID,
           payload: {
             active: true,
-            track_sid: null,
+            track_sid: shareTrackSid,
           },
         });
       }
