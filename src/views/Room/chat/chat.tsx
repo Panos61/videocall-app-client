@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { usePreferencesCtx } from '@/context';
 import { BASE_WS_URL } from '@/utils/constants';
 
+import { Kbd, KbdGroup } from '@/components/ui/kbd';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { ChevronLeft, ChevronRight, SendHorizonalIcon } from 'lucide-react';
@@ -175,6 +176,10 @@ const Chat = ({ open, onClose }: ChatProps) => {
               <SendHorizonalIcon size={20} className='text-green-600' />
             </button>
           </div>
+          <KbdGroup className='flex gap-4 mt-4 text-xs text-gray-600'>
+            <Kbd>⏎</Kbd><span className='text-xs'>to send message &</span>
+            <Kbd>/poll</Kbd><span className='text-xs'>to create poll</span>
+          </KbdGroup>
         </div>
       </div>
     </Sidebar>
