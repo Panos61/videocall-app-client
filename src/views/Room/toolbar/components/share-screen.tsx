@@ -11,7 +11,10 @@ interface Props {
 }
 
 const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
-  const { sendUserEvent } = useUserEventsCtx();
+  const {
+    sendUserEvent,
+    events: { shareScreenEvents },
+  } = useUserEventsCtx();
   const [isSharing, setIsSharing] = useState(false);
 
   useEffect(() => {
@@ -58,7 +61,7 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
       room.localParticipant.off('trackPublished', handleTrackPublished);
       room.localParticipant.off('trackUnpublished', handleTrackUnpublished);
     };
-  }, [room, onScreenShareChange, sessionID]);
+  }, [room, onScreenShareChange, sessionID, shareScreenEvents]);
 
   const handleShareScreen = async () => {
     if (!room?.localParticipant) {
@@ -77,7 +80,7 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
           senderID: sessionID,
           payload: {
             active: false,
-            track_sid: shareTrackSid,
+            track_sid: null,
           },
         });
       } else {
@@ -90,7 +93,7 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
           const videoPublications = Array.from(
             room.localParticipant.videoTrackPublications.values()
           );
-          
+
           const screenSharePublication = videoPublications.find(
             (pub) => pub.source === Track.Source.ScreenShare
           );
@@ -112,7 +115,7 @@ const ShareScreen = ({ sessionID, room, onScreenShareChange }: Props) => {
           senderID: sessionID,
           payload: {
             active: true,
-            track_sid: shareTrackSid,
+            track_sid: null,
           },
         });
       }
