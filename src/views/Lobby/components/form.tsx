@@ -45,11 +45,6 @@ const Form = ({
     reset({ username: username || '' });
   }, [username, reset]);
 
-  // Notify parent when form value changes
-  useEffect(() => {
-    setUsername(formUsername);
-  }, [formUsername, setUsername]);
-
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
@@ -130,6 +125,7 @@ const Form = ({
               message: 'Username should not exceed over 16 characters length.',
             },
           })}
+          onBlur={(e) => setUsername(e.target.value)} 
         />
         <div className='mt-8 ml-12'>{renderUsernameWarning()}</div>
       </div>
