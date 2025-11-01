@@ -123,6 +123,20 @@ export const leaveCall = async (
   return response.data;
 };
 
+export const killCall = async(
+  roomID: string,
+  jwtToken: string | undefined,
+): Promise<boolean> => {
+  const response = await api.get<boolean>(`/leave-call/${roomID}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${jwtToken}`,
+    },
+  });
+  
+  return response.data;
+}
+
 export const exitRoom = async (roomID: string): Promise<boolean> => {
   const response = await api.delete<boolean>(`/exit-room/${roomID}`);
   return response.data;
