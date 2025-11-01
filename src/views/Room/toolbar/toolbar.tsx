@@ -107,14 +107,12 @@ const Toolbar = ({
       await leaveCall(roomID, jwt);
 
       navigate(`/room/${roomID}/post-call`, {
-        state: { roomID },
         replace: true,
       });
     } catch (error) {
       console.error('Error during leave:', error);
     } finally {
       navigate(`/room/${roomID}/post-call`, {
-        state: { roomID },
         replace: true,
       });
     }
