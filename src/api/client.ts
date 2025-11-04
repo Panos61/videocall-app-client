@@ -123,32 +123,35 @@ export const leaveCall = async (
   return response.data;
 };
 
-export const killCall = async(
-  roomID: string,
-  jwtToken: string | undefined,
-): Promise<boolean> => {
-  const response = await api.get<boolean>(`/leave-call/${roomID}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${jwtToken}`,
-    },
-  });
-  
-  return response.data;
-}
-
 export const exitRoom = async (roomID: string): Promise<boolean> => {
   const response = await api.delete<boolean>(`/exit-room/${roomID}`);
   return response.data;
 };
 
-export const getLvkToken = async (roomID: string, sessionID: string): Promise<string> => {
+export const killCall = async (
+  roomID: string,
+  jwtToken: string | undefined
+): Promise<boolean> => {
+  const response = await api.get<boolean>(`/kill-room/${roomID}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${jwtToken}`,
+    },
+  });
+
+  return response.data;
+};
+
+export const getLvkToken = async (
+  roomID: string,
+  sessionID: string
+): Promise<string> => {
   const response = await api.post<string>(`/lvk-token/${roomID}`, {
     session_id: sessionID,
   });
-  
+
   return response.data;
-}
+};
 
 export const getCallState = async (roomID: string): Promise<CallState> => {
   const response = await api.get<CallState>(`/call/${roomID}`);
