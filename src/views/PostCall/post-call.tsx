@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useCountdown } from 'usehooks-ts';
 import Cookie from 'js-cookie';
 
@@ -33,8 +33,6 @@ const PostCall = () => {
   const { sendSystemEvent, disconnectSystemEvents } = useSystemEventsCtx();
 
   const navigate = useNavigate();
-  const { state } = useLocation();
-  const { sessionID } = state || {};
 
   const { id: roomID } = useParams<{ id: string }>();
   const [allowNavigation, setAllowNavigation] = useState(false);
@@ -58,6 +56,7 @@ const PostCall = () => {
     enabled: !!roomID && !!jwtToken,
   });
 
+  const userId = meData?.id;
   const isHost = meData?.isHost;
 
   const { mutate: exitRoomMutation, isPending: isExiting } = useMutation({
@@ -98,19 +97,25 @@ const PostCall = () => {
   };
 
   const handleHostLeaveRoom = () => {
+    if (!userId) return;
+
     sendSystemEvent({
       type: 'host.left',
-      session_id: sessionID,
-      payload: {},
+      payload: {
+        previous_host_id: userId,
+      },
     });
     exitRoomMutation();
   };
 
   const handleHostKillCall = () => {
+    if (!userId) return;
+
     sendSystemEvent({
       type: 'host.left',
-      session_id: sessionID,
-      payload: {},
+      payload: {
+        previous_host_id: userId,
+      },
     });
 
     killCallMutation();
@@ -120,14 +125,14 @@ const PostCall = () => {
     countStart: 60,
   });
 
-  if (!roomID || !jwtToken) return null;
-
   useEffect(() => {
     startCountdown();
     if (count === 0) {
       exitRoomMutation();
     }
   }, [startCountdown, count]);
+
+  if (!roomID || !jwtToken) return null;
 
   return (
     <div className='flex flex-col items-center gap-48 mt-72'>
@@ -163,15 +168,19 @@ const PostCall = () => {
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>
-                    <Button type='submit' onClick={handleHostLeaveRoom}>
+                    <Button
+                      type='submit'
+                      disabled={isExiting}
+                      onClick={handleHostLeaveRoom}
+                    >
                       <LogOutIcon size={16} className='mr-8' />
                       {isExiting ? 'Leaving...' : 'Leave'}
                     </Button>
                     <Button
                       type='submit'
                       variant='destructive'
-                      onClick={handleHostKillCall}
                       disabled={isKillingCall}
+                      onClick={handleHostKillCall}
                     >
                       <PowerOffIcon size={16} className='mr-8' />
                       {isKillingCall ? 'Ending...' : 'End'}
@@ -182,9 +191,9 @@ const PostCall = () => {
             </Dialog>
           ) : (
             <Button
-              variant={'call'}
-              onClick={() => exitRoomMutation()}
+              variant='destructive'
               disabled={isExiting}
+              onClick={() => exitRoomMutation()}
             >
               <LogOutIcon size={20} className='mr-8' />
               Leave Room
