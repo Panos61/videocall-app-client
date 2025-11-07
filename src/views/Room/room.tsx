@@ -26,12 +26,19 @@ import {
   useMediaControlCtx,
   useSettingsCtx,
   usePreferencesCtx,
+  useSystemEventsCtx,
 } from '@/context';
 import { exitRoom, getLvkToken, getParticipants } from '@/api/client';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import { useOrderedTiles } from './useOrderedTiles';
-import { VideoTile, Participants, ShareScreenTile } from './components';
+import {
+  VideoTile,
+  Participants,
+  ShareScreenTile,
+  HostHandoverToast,
+  HostUpdatedToast,
+} from './components';
 import Chat from './chat';
 import Header from './header';
 import TilePanel from './tile-panel';
@@ -57,6 +64,13 @@ interface TrackInfo {
 const Room = () => {
   // Settings Context: websocket connection for settings
   const { connectSettings, settings, disconnect } = useSettingsCtx();
+  // System Events Context: websocket connection for system events
+  const { recentSystemEvents, latestHostLeft, latestHostUpdate } =
+    useSystemEventsCtx();
+  console.log('recentSystemEvents', recentSystemEvents);
+  console.log('latestHostLeft', latestHostLeft);
+  console.log('latestHostUpdate', latestHostUpdate);
+
   // Events Context: websocket connection for user events
   const {
     ws: eventsWS,
@@ -115,25 +129,25 @@ const Room = () => {
   const { sessionID } = location.state || {};
   // const [searchParams, setSearchParams] = useSearchParams();
 
-  useNavigationBlocker({
-    message:
-      'Are you sure you want to leave the call? You will be disconnected from the room too.',
-    onBeforeLeave: () => {
-      const room: LivekitRoom | null = livekitRoom.current;
-      if (room) room.disconnect();
+  // useNavigationBlocker({
+  //   message:
+  //     'Are you sure you want to leave the call? You will be disconnected from the room too.',
+  //   onBeforeLeave: () => {
+  //     const room: LivekitRoom | null = livekitRoom.current;
+  //     if (room) room.disconnect();
 
-      if (videoTrack) {
-        videoTrack.stop();
-      }
-      if (audioTrack) {
-        audioTrack.stop();
-      }
+  //     if (videoTrack) {
+  //       videoTrack.stop();
+  //     }
+  //     if (audioTrack) {
+  //       audioTrack.stop();
+  //     }
 
-      disconnect();
-      if (roomID) exitRoom(roomID);
-    },
-    allowedPaths: ['/post-call'],
-  });
+  //     disconnect();
+  //     if (roomID) exitRoom(roomID);
+  //   },
+  //   allowedPaths: ['/post-call'],
+  // });
 
   const {
     data: lvkTokenData,
@@ -591,7 +605,10 @@ const Room = () => {
         isSharingScreen={shareScreenEvents.length > 0}
         participantsCount={participants.length}
       />
+
       <div className='flex-1 relative overflow-hidden'>
+        {latestHostLeft && <HostHandoverToast />}
+        {latestHostUpdate && <HostUpdatedToast />}
         <ResizablePanelGroup direction='horizontal' className='h-full'>
           <ResizablePanel
             defaultSize={8}
