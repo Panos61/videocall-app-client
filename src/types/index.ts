@@ -1,10 +1,3 @@
-export interface BaseEvent {
-  type: string;
-  senderID?: string;
-  session_id?: string;
-  payload: unknown;
-}
-
 export interface Participant {
   id: string;
   username: string;

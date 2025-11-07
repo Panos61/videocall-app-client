@@ -1,17 +1,20 @@
 import { createContext, useState, useRef } from 'react';
 import { BASE_WS_URL } from '@/utils/constants';
-import type { BaseEvent } from '@/types';
+import type {
+  HostLeftPayload,
+  HostUpdatePayload,
+  SystemEventData,
+} from './events';
 
 export interface Props {
   ws: WebSocket | null;
   connectSystemEvents: (roomID: string) => void;
-  sendSystemEvent: (event: BaseEvent) => void;
+  sendSystemEvent: (event: SystemEventData) => void;
   disconnectSystemEvents: () => void;
   isConnected: boolean;
-  events: {
-    userJoined: boolean;
-    userLeft: boolean;
-  };
+  recentSystemEvents: SystemEventData[];
+  latestHostLeft: SystemEventData<HostLeftPayload> | null;
+  latestHostUpdate: SystemEventData<HostUpdatePayload> | null;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -25,8 +28,13 @@ export const SystemEventsProvider = ({
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  const [userJoined, setUserJoined] = useState<boolean>(false);
-  const [userLeft, setUserLeft] = useState<boolean>(false);
+  const [recentSystemEvents, setRecentSystemEvents] = useState<
+    SystemEventData[]
+  >([]);
+  const [latestHostLeft, setLatestHostLeft] =
+    useState<SystemEventData<HostLeftPayload> | null>(null);
+  const [latestHostUpdate, setLatestHostUpdate] =
+    useState<SystemEventData<HostUpdatePayload> | null>(null);
 
   const connectSystemEvents = (roomID: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
@@ -50,14 +58,32 @@ export const SystemEventsProvider = ({
 
       ws.current.onmessage = (event: MessageEvent) => {
         try {
-          const data: BaseEvent = JSON.parse(event.data);
-          // Process received events and update state
+          const data: SystemEventData = JSON.parse(event.data);
+          
+          const systemEvent: SystemEventData = {
+            type: data.type,
+            payload: data.payload,
+            received_at: Date.now(),
+          };
+          // keep last 20 total system events
+          setRecentSystemEvents((prev) => [...prev, systemEvent].slice(-20));
+          
           switch (data.type) {
-            case 'user.joined':
-              setUserJoined(true);
+            case 'host.left':
+              const hostLeftPayload = data.payload as HostLeftPayload;
+              setLatestHostLeft({
+                type: 'host.left',
+                payload: hostLeftPayload,
+                received_at: Date.now(),
+              });
               break;
-            case 'user.left':
-              setUserLeft(true);
+            case 'host.updated':
+              const hostUpdatePayload = data.payload as HostUpdatePayload;
+              setLatestHostUpdate({
+                type: 'host.updated',
+                payload: hostUpdatePayload,
+                received_at: Date.now(),
+              });
               break;
           }
         } catch (error) {
@@ -73,7 +99,7 @@ export const SystemEventsProvider = ({
     setIsConnected(false);
   };
 
-  const sendSystemEvent = (event: BaseEvent) => {
+  const sendSystemEvent = (event: SystemEventData) => {
     if (isConnected && ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(event));
     } else {
@@ -89,10 +115,9 @@ export const SystemEventsProvider = ({
         sendSystemEvent,
         disconnectSystemEvents,
         isConnected,
-        events: {
-          userJoined,
-          userLeft,
-        },
+        recentSystemEvents,
+        latestHostLeft,
+        latestHostUpdate,
       }}
     >
       {children}

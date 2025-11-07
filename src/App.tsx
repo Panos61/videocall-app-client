@@ -10,7 +10,8 @@ import {
 } from './context';
 import ProtectedRoute from './utils/ProtectedRoute';
 
-// import { Toaster } from '@/components/ui/toaster';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as SonnerToaster } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   Home,
@@ -79,6 +80,7 @@ const App = () => {
                   <RouterProvider router={router} />
                 </TooltipProvider>
                 {/* <Toaster /> */}
+                <SonnerToaster richColors position='top-center' />
               </PreferencesProvider>
             </MediaControlProvider>
           </UserEventsProvider>

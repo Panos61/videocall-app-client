@@ -1,46 +1,82 @@
 import { useEffect, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCountdown } from 'usehooks-ts';
 import Cookie from 'js-cookie';
 
-import { exitRoom } from '@/api/client';
+import { getMe, exitRoom, killCall } from '@/api/client';
 import { useSystemEventsCtx } from '@/context';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
   HomeIcon,
   LogOutIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
   LockIcon,
+  Crown,
+  PowerOffIcon,
 } from 'lucide-react';
 
 const PostCall = () => {
-  const { disconnectSystemEvents } = useSystemEventsCtx();
-  
+  const { sendSystemEvent, disconnectSystemEvents } = useSystemEventsCtx();
+
   const navigate = useNavigate();
+
   const { id: roomID } = useParams<{ id: string }>();
-
-  if (!roomID) return null;
-
   const [allowNavigation, setAllowNavigation] = useState(false);
+
+  const jwtToken = Cookie.get('rsCookie');
 
   useNavigationBlocker({
     message:
       'Are you sure you want to leave the room? All your data will be deleted.',
     onBeforeLeave: () => {
       disconnectSystemEvents();
-      exitRoom(roomID);
+      if (roomID) exitRoom(roomID);
     },
     shouldBlock: !allowNavigation,
     allowedPaths: [],
   });
 
-  const { mutate: exitRoomMutation, isPending } = useMutation({
-    mutationFn: () => exitRoom(roomID),
+  const { data: meData } = useQuery({
+    queryKey: ['me', roomID, jwtToken],
+    queryFn: () => getMe(roomID!, jwtToken!),
+    enabled: !!roomID && !!jwtToken,
+  });
+
+  const userId = meData?.id;
+  const isHost = meData?.isHost;
+
+  const { mutate: exitRoomMutation, isPending: isExiting } = useMutation({
+    mutationFn: () => exitRoom(roomID!),
+    onSuccess: () => {
+      disconnectSystemEvents();
+      setAllowNavigation(true);
+      setTimeout(() => navigate('/', { replace: true }), 0);
+      Cookie.remove('rsCookie');
+    },
+    onError: () => {
+      disconnectSystemEvents();
+      setAllowNavigation(true);
+      setTimeout(() => navigate('/', { replace: true }), 0);
+      Cookie.remove('rsCookie');
+    },
+  });
+
+  const { mutate: killCallMutation, isPending: isKillingCall } = useMutation({
+    mutationFn: () => killCall(roomID!, jwtToken!),
     onSuccess: () => {
       disconnectSystemEvents();
       setAllowNavigation(true);
@@ -60,6 +96,31 @@ const PostCall = () => {
     setTimeout(() => navigate(`/room/${roomID}`, { replace: true }), 0);
   };
 
+  const handleHostLeaveRoom = () => {
+    if (!userId) return;
+
+    sendSystemEvent({
+      type: 'host.left',
+      payload: {
+        previous_host_id: userId,
+      },
+    });
+    exitRoomMutation();
+  };
+
+  const handleHostKillCall = () => {
+    if (!userId) return;
+
+    sendSystemEvent({
+      type: 'host.left',
+      payload: {
+        previous_host_id: userId,
+      },
+    });
+
+    killCallMutation();
+  };
+
   const [count, { startCountdown }] = useCountdown({
     countStart: 60,
   });
@@ -71,19 +132,73 @@ const PostCall = () => {
     }
   }, [startCountdown, count]);
 
+  if (!roomID || !jwtToken) return null;
+
   return (
     <div className='flex flex-col items-center gap-48 mt-72'>
-      <div className='flex flex-col items-center justify-center gap-36'>
+      <div className='flex flex-col items-center justify-center gap-28'>
         <h1 className='text-4xl'>You left the call</h1>
+        <div className='flex items-center justify-center gap-4 mt-24'>
+          <Crown size={12} className='text-yellow-600' />
+          <span className='text-xs text-gray-600'>
+            You are the host of this call.
+          </span>
+        </div>
         <div className='flex items-center justify-center gap-12'>
           <Button variant='outline' onClick={handleStayInLobby}>
-            <LogOutIcon size={20} className='mr-8' />
-            Stay in lobby
-          </Button>
-          <Button onClick={() => exitRoomMutation()} disabled={isPending}>
             <HomeIcon size={20} className='mr-8' />
-            {isPending ? 'Exiting...' : 'Return to home screen'}
+            Stay in Lobby
           </Button>
+          {isHost ? (
+            <Dialog>
+              <form>
+                <DialogTrigger asChild>
+                  <Button variant='destructive'>
+                    <LogOutIcon size={20} className='mr-8' />
+                    Leave Room
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className='flex flex-col gap-24 sm:max-w-[425px]'>
+                  <DialogHeader>
+                    <DialogTitle>Leave the Room</DialogTitle>
+                    <DialogDescription className='text-sm text-muted-foreground'>
+                      You’re the current host. If you leave, you can either hand
+                      over the session to others or end the call for everyone.
+                      Choose what happens next.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter>
+                    <Button
+                      type='submit'
+                      disabled={isExiting}
+                      onClick={handleHostLeaveRoom}
+                    >
+                      <LogOutIcon size={16} className='mr-8' />
+                      {isExiting ? 'Leaving...' : 'Leave'}
+                    </Button>
+                    <Button
+                      type='submit'
+                      variant='destructive'
+                      disabled={isKillingCall}
+                      onClick={handleHostKillCall}
+                    >
+                      <PowerOffIcon size={16} className='mr-8' />
+                      {isKillingCall ? 'Ending...' : 'End'}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </form>
+            </Dialog>
+          ) : (
+            <Button
+              variant='destructive'
+              disabled={isExiting}
+              onClick={() => exitRoomMutation()}
+            >
+              <LogOutIcon size={20} className='mr-8' />
+              Leave Room
+            </Button>
+          )}
         </div>
         <span className='text-sm underline'>
           Returning to home screen in {count} seconds.
