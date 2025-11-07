@@ -6,8 +6,8 @@ import Cookie from 'js-cookie';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, LogInIcon } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { createRoom } from '@/api/client';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -154,52 +154,6 @@ const Home = () => {
           </div>
         </div>
       </motion.div>
-      {/* <div className='flex gap-12 md:flex justify-center'>
-        <Card className='w-full max-w-md bg-white border border-gray-200 drop-shadow-md'>
-          <CardContent className='p-24 text-gray-700'>
-            <div className='flex items-center gap-3 mb-4'>
-              <EyeOff className='size-24 text-orange-300' />
-              <h2 className='text-xl font-semibold text-gray-800'>
-                Private Video Rooms
-              </h2>
-            </div>
-            <p className='text-sm'>
-              Start high-quality video calls in one click. Invite anyone with a
-              link. No setup, no hassle — everything stays encrypted and secure.
-            </p>
-          </CardContent>
-        </Card>
-        <Card className='w-full max-w-md bg-white border border-gray-200 drop-shadow-md'>
-          <CardContent className='p-24 text-gray-700'>
-            <div className='flex items-center gap-3 mb-4'>
-              <VideoIcon className='size-24 text-green-500' />
-              <h2 className='text-xl font-semibold text-gray-800'>
-                Private Video Rooms
-              </h2>
-            </div>
-            <p className='text-sm'>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
-              quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Quisquam, quos.
-            </p>
-          </CardContent>
-        </Card>
-        <Card className='w-full max-w-md bg-white border border-gray-200 drop-shadow-md'>
-          <CardContent className='p-24 text-gray-700'>
-            <div className='flex items-center gap-3 mb-4'>
-              <MessageCircleIcon className='size-24 text-violet-500' />
-              <h2 className='text-xl font-semibold text-gray-800'>
-                Toku Video Call & Chat
-              </h2>
-            </div>
-            <p className='text-sm'>
-              Toku Video Call & Chat enables secure, high-quality video calls
-              without complexity. Share the room link and collaborate with
-              confidence. All sessions are encrypted and private.
-            </p>
-          </CardContent>
-        </Card>
-      </div> */}
     </div>
   );
 };
