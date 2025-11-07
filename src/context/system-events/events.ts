@@ -10,8 +10,7 @@ export interface HostLeftPayload {
 }
 
 export interface HostHandoverPayload {
-  candidate_id: string;
-  has_accepted: boolean;
+  new_host_id: string;
   timestamp: number;
 }
 
