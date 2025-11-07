@@ -79,7 +79,7 @@ const App = () => {
                 <TooltipProvider>
                   <RouterProvider router={router} />
                 </TooltipProvider>
-                <Toaster />
+                {/* <Toaster /> */}
                 <SonnerToaster richColors position='top-center' />
               </PreferencesProvider>
             </MediaControlProvider>

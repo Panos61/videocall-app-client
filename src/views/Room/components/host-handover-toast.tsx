@@ -1,20 +1,15 @@
 import { useEffect, useRef } from 'react';
-import { toast } from 'sonner';
 import { useCountdown } from 'usehooks-ts';
+import { toast } from 'sonner';
 
-interface HostHandoverToastProps {
+interface Props {
   onReject?: () => void;
   onAccept?: () => void;
-  countdown?: number;
 }
 
-const HostHandoverToast = ({
-  onReject,
-  onAccept,
-  countdown = 60,
-}: HostHandoverToastProps) => {
+const HostHandoverToast = ({ onReject, onAccept }: Props) => {
   const [count, { startCountdown }] = useCountdown({
-    countStart: countdown,
+    countStart: 30,
   });
   const toastIdRef = useRef<string | number | null>(null);
 
