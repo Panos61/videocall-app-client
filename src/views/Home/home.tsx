@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
 
+import LOGO from '@/assets/catgpt.png';
+
 const Home = () => {
   const navigate = useNavigate();
   const {
@@ -86,9 +88,7 @@ const Home = () => {
   return (
     <div className='flex flex-col gap-32 relative min-h-screen bg-gradient-to-br text-gray-900 px-4 py-12 items-center justify-center'>
       <header className='absolute top-40 left-[104px] flex items-center gap-12 text-gray-800'>
-        <h1 className='text-5xl'>
-          <span className='font-mono'>[placeholder...]</span>
-        </h1>
+        <img src={LOGO} alt='logo' width={300} height={400} />
       </header>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
