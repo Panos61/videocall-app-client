@@ -87,7 +87,8 @@ const Home = () => {
 
   return (
     <div className='flex flex-col gap-32 relative min-h-screen bg-gradient-to-br text-gray-900 px-4 py-12 items-center justify-center'>
-      <header className='absolute top-40 left-[104px] flex items-center gap-12 text-gray-800'>
+      <header className='absolute top-40 left-[104px] flex flex-col items-center text-gray-800'>
+        <p className='text-4xl font-bold font-mono'>Whispurr</p>
         <img src={LOGO} alt='logo' width={300} height={400} />
       </header>
       <motion.div
@@ -101,14 +102,19 @@ const Home = () => {
             Spin Up a Room. <span className='text-green-600'>🛸</span>
             <br />
             Start Talking. <span className='text-green-600'>🚀</span>
+            <br />
+            Stay Anonymous. <span className='text-green-600'>👻</span>
           </h1>
           <h1 className='text-4xl text-gray-500'>
             Create a room, share the link, and start talking. Private,
             encrypted, and zero setup.
           </h1>
           <p className='text-xl text-gray-600'>
-            Host encrypted meetings with a single click. No sign-ups, no
-            downloads — just secure real-time collaboration.
+            Whispurr (pronounced <span className='text-yellow-600'>/ˈwɪspər/</span>, like "whisper") is a web-based video chat platform
+            that allows you to host encrypted meetings with a single click.
+          </p>
+          <p className='text-xl text-gray-600'>
+            No sign-ups, no downloads — just being fast and anonymous.
           </p>
           <div className='flex items-center gap-12'>
             <Button
