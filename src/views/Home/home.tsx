@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useMediaQuery } from 'usehooks-ts';
 import Cookie from 'js-cookie';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, LogInIcon } from 'lucide-react';
@@ -85,11 +86,13 @@ const Home = () => {
     }
   };
 
+  const isLarge = useMediaQuery('(max-width: 1500px)');
+
   return (
     <div className='flex flex-col gap-32 relative min-h-screen bg-gradient-to-br text-gray-900 px-4 py-12 items-center justify-center'>
       <header className='absolute top-40 left-[104px] flex flex-col items-center text-gray-800'>
         <p className='text-4xl font-bold font-mono'>Whispurr</p>
-        <img src={LOGO} alt='logo' width={300} height={400} />
+        <img src={LOGO} alt='logo' width={isLarge ? 124 : 300} />
       </header>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -110,8 +113,10 @@ const Home = () => {
             encrypted, and zero setup.
           </h1>
           <p className='text-xl text-gray-600'>
-            Whispurr (pronounced <span className='text-yellow-600'>/ˈwɪspər/</span>, like "whisper") is a web-based video chat platform
-            that allows you to host encrypted meetings with a single click.
+            Whispurr (pronounced{' '}
+            <span className='text-yellow-600'>/ˈwɪspər/</span>, like "whisper")
+            is a web-based video chat platform that allows you to host encrypted
+            meetings with a single click.
           </p>
           <p className='text-xl text-gray-600'>
             No sign-ups, no downloads — just being fast and anonymous.
