@@ -110,16 +110,18 @@ const Participants = ({
               <DialogTitle>Handover Host</DialogTitle>
               <DialogDescription className='flex flex-col items-center gap-12 mb-16'>
                 Are you sure you want to handover the host to this participant?
-                <div className='flex items-center gap-4'>
-                  <InfoIcon size={44} className='text-blue-500'/>
-                  <p className='text-xs text-black'>
-                    Important: This action is irreversible. The selected participant will become the new host. Host actions will be performed by the new host.
-                  </p>
-                </div>
                 <div className='flex items-center gap-8 w-full bg-gray-100 rounded-8 p-8'>
                   <Avatar size='sm' src={selectedParticipant.avatar_src} />
                   <p className='text-lg text-black'>
                     {selectedParticipant.username}
+                  </p>
+                </div>
+                <div className='flex items-center gap-4'>
+                  <InfoIcon size={44} className='text-blue-500' />
+                  <p className='text-xs text-black'>
+                    Important: This action is irreversible. The selected
+                    participant will become the new host. Host actions will be
+                    performed by the new host.
                   </p>
                 </div>
               </DialogDescription>
@@ -132,7 +134,7 @@ const Participants = ({
                 type='submit'
                 onClick={() =>
                   sendSystemEvent({
-                    type: 'host.handover',
+                    type: 'host.updated',
                     payload: {
                       new_host_id: selectedParticipant.id,
                     },
@@ -140,7 +142,7 @@ const Participants = ({
                 }
               >
                 Handover
-                <HandshakeIcon className='size-16 text-blue-500 ml-4' />
+                <HandshakeIcon className='ml-4 size-16 text-blue-500' />
               </Button>
             </DialogFooter>
           </DialogContent>

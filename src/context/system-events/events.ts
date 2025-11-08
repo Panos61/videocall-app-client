@@ -9,12 +9,7 @@ export interface HostLeftPayload {
   timestamp: number;
 }
 
-export interface HostHandoverPayload {
-  new_host_id: string;
-  timestamp: number;
-}
-
-export interface HostUpdatePayload {
+export interface HostUpdatedPayload {
   new_host_id: string;
   timestamp: number;
 }
