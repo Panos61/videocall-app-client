@@ -2,7 +2,7 @@ import { createContext, useState, useRef } from 'react';
 import { BASE_WS_URL } from '@/utils/constants';
 import type {
   HostLeftPayload,
-  HostUpdatePayload,
+  HostUpdatedPayload,
   SystemEventData,
 } from './events';
 
@@ -14,7 +14,7 @@ export interface Props {
   isConnected: boolean;
   recentSystemEvents: SystemEventData[];
   latestHostLeft: SystemEventData<HostLeftPayload> | null;
-  latestHostUpdate: SystemEventData<HostUpdatePayload> | null;
+  latestHostUpdate: SystemEventData<HostUpdatedPayload> | null;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -34,7 +34,7 @@ export const SystemEventsProvider = ({
   const [latestHostLeft, setLatestHostLeft] =
     useState<SystemEventData<HostLeftPayload> | null>(null);
   const [latestHostUpdate, setLatestHostUpdate] =
-    useState<SystemEventData<HostUpdatePayload> | null>(null);
+    useState<SystemEventData<HostUpdatedPayload> | null>(null);
 
   const connectSystemEvents = (roomID: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
@@ -78,10 +78,10 @@ export const SystemEventsProvider = ({
               });
               break;
             case 'host.updated':
-              const hostUpdatePayload = data.payload as HostUpdatePayload;
+              const hostUpdatedPayload = data.payload as HostUpdatedPayload;
               setLatestHostUpdate({
                 type: 'host.updated',
-                payload: hostUpdatePayload,
+                payload: hostUpdatedPayload,
                 received_at: Date.now(),
               });
               break;

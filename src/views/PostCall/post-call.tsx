@@ -28,6 +28,7 @@ import {
   Crown,
   PowerOffIcon,
 } from 'lucide-react';
+import LOGO from '@/assets/catgpt.png';
 
 const PostCall = () => {
   const { sendSystemEvent, disconnectSystemEvents } = useSystemEventsCtx();
@@ -136,9 +137,13 @@ const PostCall = () => {
 
   return (
     <div className='flex flex-col items-center gap-48 mt-72'>
-      <div className='flex flex-col items-center justify-center gap-28'>
+      <header className='absolute top-40 flex flex-col items-center'>
+        <p className='text-2xl font-mono text-gray-800'>Whispurr</p>
+        <img src={LOGO} alt='logo' width={80} />
+      </header>
+      <div className='flex flex-col items-center justify-center gap-28 mt-[120px]'>
         <h1 className='text-4xl'>You left the call</h1>
-        <div className='flex items-center justify-center gap-4 mt-24'>
+        <div className='flex items-center justify-center gap-4'>
           <Crown size={12} className='text-yellow-600' />
           <span className='text-xs text-gray-600'>
             You are the host of this call.
