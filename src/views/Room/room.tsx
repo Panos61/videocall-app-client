@@ -34,10 +34,9 @@ import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 import { useOrderedTiles } from './useOrderedTiles';
 import {
   VideoTile,
-  Participants,
+  ParticipantsList,
   ShareScreenTile,
-  HostHandoverToast,
-  HostUpdatedToast,
+  HostUpdateToast,
 } from './components';
 import Chat from './chat';
 import Header from './header';
@@ -607,8 +606,8 @@ const Room = () => {
       />
 
       <div className='flex-1 relative overflow-hidden'>
-        {latestHostLeft && <HostHandoverToast />}
-        {latestHostUpdate && <HostUpdatedToast />}
+        {latestHostLeft && <HostUpdateToast hostEventType='left' />}
+        {latestHostUpdate && <HostUpdateToast hostEventType='updated' />}
         <ResizablePanelGroup direction='horizontal' className='h-full'>
           <ResizablePanel
             defaultSize={8}
@@ -719,7 +718,7 @@ const Room = () => {
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
-        <Participants
+        <ParticipantsList
           open={activePanel === 'participants'}
           participants={participants}
           invitePermission={hasInvitePermission}
