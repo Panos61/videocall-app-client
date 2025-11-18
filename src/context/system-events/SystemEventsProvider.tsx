@@ -1,10 +1,12 @@
 import { createContext, useState, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { BASE_WS_URL } from '@/utils/constants';
 import type {
   HostLeftPayload,
   HostUpdatedPayload,
   SystemEventData,
 } from './events';
+import { handleHostLeft, handleHostUpdated } from './hostEventHandlers';
 
 export interface Props {
   ws: WebSocket | null;
@@ -25,7 +27,9 @@ export const SystemEventsProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const queryClient = useQueryClient();
   const ws = useRef<WebSocket | null>(null);
+
   const [isConnected, setIsConnected] = useState(false);
 
   const [recentSystemEvents, setRecentSystemEvents] = useState<
@@ -59,7 +63,7 @@ export const SystemEventsProvider = ({
       ws.current.onmessage = (event: MessageEvent) => {
         try {
           const data: SystemEventData = JSON.parse(event.data);
-          
+
           const systemEvent: SystemEventData = {
             type: data.type,
             payload: data.payload,
@@ -67,7 +71,7 @@ export const SystemEventsProvider = ({
           };
           // keep last 20 total system events
           setRecentSystemEvents((prev) => [...prev, systemEvent].slice(-20));
-          
+
           switch (data.type) {
             case 'host.left':
               const hostLeftPayload = data.payload as HostLeftPayload;
@@ -76,6 +80,8 @@ export const SystemEventsProvider = ({
                 payload: hostLeftPayload,
                 received_at: Date.now(),
               });
+
+              handleHostLeft(queryClient, hostLeftPayload, roomID);
               break;
             case 'host.updated':
               const hostUpdatedPayload = data.payload as HostUpdatedPayload;
@@ -84,6 +90,8 @@ export const SystemEventsProvider = ({
                 payload: hostUpdatedPayload,
                 received_at: Date.now(),
               });
+
+              handleHostUpdated(queryClient, hostUpdatedPayload, roomID);
               break;
           }
         } catch (error) {
