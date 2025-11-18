@@ -142,6 +142,19 @@ export const killCall = async (
   return response.data;
 };
 
+export const assignHost = async (
+  roomID: string,
+  currentHostID: string,
+  selectedParticipantID: string
+): Promise<string> => {
+  const response = await api.post<string>(`/assign-host/${roomID}`, {
+    current_host_id: currentHostID,
+    new_host_id: selectedParticipantID,
+  });
+
+  return response.data;
+};
+
 export const getLvkToken = async (
   roomID: string,
   sessionID: string
