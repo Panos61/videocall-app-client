@@ -81,7 +81,7 @@ export const SystemEventsProvider = ({
                 received_at: Date.now(),
               });
 
-              handleHostLeft(queryClient, hostLeftPayload, roomID);
+              handleHostLeft(queryClient, roomID);
               break;
             case 'host.updated':
               const hostUpdatedPayload = data.payload as HostUpdatedPayload;
