@@ -64,12 +64,9 @@ const Room = () => {
   // Settings Context: websocket connection for settings
   const { connectSettings, settings, disconnect } = useSettingsCtx();
   // System Events Context: websocket connection for system events
-  const { recentSystemEvents, latestHostLeft, latestHostUpdate } =
+  const { latestHostLeft, latestHostUpdate } =
     useSystemEventsCtx();
-  console.log('recentSystemEvents', recentSystemEvents);
-  console.log('latestHostLeft', latestHostLeft);
-  console.log('latestHostUpdate', latestHostUpdate);
-
+    
   // Events Context: websocket connection for user events
   const {
     ws: eventsWS,
