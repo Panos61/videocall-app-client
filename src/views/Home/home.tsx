@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { useMediaQuery } from 'usehooks-ts';
 import Cookie from 'js-cookie';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, LogInIcon } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { createRoom } from '@/api/client';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -85,10 +86,13 @@ const Home = () => {
     }
   };
 
+  const isLarge = useMediaQuery('(max-width: 1500px)');
+
   return (
     <div className='flex flex-col gap-32 relative min-h-screen bg-gradient-to-br text-gray-900 px-4 py-12 items-center justify-center'>
-      <header className='absolute top-40 left-[104px] flex items-center gap-12 text-gray-800'>
-        <img src={LOGO} alt='logo' width={300} height={400} />
+      <header className='absolute top-40 left-[104px] flex flex-col items-center text-gray-800'>
+        <p className='text-4xl font-bold font-mono'>Whispurr</p>
+        <img src={LOGO} alt='logo' width={isLarge ? 124 : 300} />
       </header>
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -101,14 +105,21 @@ const Home = () => {
             Spin Up a Room. <span className='text-green-600'>🛸</span>
             <br />
             Start Talking. <span className='text-green-600'>🚀</span>
+            <br />
+            Stay Anonymous. <span className='text-green-600'>👻</span>
           </h1>
           <h1 className='text-4xl text-gray-500'>
             Create a room, share the link, and start talking. Private,
             encrypted, and zero setup.
           </h1>
           <p className='text-xl text-gray-600'>
-            Host encrypted meetings with a single click. No sign-ups, no
-            downloads — just secure real-time collaboration.
+            Whispurr (pronounced{' '}
+            <span className='text-yellow-600'>/ˈwɪspər/</span>, like "whisper")
+            is a web-based video chat platform that allows you to host encrypted
+            meetings with a single click.
+          </p>
+          <p className='text-xl text-gray-600'>
+            No sign-ups, no downloads — just being fast and anonymous.
           </p>
           <div className='flex items-center gap-12'>
             <Button
@@ -154,52 +165,6 @@ const Home = () => {
           </div>
         </div>
       </motion.div>
-      {/* <div className='flex gap-12 md:flex justify-center'>
-        <Card className='w-full max-w-md bg-white border border-gray-200 drop-shadow-md'>
-          <CardContent className='p-24 text-gray-700'>
-            <div className='flex items-center gap-3 mb-4'>
-              <EyeOff className='size-24 text-orange-300' />
-              <h2 className='text-xl font-semibold text-gray-800'>
-                Private Video Rooms
-              </h2>
-            </div>
-            <p className='text-sm'>
-              Start high-quality video calls in one click. Invite anyone with a
-              link. No setup, no hassle — everything stays encrypted and secure.
-            </p>
-          </CardContent>
-        </Card>
-        <Card className='w-full max-w-md bg-white border border-gray-200 drop-shadow-md'>
-          <CardContent className='p-24 text-gray-700'>
-            <div className='flex items-center gap-3 mb-4'>
-              <VideoIcon className='size-24 text-green-500' />
-              <h2 className='text-xl font-semibold text-gray-800'>
-                Private Video Rooms
-              </h2>
-            </div>
-            <p className='text-sm'>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam,
-              quos. Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Quisquam, quos.
-            </p>
-          </CardContent>
-        </Card>
-        <Card className='w-full max-w-md bg-white border border-gray-200 drop-shadow-md'>
-          <CardContent className='p-24 text-gray-700'>
-            <div className='flex items-center gap-3 mb-4'>
-              <MessageCircleIcon className='size-24 text-violet-500' />
-              <h2 className='text-xl font-semibold text-gray-800'>
-                Toku Video Call & Chat
-              </h2>
-            </div>
-            <p className='text-sm'>
-              Toku Video Call & Chat enables secure, high-quality video calls
-              without complexity. Share the room link and collaborate with
-              confidence. All sessions are encrypted and private.
-            </p>
-          </CardContent>
-        </Card>
-      </div> */}
     </div>
   );
 };

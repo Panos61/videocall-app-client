@@ -34,10 +34,9 @@ import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 import { useOrderedTiles } from './useOrderedTiles';
 import {
   VideoTile,
-  Participants,
+  ParticipantsList,
   ShareScreenTile,
-  HostHandoverToast,
-  HostUpdatedToast,
+  HostUpdateToast,
 } from './components';
 import Chat from './chat';
 import Header from './header';
@@ -65,12 +64,9 @@ const Room = () => {
   // Settings Context: websocket connection for settings
   const { connectSettings, settings, disconnect } = useSettingsCtx();
   // System Events Context: websocket connection for system events
-  const { recentSystemEvents, latestHostLeft, latestHostUpdate } =
+  const { latestHostLeft, latestHostUpdate } =
     useSystemEventsCtx();
-  console.log('recentSystemEvents', recentSystemEvents);
-  console.log('latestHostLeft', latestHostLeft);
-  console.log('latestHostUpdate', latestHostUpdate);
-
+    
   // Events Context: websocket connection for user events
   const {
     ws: eventsWS,
@@ -607,8 +603,8 @@ const Room = () => {
       />
 
       <div className='flex-1 relative overflow-hidden'>
-        {latestHostLeft && <HostHandoverToast />}
-        {latestHostUpdate && <HostUpdatedToast />}
+        {latestHostLeft && <HostUpdateToast hostEventType='left' />}
+        {latestHostUpdate && <HostUpdateToast hostEventType='updated' />}
         <ResizablePanelGroup direction='horizontal' className='h-full'>
           <ResizablePanel
             defaultSize={8}
@@ -719,7 +715,7 @@ const Room = () => {
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>
-        <Participants
+        <ParticipantsList
           open={activePanel === 'participants'}
           participants={participants}
           invitePermission={hasInvitePermission}

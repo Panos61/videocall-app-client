@@ -1,8 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { toast } from 'sonner';
 import { useCountdown } from 'usehooks-ts';
+import { toast } from 'sonner';
 
-const HostUpdatedToast = () => {
+type Props = {
+  hostEventType: 'left' | 'updated';
+};
+
+const HostUpdateToast = ({ hostEventType }: Props) => {
   const [count, { startCountdown }] = useCountdown({
     countStart: 5,
   });
@@ -25,7 +29,9 @@ const HostUpdatedToast = () => {
   // Create initial toast
   useEffect(() => {
     toastIdRef.current = toast.info(
-      'New Host has been randomly promoted to host.',
+      hostEventType === 'left'
+        ? 'Previous Host has left the room, you are randomly promoted to host.'
+        : 'Previous Host has been replaced by a new host.',
       {
         duration: Infinity,
       }
@@ -40,16 +46,18 @@ const HostUpdatedToast = () => {
 
   useEffect(() => {
     if (toastIdRef.current && count > 0) {
-      toast.warning(
-        'New Host has been randomly promoted to host.',
+      toast.info(
+        hostEventType === 'left'
+          ? 'Previous Host has left the room, you are randomly promoted to host.'
+          : 'Previous Host has been replaced by a new host.',
         {
           id: toastIdRef.current,
         }
       );
     }
-  }, [count]);
+  }, [count, hostEventType]);
 
   return null;
 };
 
-export default HostUpdatedToast;
+export default HostUpdateToast;

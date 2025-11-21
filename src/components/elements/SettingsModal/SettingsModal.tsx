@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Cookie from 'js-cookie';
 import classNames from 'classnames';
 
@@ -29,26 +30,16 @@ export const SettingsModal = () => {
   const { settings } = useSettingsCtx();
 
   const [activeTab, setActiveTab] = useState<Tab>('invitation');
-  const [meData, setMeData] = useState<Participant | null>(null);
 
   const { pathname } = useLocation();
   const roomID = pathname.split('/')[2];
   const jwt = Cookie.get('rsCookie');
 
-  useEffect(() => {
-    const fetchMe = async () => {
-      if (!jwt || !roomID) return;
-
-      try {
-        const meResponseData = await getMe(roomID, jwt);
-        setMeData(meResponseData);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchMe();
-  }, [roomID, jwt]);
+  const { data: meData } = useQuery<Participant>({
+    queryKey: ['me', roomID],
+    queryFn: () => getMe(roomID!, jwt!),
+    enabled: !!roomID && !!jwt,
+  });
 
   const isHost = meData?.isHost;
 

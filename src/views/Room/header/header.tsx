@@ -20,7 +20,7 @@ const Header = ({ isSharingScreen, participantsCount }: Props) => {
   return (
     <header className='flex items-center justify-between h-52 px-48 border-b border-zinc-800'>
       <div className='flex items-center gap-72'>
-        <div className='text-lg text-white font-mono'>[placeholder...]</div>
+        <div className='text-lg text-white font-mono'>Whispurr</div>
         <div className='flex items-center gap-8'>
           {uniqueRaisedHandEvents.map((event) => (
             <RaisedHand key={event} username={event} />

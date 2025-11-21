@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import classNames from 'classnames';
 import {
   LockIcon,
@@ -6,34 +5,15 @@ import {
   MicOffIcon,
   VideoIcon,
   VideoOffIcon,
-  EllipsisVerticalIcon,
-  HandshakeIcon,
   Crown,
-  InfoIcon,
 } from 'lucide-react';
 
-import { useSystemEventsCtx } from '@/context/system-events';
 import type { Participant } from '@/types';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, InviteModal } from '@/components/elements';
-import Sidebar from '../sidebar';
+
+import AssignHostModal from './assign-host-modal';
+import Sidebar from '../../sidebar';
 
 interface Props {
   open: boolean;
@@ -49,7 +29,7 @@ interface Props {
   onClose: () => void;
 }
 
-const Participants = ({
+const ParticipantsList = ({
   open,
   participants,
   invitePermission,
@@ -60,8 +40,6 @@ const Participants = ({
   isActiveSpeaker,
   onClose,
 }: Props) => {
-  const { sendSystemEvent } = useSystemEventsCtx();
-
   const getMediaState = (remoteSession: string, participant: Participant) => {
     const isLocal = sessionID === remoteSession;
     if (isLocal) {
@@ -85,69 +63,6 @@ const Participants = ({
         'bg-green-200/75': isActiveSpeaker,
       }
     );
-
-  const [showNewDialog, setShowNewDialog] = useState(false);
-
-  const renderDropdownMenu = (selectedParticipant: Participant) => {
-    return (
-      <>
-        <DropdownMenu modal={false}>
-          <DropdownMenuTrigger asChild>
-            <EllipsisVerticalIcon className='size-12 text-gray-500 cursor-pointer hover:text-gray-700' />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align='end'>
-            <DropdownMenuGroup>
-              <DropdownMenuItem onSelect={() => setShowNewDialog(true)}>
-                Handover Host
-                <HandshakeIcon className='size-16 text-blue-500' />
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        <Dialog open={showNewDialog} onOpenChange={setShowNewDialog}>
-          <DialogContent className='sm:max-w-[425px]'>
-            <DialogHeader>
-              <DialogTitle>Handover Host</DialogTitle>
-              <DialogDescription className='flex flex-col items-center gap-12 mb-16'>
-                Are you sure you want to handover the host to this participant?
-                <div className='flex items-center gap-4'>
-                  <InfoIcon size={44} className='text-blue-500'/>
-                  <p className='text-xs text-black'>
-                    Important: This action is irreversible. The selected participant will become the new host. Host actions will be performed by the new host.
-                  </p>
-                </div>
-                <div className='flex items-center gap-8 w-full bg-gray-100 rounded-8 p-8'>
-                  <Avatar size='sm' src={selectedParticipant.avatar_src} />
-                  <p className='text-lg text-black'>
-                    {selectedParticipant.username}
-                  </p>
-                </div>
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant='outline'>Cancel</Button>
-              </DialogClose>
-              <Button
-                type='submit'
-                onClick={() =>
-                  sendSystemEvent({
-                    type: 'host.handover',
-                    payload: {
-                      new_host_id: selectedParticipant.id,
-                    },
-                  })
-                }
-              >
-                Handover
-                <HandshakeIcon className='size-16 text-blue-500 ml-4' />
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </>
-    );
-  };
 
   return (
     <Sidebar title='Participants' open={open} onClose={onClose}>
@@ -196,9 +111,9 @@ const Participants = ({
                 ) : (
                   <VideoOffIcon color='#dc2626' className='size-12' />
                 )}
-                {isHost &&
-                  sessionID !== participant.session_id &&
-                  renderDropdownMenu(participant)}
+                {isHost && sessionID !== participant.session_id && (
+                  <AssignHostModal selectedParticipant={participant} />
+                )}
               </div>
             </div>
           ))}
@@ -208,4 +123,4 @@ const Participants = ({
   );
 };
 
-export default Participants;
+export default ParticipantsList;

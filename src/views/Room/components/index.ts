@@ -1,13 +1,6 @@
-import Participants from './participants';
+import ParticipantsList from './participants-list/participants-list';
 import VideoTile from './video-tile';
 import ShareScreenTile from './sharescreen-tile';
-import HostHandoverToast from './host-handover-toast';
-import HostUpdatedToast from './host-updated-toast';
+import HostUpdateToast from './host-update-toast';
 
-export {
-  Participants,
-  VideoTile,
-  ShareScreenTile,
-  HostHandoverToast,
-  HostUpdatedToast,
-};
+export { ParticipantsList, VideoTile, ShareScreenTile, HostUpdateToast };

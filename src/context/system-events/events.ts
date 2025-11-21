@@ -6,15 +6,12 @@ export interface SystemEventData<T = any> {
 
 export interface HostLeftPayload {
   previous_host_id: string;
-  timestamp: number;
-}
-
-export interface HostHandoverPayload {
   new_host_id: string;
   timestamp: number;
 }
 
-export interface HostUpdatePayload {
+export interface HostUpdatedPayload {
+  current_host_id: string;
   new_host_id: string;
   timestamp: number;
 }
