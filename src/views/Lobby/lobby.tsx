@@ -156,7 +156,6 @@ const Lobby = () => {
 
   const roomCreatedAt: string = roomInfoData || new Date().toISOString();
   const isHost = meData?.isHost ?? false;
-  const username = meData?.username || formUsername;
 
   const { data: callStateData } = useQuery({
     queryKey: ['callState', roomID],
@@ -193,6 +192,12 @@ const Lobby = () => {
   const selectedVideoDevice = videoDevices.find(
     (device) => device.deviceId === videoActiveDeviceId
   );
+
+  useEffect(() => {
+    if (meData?.username && !formUsername) {
+      setFormUsername(meData.username);
+    }
+  }, [meData?.username]);
 
   // Video device can be found but not set as active device
   // set first video device as selected
@@ -246,8 +251,8 @@ const Lobby = () => {
         <div className='col-span-4 md:col-span-1 flex items-center justify-center'>
           <div className='flex flex-col items-center gap-32 size-full'>
             <div className='flex flex-col items-center'>
-            <h1 className='text-3xl font-mono'>Whispurr</h1>
-            <img src={LOGO} alt='logo' width={100} />
+              <h1 className='text-3xl font-mono'>Whispurr</h1>
+              <img src={LOGO} alt='logo' width={100} />
             </div>
             <div className='flex flex-col flex-1 justify-center'>
               <h3 className='mb-20 text-center text-xl font-semibold tracking-tight'>
@@ -255,7 +260,7 @@ const Lobby = () => {
               </h3>
               <Form
                 isHost={isHost}
-                username={username}
+                username={formUsername}
                 setUsername={setFormUsername}
                 avatarSrc={avatarSrc}
                 isCallActive={isCallActive}
