@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useBlocker, useLocation } from 'react-router-dom';
 
 interface UseNavigationBlockerOptions {
@@ -15,10 +15,12 @@ export const useNavigationBlocker = ({
   allowedPaths = [],
 }: UseNavigationBlockerOptions) => {
   const location = useLocation();
+  const isConfirmed = useRef(false);
 
   // Block navigation when user tries to leave
   const blocker = useBlocker(({ currentLocation, nextLocation }) => {
     if (!shouldBlock) return false;
+    if (isConfirmed.current) return false;
 
     // For post-call pages, block ALL navigation  (we handle redirects manually)
     if (currentLocation.pathname.includes('/post-call')) {
@@ -46,9 +48,9 @@ export const useNavigationBlocker = ({
         const shouldLeave = window.confirm(message);
 
         if (shouldLeave) {
+          isConfirmed.current = true;
           onBeforeLeave?.();
-          blocker.reset();
-          window.location.replace('/');
+          blocker.proceed();
         } else {
           blocker.reset();
         }
@@ -64,7 +66,7 @@ export const useNavigationBlocker = ({
         blocker.reset();
       }
     }
-  }, [blocker, message, onBeforeLeave, location.pathname]);
+  }, [blocker, message, onBeforeLeave]);
 
   // Handle browser back button and page refresh
   useEffect(() => {
