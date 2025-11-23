@@ -11,6 +11,8 @@ import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
+import JOIN_TONE from '@/assets/join_tone.mp3';
+
 interface Props {
   isHost: boolean | undefined;
   username: string;
@@ -64,6 +66,10 @@ const Form = ({
       if (isHost) {
         startCallMutation();
       }
+
+      const joinTone = new Audio(JOIN_TONE);
+      joinTone.volume = 0.6;
+      joinTone.play();
 
       sendSystemEvent({
         type: 'user.joined',
@@ -124,7 +130,7 @@ const Form = ({
               message: 'Username should not exceed over 16 characters length.',
             },
           })}
-          onChange={(e) => setUsername(e.target.value)} 
+          onChange={(e) => setUsername(e.target.value)}
         />
         <div className='mt-8 ml-12'>{renderUsernameWarning()}</div>
       </div>

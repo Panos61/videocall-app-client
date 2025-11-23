@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCountdown } from 'usehooks-ts';
 import Cookie from 'js-cookie';
@@ -28,22 +28,24 @@ import {
   Crown,
   PowerOffIcon,
 } from 'lucide-react';
+
 import LOGO from '@/assets/catgpt.png';
 
 const PostCall = () => {
   const { sendSystemEvent, disconnectSystemEvents } = useSystemEventsCtx();
-
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const { id: roomID } = useParams<{ id: string }>();
   const [allowNavigation, setAllowNavigation] = useState(false);
 
   const jwtToken = Cookie.get('rsCookie');
-
+  
   useNavigationBlocker({
     message:
       'Are you sure you want to leave the room? All your data will be deleted.',
     onBeforeLeave: () => {
+      setAllowNavigation(true);
       disconnectSystemEvents();
       if (roomID) exitRoom(roomID);
     },
@@ -62,33 +64,33 @@ const PostCall = () => {
 
   const { mutate: exitRoomMutation, isPending: isExiting } = useMutation({
     mutationFn: () => exitRoom(roomID!),
-    onSuccess: () => {
+    onMutate: () => {
+      queryClient.cancelQueries();
       disconnectSystemEvents();
-      setAllowNavigation(true);
-      setTimeout(() => navigate('/', { replace: true }), 0);
       Cookie.remove('rsCookie');
+      setAllowNavigation(true);
+    },
+    onSuccess: () => {
+      navigate('/', { replace: true });
     },
     onError: () => {
-      disconnectSystemEvents();
-      setAllowNavigation(true);
-      setTimeout(() => navigate('/', { replace: true }), 0);
-      Cookie.remove('rsCookie');
+      navigate('/', { replace: true });
     },
   });
 
   const { mutate: killCallMutation, isPending: isKillingCall } = useMutation({
     mutationFn: () => killCall(roomID!, jwtToken!),
-    onSuccess: () => {
+    onMutate: () => {
+      queryClient.cancelQueries();
       disconnectSystemEvents();
-      setAllowNavigation(true);
-      setTimeout(() => navigate('/', { replace: true }), 0);
       Cookie.remove('rsCookie');
+      setAllowNavigation(true);
+    },
+    onSuccess: () => {
+      navigate('/', { replace: true });
     },
     onError: () => {
-      disconnectSystemEvents();
-      setAllowNavigation(true);
-      setTimeout(() => navigate('/', { replace: true }), 0);
-      Cookie.remove('rsCookie');
+      navigate('/', { replace: true });
     },
   });
 

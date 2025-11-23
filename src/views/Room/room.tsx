@@ -125,25 +125,25 @@ const Room = () => {
   const { sessionID } = location.state || {};
   // const [searchParams, setSearchParams] = useSearchParams();
 
-  // useNavigationBlocker({
-  //   message:
-  //     'Are you sure you want to leave the call? You will be disconnected from the room too.',
-  //   onBeforeLeave: () => {
-  //     const room: LivekitRoom | null = livekitRoom.current;
-  //     if (room) room.disconnect();
+  useNavigationBlocker({
+    message:
+      'Are you sure you want to leave the call? You will be disconnected from the room too.',
+    onBeforeLeave: () => {
+      const room: LivekitRoom | null = livekitRoom.current;
+      if (room) room.disconnect();
 
-  //     if (videoTrack) {
-  //       videoTrack.stop();
-  //     }
-  //     if (audioTrack) {
-  //       audioTrack.stop();
-  //     }
+      if (videoTrack) {
+        videoTrack.stop();
+      }
+      if (audioTrack) {
+        audioTrack.stop();
+      }
 
-  //     disconnect();
-  //     if (roomID) exitRoom(roomID);
-  //   },
-  //   allowedPaths: ['/post-call'],
-  // });
+      disconnect();
+      if (roomID) exitRoom(roomID);
+    },
+    allowedPaths: ['/post-call'],
+  });
 
   const {
     data: lvkTokenData,
@@ -415,6 +415,7 @@ const Room = () => {
   useEffect(() => {
     const room: LivekitRoom | null = livekitRoom.current;
     if (!room) return;
+    console.log('lvkToken: ', lvkToken);
 
     const connectToRoom = async () => {
       try {
