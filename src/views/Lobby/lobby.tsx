@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { createLocalVideoTrack, LocalVideoTrack } from 'livekit-client';
 import { useMediaDeviceSelect } from '@livekit/components-react';
+import { GitBranchIcon } from 'lucide-react';
 import Cookie from 'js-cookie';
 
 import type { CallState, Participant } from '@/types';
@@ -308,6 +309,17 @@ const Lobby = () => {
             onGetSrc={setAvatarSrc}
           />
         </div>
+        <div
+        className='absolute bottom-16 flex items-center gap-8'
+        onClick={() =>
+          window.open('https://github.com/Panos61/videocall-app-client/issues', '_blank')
+        }
+      >
+        <span className='text-sm text-gray-600 underline cursor-pointer hover:text-gray-900'>
+          Report an issue
+        </span>
+        <GitBranchIcon className='size-16' />
+      </div>
       </div>
     </>
   );

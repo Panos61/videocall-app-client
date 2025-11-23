@@ -67,7 +67,6 @@ const Form = ({
 
       sendSystemEvent({
         type: 'user.joined',
-        session_id: sessionID,
         payload: {},
       });
       navigate(`/room/${roomID}/call`, {
@@ -125,7 +124,7 @@ const Form = ({
               message: 'Username should not exceed over 16 characters length.',
             },
           })}
-          onBlur={(e) => setUsername(e.target.value)} 
+          onChange={(e) => setUsername(e.target.value)} 
         />
         <div className='mt-8 ml-12'>{renderUsernameWarning()}</div>
       </div>
