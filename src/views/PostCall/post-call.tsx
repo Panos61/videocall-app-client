@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCountdown } from 'usehooks-ts';
 import Cookie from 'js-cookie';
+import { GitBranchIcon } from 'lucide-react';
 
 import { getMe, exitRoom, killCall } from '@/api/client';
 import { useSystemEventsCtx } from '@/context';
@@ -40,7 +41,7 @@ const PostCall = () => {
   const [allowNavigation, setAllowNavigation] = useState(false);
 
   const jwtToken = Cookie.get('rsCookie');
-  
+
   useNavigationBlocker({
     message:
       'Are you sure you want to leave the room? All your data will be deleted.',
@@ -242,6 +243,20 @@ const PostCall = () => {
           </span>
         </div>
       </Card>
+      <div
+        className='absolute bottom-16 flex items-center gap-8'
+        onClick={() =>
+          window.open(
+            'https://github.com/Panos61/videocall-app-client/issues/new',
+            '_blank'
+          )
+        }
+      >
+        <span className='text-sm text-gray-600 underline cursor-pointer hover:text-gray-900'>
+          Report an issue
+        </span>
+        <GitBranchIcon className='size-16' />
+      </div>
     </div>
   );
 };

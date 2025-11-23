@@ -312,7 +312,7 @@ const Lobby = () => {
         <div
         className='absolute bottom-16 flex items-center gap-8'
         onClick={() =>
-          window.open('https://github.com/Panos61/videocall-app-client/issues', '_blank')
+          window.open('https://github.com/Panos61/videocall-app-client/issues/new', '_blank')
         }
       >
         <span className='text-sm text-gray-600 underline cursor-pointer hover:text-gray-900'>
