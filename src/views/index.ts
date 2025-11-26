@@ -1,4 +1,4 @@
-import Home from './Home/Home';
+import Home from './Home/home';
 import Authorization from './Authorization';
 import Lobby from './Lobby';
 import Room from './Room';

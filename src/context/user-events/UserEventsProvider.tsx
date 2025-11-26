@@ -2,9 +2,11 @@ import { createContext, useState, useRef, useMemo } from 'react';
 import { BASE_WS_URL } from '@/utils/constants';
 import type { MediaControlState, RemoteMediaControlState } from '@/types';
 
+// todo: refactor user-events
 interface BaseEvent {
   type: string;
-  session_id: string;
+  session_id?: string;
+  senderID?: string;
   payload:
     | {
         reaction_type: string;
