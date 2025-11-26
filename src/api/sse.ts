@@ -1,11 +1,11 @@
-import { BASE_WS_URL } from '@/utils/constants';
+import { BASE_API_URL } from '@/utils/constants';
 
 export const connectSSE = (
   roomID: string,
   onInvitationUpdate: (key: string) => void
 ) => {
   const source: EventSource = new EventSource(
-    `${BASE_WS_URL}/sse-invitation-update/${roomID}`
+    `${BASE_API_URL}/sse-invitation-update/${roomID}`
   );
 
   source.addEventListener('update', (event) => {
