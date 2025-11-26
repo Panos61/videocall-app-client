@@ -37,7 +37,7 @@ export const InviteModal = () => {
   });
 
   const buildInvitation = (invitation: string | undefined, roomID: string) => {
-    return `http://localhost:3000/room-invite?code=${invitation}&room=${roomID}`;
+    return `${window.location.origin}/room-invite?code=${invitation}&room=${roomID}`;
   };
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export const InviteModal = () => {
       setInvitationURL(invitationURL);
 
       const formattedInvitation = invitationURL.replace(
-        'http://localhost:3000',
+        window.location.origin,
         ''
       );
       setFormattedInvitation(formattedInvitation);
@@ -60,7 +60,7 @@ export const InviteModal = () => {
           if (prev !== newCode) {
             const newInvitationURL = buildInvitation(newCode, roomID);
             const formattedInvitation = newInvitationURL.replace(
-              'http://localhost:3000',
+              window.location.origin,
               ''
             );
             setFormattedInvitation(formattedInvitation);
