@@ -26,7 +26,7 @@ const Chat = ({ open, onClose }: ChatProps) => {
   const { id: roomID } = useParams<{ id: string }>();
 
   const [messages, setMessages] = useState<string[]>([]);
-  const [messageData, setMessageData] = useState<MessageData[]>([]);
+  const [_messageData, setMessageData] = useState<MessageData[]>([]);
   const [inputValue, setInputValue] = useState('');
 
   const chatWS = useRef<WebSocket | null>(null);

@@ -1,11 +1,16 @@
 import { createContext, ReactNode, useState, useEffect } from 'react';
 import { LocalAudioTrack, LocalVideoTrack } from 'livekit-client';
-import type {
-  BaseEvent,
-  MediaControlState,
-  RemoteMediaControlState,
-} from '@/types';
+import type { MediaControlState, RemoteMediaControlState } from '@/types';
 import { useUserEventsCtx } from '../user-events/useUserEventsCtx';
+
+interface BaseEvent {
+  type: string;
+  session_id: string;
+  payload: {
+    audio: boolean;
+    video: boolean;
+  };
+}
 
 export interface DevicePreferences {
   deviceId: string | undefined;
