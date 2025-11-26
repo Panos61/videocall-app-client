@@ -64,9 +64,8 @@ const Room = () => {
   // Settings Context: websocket connection for settings
   const { connectSettings, settings, disconnect } = useSettingsCtx();
   // System Events Context: websocket connection for system events
-  const { latestHostLeft, latestHostUpdate } =
-    useSystemEventsCtx();
-    
+  const { latestHostLeft, latestHostUpdate } = useSystemEventsCtx();
+
   // Events Context: websocket connection for user events
   const {
     ws: eventsWS,
@@ -604,8 +603,18 @@ const Room = () => {
       />
 
       <div className='flex-1 relative overflow-hidden'>
-        {latestHostLeft && <HostUpdateToast hostEventType='left' />}
-        {latestHostUpdate && <HostUpdateToast hostEventType='updated' />}
+        {latestHostLeft && (
+          <HostUpdateToast
+            key={latestHostLeft.received_at}
+            hostEventType='left'
+          />
+        )}
+        {latestHostUpdate && (
+          <HostUpdateToast
+            key={latestHostUpdate.received_at}
+            hostEventType='updated'
+          />
+        )}
         <ResizablePanelGroup direction='horizontal' className='h-full'>
           <ResizablePanel
             defaultSize={8}
