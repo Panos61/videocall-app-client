@@ -92,7 +92,6 @@ const Toolbar = ({
 
       sendSystemEvent({
         type: 'user.left',
-        session_id: sessionID,
         payload: {},
       });
 

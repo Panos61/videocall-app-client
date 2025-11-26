@@ -91,7 +91,7 @@ export const SystemEventsProvider = ({
                 received_at: Date.now(),
               });
 
-              handleHostUpdated(queryClient, hostUpdatedPayload, roomID);
+              handleHostUpdated(queryClient, roomID);
               break;
           }
         } catch (error) {
