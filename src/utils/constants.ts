@@ -1,1 +1,2 @@
-export const BASE_WS_URL = 'ws://localhost:8080';
+export const BASE_API_URL = import.meta.env.VITE_API_URL;
+export const BASE_WS_URL = import.meta.env.VITE_WS_URL;

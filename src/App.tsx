@@ -10,7 +10,7 @@ import {
 } from './context';
 import ProtectedRoute from './utils/ProtectedRoute';
 
-import { Toaster } from '@/components/ui/toaster';
+// import { Toaster } from '@/components/ui/toaster';s
 import { Toaster as SonnerToaster } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
