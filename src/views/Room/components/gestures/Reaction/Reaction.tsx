@@ -13,7 +13,8 @@ const Reaction = ({ emoji, id, username, onAnimationEnd }: Props) => {
 
   // Random values for more natural balloon-like movement
   const randomXEnd = Math.random() * 100 - 50; // -50px to 50px horizontal drift
-  const randomDuration = 8 + Math.random() * 4; // 8-12 seconds duration
+  // Reduced duration since it travels less distance
+  const randomDuration = 4 + Math.random() * 2; // 4-6 seconds duration
 
   const handleAnimationEnd = (event: React.AnimationEvent) => {
     // onAnimationEnd fires for both 'float-in' and 'float-out'
@@ -64,25 +65,29 @@ const Reaction = ({ emoji, id, username, onAnimationEnd }: Props) => {
               opacity: 0;
             }
             15% {
-              transform: translate(-50%, -100px) scale(1);
+              transform: translate(-50%, -50px) scale(1);
               opacity: 1;
             }
             100% {
-              transform: translate(calc(-50% + var(--random-x-end)), -100vh) scale(1);
+              /* Move to -40vh (middle of screen) */
+              transform: translate(calc(-40% + var(--random-x-end)), -40vh) scale(1);
               opacity: 1;
             }
           }
           @keyframes float-out {
             0% {
+              /* Start fade out from wherever float-in ended (approx middle) */
+              transform: translate(calc(-40% + var(--random-x-end)), -40vh) scale(1);
               opacity: 1;
             }
             100% {
-              transform: translate(calc(-50% + var(--random-x-end)), -700px) rotate(var(--random-rotate-end)) scale(1);
+              /* Continue floating up a bit while fading out */
+              transform: translate(calc(-40% + var(--random-x-end)), -40vh) scale(1);
               opacity: 0;
             }
           }
           .animate-float-in {
-            animation: float-in var(--duration) ease-out forwards;
+            animation: float-in var(--duration) linear forwards;
           }
           .animate-float-out {
             animation: float-out 0.5s ease-out forwards;
