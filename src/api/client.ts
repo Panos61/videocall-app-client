@@ -9,13 +9,14 @@ import type {
   UpdateSettings,
   Authorization,
 } from '@/types';
+import { BASE_API_URL } from '@/utils/constants';
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: BASE_API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -61,7 +62,7 @@ api.interceptors.response.use(
         }
 
         const response = await axios.post(
-          'http://localhost:8080/refresh-token',
+          `${BASE_API_URL}/refresh-token`,
           {},
           {
             headers: {
@@ -90,7 +91,7 @@ api.interceptors.response.use(
 
 export const createRoom = async () => {
   const response = await axios.get<CreateRoom>(
-    'http://localhost:8080/create-room',
+    `${BASE_API_URL}/create-room`,
     {
       headers: { 'Content-Type': 'application/json' },
     }
@@ -251,7 +252,7 @@ export const getParticipants = async (
   const response = await api.get<{
     participants: Participant[];
     participantsInCall: Participant[];
-  }>(`http://localhost:8080/participants/${roomID}`);
+  }>(`${BASE_API_URL}/participants/${roomID}`);
 
   return {
     participants: response.data.participants,
@@ -291,7 +292,7 @@ export const validateInvitation = async (
 
 export const getInvitationCode = async (roomID: string): Promise<string> => {
   const response = await axios.get<{ invitation: string }>(
-    `http://localhost:8080/invitation-code/${roomID}`
+    `${BASE_API_URL}/invitation-code/${roomID}`
   );
 
   return response.data.invitation;

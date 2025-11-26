@@ -19,6 +19,7 @@ import {
   useSettingsCtx,
   useSystemEventsCtx,
 } from '@/context';
+import { BASE_WS_URL } from '@/utils/constants';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
 import {
   Actions,
@@ -95,7 +96,7 @@ const Lobby = () => {
 
   useEffect(() => {
     participantsWS.current = new WebSocket(
-      `ws://localhost:8080/ws/participants/${roomID}`
+      `${BASE_WS_URL}/ws/participants/${roomID}`
     );
     if (!participantsWS.current) return;
 
@@ -116,7 +117,7 @@ const Lobby = () => {
 
   useEffect(() => {
     callStateWS.current = new WebSocket(
-      `ws://localhost:8080/ws/call/${roomID}`
+      `${BASE_WS_URL}/ws/call/${roomID}`
     );
     if (!callStateWS.current) return;
 
