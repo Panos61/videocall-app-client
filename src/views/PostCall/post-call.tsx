@@ -68,13 +68,14 @@ const PostCall = () => {
     onMutate: () => {
       queryClient.cancelQueries();
       disconnectSystemEvents();
-      Cookie.remove('rsCookie');
       setAllowNavigation(true);
     },
     onSuccess: () => {
+      Cookie.remove('rsCookie');
       navigate('/', { replace: true });
     },
     onError: () => {
+      Cookie.remove('rsCookie');
       navigate('/', { replace: true });
     },
   });
@@ -84,13 +85,14 @@ const PostCall = () => {
     onMutate: () => {
       queryClient.cancelQueries();
       disconnectSystemEvents();
-      Cookie.remove('rsCookie');
       setAllowNavigation(true);
     },
     onSuccess: () => {
+      Cookie.remove('rsCookie');
       navigate('/', { replace: true });
     },
     onError: () => {
+      Cookie.remove('rsCookie');
       navigate('/', { replace: true });
     },
   });
@@ -114,7 +116,6 @@ const PostCall = () => {
 
   const handleHostKillCall = () => {
     if (!userId) return;
-
     sendSystemEvent({
       type: 'host.left',
       payload: {

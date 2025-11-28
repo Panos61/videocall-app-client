@@ -125,7 +125,7 @@ export const leaveCall = async (
 };
 
 export const exitRoom = async (roomID: string): Promise<boolean> => {
-  const response = await api.delete<boolean>(`/exit-room/${roomID}`);
+  const response = await api.get<boolean>(`/exit-room/${roomID}`);
   return response.data;
 };
 
