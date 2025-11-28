@@ -10,7 +10,7 @@ import {
 
 import type { Participant } from '@/types';
 import { InviteModal } from '@/features';
-import { Avatar } from '@/components/elements';
+import { Avatar } from '@/components/shared';
 import { Separator } from '@/components/ui/separator';
 
 import AssignHostModal from './assign-host-modal';

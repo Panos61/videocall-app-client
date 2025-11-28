@@ -1,6 +1,6 @@
 import type { Participant } from '@/types';
 import { Crown, Users } from 'lucide-react';
-import { Avatar } from '@/components/elements';
+import { Avatar } from '@/components/shared';
 import {
   Dialog,
   DialogContent,

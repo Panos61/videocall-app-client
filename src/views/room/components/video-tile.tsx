@@ -11,7 +11,7 @@ import { HandIcon, MicIcon, MicOffIcon } from 'lucide-react';
 
 import type { Participant } from '@/types';
 import { useUserEventsCtx } from '@/context';
-import { Avatar, LoadingSpinner } from '@/components/elements';
+import { Avatar, LoadingSpinner } from '@/components/shared';
 
 interface TrackInfo {
   track:

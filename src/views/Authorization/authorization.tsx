@@ -6,9 +6,9 @@ import Cookie from 'js-cookie';
 import { validateInvitation, joinRoom } from '@/api/client';
 
 import { CircleCheckBig, CircleX, LogIn } from 'lucide-react';
+import { LoadingSpinner } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { LoadingSpinner } from '@/components/elements';
 import { useToast } from '@/components/ui/use-toast';
 
 const Authorization = () => {
