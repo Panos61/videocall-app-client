@@ -64,7 +64,8 @@ const Room = () => {
   // Settings Context: websocket connection for settings
   const { connectSettings, settings, disconnect } = useSettingsCtx();
   // System Events Context: websocket connection for system events
-  const { latestRoomKilled, latestHostLeft, latestHostUpdate } = useSystemEventsCtx();
+  const { latestRoomKilled, latestHostLeft, latestHostUpdate } =
+    useSystemEventsCtx();
 
   // Events Context: websocket connection for user events
   const {
@@ -72,12 +73,10 @@ const Room = () => {
     connectUserEvents,
     sendUserEvent,
     events: { shareScreenEvents },
-    disconnectUserEvents,
   } = useUserEventsCtx();
   // Media Control Context: websocket connection for media device control
   const {
     connectMedia,
-    disconnectMedia,
     mediaState,
     remoteMediaStates,
     setAudioState,
@@ -175,10 +174,6 @@ const Room = () => {
   useEffect(() => {
     if (roomID && sessionID) connectUserEvents(roomID, sessionID);
     if (!eventsWS) return;
-
-    return () => {
-      disconnectUserEvents();
-    };
   }, [roomID, sessionID]);
 
   useEffect(() => {
@@ -191,17 +186,10 @@ const Room = () => {
     };
 
     connectMediaControlEvents();
-    return () => {
-      disconnectMedia();
-    };
   }, [roomID, sessionID]);
 
   useEffect(() => {
     if (roomID && sessionID) connectSettings(roomID);
-
-    return () => {
-      disconnect();
-    };
   }, [roomID, connectSettings]);
 
   // Setup LiveKit room & event listeners
@@ -209,6 +197,7 @@ const Room = () => {
     livekitRoom.current = new LivekitRoom({
       adaptiveStream: true,
       dynacast: true,
+      disconnectOnPageLeave: false,
       videoCaptureDefaults: {
         resolution: VideoPresets.h720.resolution,
       },
@@ -387,7 +376,6 @@ const Room = () => {
       room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.off(RoomEvent.ParticipantConnected, handleParticipantConnected);
       room.off(RoomEvent.Connected, handleConnected);
-      room.disconnect();
     };
   }, []);
 
