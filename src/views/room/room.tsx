@@ -64,7 +64,7 @@ const Room = () => {
   // Settings Context: websocket connection for settings
   const { connectSettings, settings, disconnect } = useSettingsCtx();
   // System Events Context: websocket connection for system events
-  const { latestHostLeft, latestHostUpdate } = useSystemEventsCtx();
+  const { latestRoomKilled, latestHostLeft, latestHostUpdate } = useSystemEventsCtx();
 
   // Events Context: websocket connection for user events
   const {
@@ -141,6 +141,7 @@ const Room = () => {
       disconnect();
       if (roomID) exitRoom(roomID);
     },
+    shouldBlock: !latestRoomKilled,
     allowedPaths: ['/post-call'],
   });
 
