@@ -18,7 +18,7 @@ import {
   DropdownMenuRadioGroup,
 } from '@/components/ui/dropdown-menu';
 import { Separator } from '@/components/ui/separator';
-import { InviteModal, SettingsModal } from '@/components/elements';
+import { InviteModal, SettingsModal } from '@/features';
 
 interface Props {
   settings: Settings;

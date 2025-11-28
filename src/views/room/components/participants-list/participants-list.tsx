@@ -9,8 +9,9 @@ import {
 } from 'lucide-react';
 
 import type { Participant } from '@/types';
+import { InviteModal } from '@/features';
+import { Avatar } from '@/components/elements';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, InviteModal } from '@/components/elements';
 
 import AssignHostModal from './assign-host-modal';
 import Sidebar from '../../sidebar';
