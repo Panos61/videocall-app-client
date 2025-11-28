@@ -4,6 +4,7 @@ import { BASE_WS_URL } from '@/utils/constants';
 import type {
   HostLeftPayload,
   HostUpdatedPayload,
+  RoomKilledPayload,
   SystemEventData,
 } from './events';
 import { handleHostLeft, handleHostUpdated } from './hostEventHandlers';
@@ -17,6 +18,7 @@ export interface Props {
   recentSystemEvents: SystemEventData[];
   latestHostLeft: SystemEventData<HostLeftPayload> | null;
   latestHostUpdate: SystemEventData<HostUpdatedPayload> | null;
+  latestRoomKilled: SystemEventData<RoomKilledPayload> | null;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -39,8 +41,16 @@ export const SystemEventsProvider = ({
     useState<SystemEventData<HostLeftPayload> | null>(null);
   const [latestHostUpdate, setLatestHostUpdate] =
     useState<SystemEventData<HostUpdatedPayload> | null>(null);
+  const [latestRoomKilled, setLatestRoomKilled] =
+    useState<SystemEventData<RoomKilledPayload> | null>(null);
 
   const connectSystemEvents = (roomID: string) => {
+    // Clear previous room events when connecting to a new one
+    setLatestHostLeft(null);
+    setLatestHostUpdate(null);
+    setLatestRoomKilled(null);
+    setRecentSystemEvents([]);
+
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       if (ws.current) {
         ws.current.close();
@@ -93,6 +103,14 @@ export const SystemEventsProvider = ({
 
               handleHostUpdated(queryClient, roomID);
               break;
+            case 'room.killed':
+              const roomKilledPayload = data.payload as RoomKilledPayload;
+              setLatestRoomKilled({
+                type: 'room.killed',
+                payload: roomKilledPayload,
+                received_at: Date.now(),
+              });
+              break;
           }
         } catch (error) {
           console.error('Failed to parse incoming event:', error);
@@ -126,6 +144,7 @@ export const SystemEventsProvider = ({
         recentSystemEvents,
         latestHostLeft,
         latestHostUpdate,
+        latestRoomKilled,
       }}
     >
       {children}
