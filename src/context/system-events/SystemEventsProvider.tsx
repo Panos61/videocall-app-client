@@ -77,6 +77,14 @@ export const SystemEventsProvider = ({
           setRecentSystemEvents((prev) => [...prev, systemEvent].slice(-20));
 
           switch (data.type) {
+            case 'room.killed':
+              const roomKilledPayload = data.payload as RoomKilledPayload;
+              setLatestRoomKilled({
+                type: 'room.killed',
+                payload: roomKilledPayload,
+                received_at: Date.now(),
+              });
+              break;
             case 'host.left':
               const hostLeftPayload = data.payload as HostLeftPayload;
               setLatestHostLeft({
@@ -96,14 +104,6 @@ export const SystemEventsProvider = ({
               });
 
               handleHostUpdated(queryClient, roomID);
-              break;
-            case 'room.killed':
-              const roomKilledPayload = data.payload as RoomKilledPayload;
-              setLatestRoomKilled({
-                type: 'room.killed',
-                payload: roomKilledPayload,
-                received_at: Date.now(),
-              });
               break;
           }
         } catch (error) {
