@@ -8,6 +8,7 @@ interface UseNavigationBlockerOptions {
   allowedPaths: string[];
 }
 
+// TODO: refactor this hook so that onBeforeLeave is not triggered instantly without user clicking on leave
 export const useNavigationBlocker = ({
   message,
   onBeforeLeave,
