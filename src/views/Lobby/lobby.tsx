@@ -312,7 +312,7 @@ const Lobby = () => {
           />
         </div>
         <div
-        className='absolute bottom-16 flex items-center gap-8'
+        className='md:relative bottom-32 md:flex hidden items-center gap-8'
         onClick={() =>
           window.open('https://github.com/Panos61/videocall-app-client/issues/new', '_blank')
         }
