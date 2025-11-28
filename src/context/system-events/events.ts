@@ -15,3 +15,7 @@ export interface HostUpdatedPayload {
   new_host_id: string;
   timestamp: number;
 }
+
+export interface RoomKilledPayload {
+  timestamp: number;
+}

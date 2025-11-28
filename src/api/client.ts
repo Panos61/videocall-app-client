@@ -13,6 +13,7 @@ import { BASE_API_URL } from '@/utils/constants';
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
+  _isCritical?: boolean;
 }
 
 const api = axios.create({
@@ -44,7 +45,11 @@ api.interceptors.response.use(
 
     // check if room exists, else redirect to invalid page
     if (error.response?.status === 404) {
-      window.location.href = '/whoops';
+      if (originalRequest._isCritical) {
+        window.location.href = '/whoops';
+        return Promise.reject(error);
+      }
+
       return Promise.reject(error);
     }
 
@@ -89,13 +94,17 @@ api.interceptors.response.use(
   }
 );
 
+// critical endpoint to validate if user has access to the room
+export const hasRoomAccess = async (roomID: string) => {
+  await api.post(`/get-me/${roomID}`, {}, {
+    _isCritical: true,
+  } as CustomAxiosRequestConfig);
+};
+
 export const createRoom = async () => {
-  const response = await axios.get<CreateRoom>(
-    `${BASE_API_URL}/create-room`,
-    {
-      headers: { 'Content-Type': 'application/json' },
-    }
-  );
+  const response = await axios.get<CreateRoom>(`${BASE_API_URL}/create-room`, {
+    headers: { 'Content-Type': 'application/json' },
+  });
 
   return response.data;
 };
@@ -125,7 +134,7 @@ export const leaveCall = async (
 };
 
 export const exitRoom = async (roomID: string): Promise<boolean> => {
-  const response = await api.delete<boolean>(`/exit-room/${roomID}`);
+  const response = await api.get<boolean>(`/exit-room/${roomID}`);
   return response.data;
 };
 

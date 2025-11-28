@@ -1,12 +1,10 @@
 import { useEffect } from 'react';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { isUUIDv4 } from './isUUIDv4';
+import { hasRoomAccess } from '@/api/client';
+import { RoomKilledModal } from '@/features';
 
-interface Props {
-  children: React.ReactNode;
-}
-
-const ProtectedRoute = ({ children }: Props) => {
+const ProtectedRoute = ({ children }: { children?: React.ReactNode }) => {
   const navigate = useNavigate();
   const { id: uuid } = useParams<{ id: string }>();
 
@@ -15,10 +13,18 @@ const ProtectedRoute = ({ children }: Props) => {
   useEffect(() => {
     if (!isUUIDv4(uuid)) {
       navigate('/whoops');
+      return;
     }
+    
+    hasRoomAccess(uuid);
   }, [uuid, navigate]);
 
-  return children ? children : <Outlet />;
+  return (
+    <>
+      {children ? children : <Outlet />}
+      <RoomKilledModal />
+    </>
+  );
 };
 
 export default ProtectedRoute;

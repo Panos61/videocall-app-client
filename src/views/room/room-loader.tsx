@@ -6,9 +6,9 @@ import Cookie from 'js-cookie';
 
 import { exitRoom } from '@/api/client';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
-
-import { LoadingSpinner } from '@/components/elements';
+import { LoadingSpinner } from '@/components/shared';
 // import { Button } from '@/components/ui/button';
+
 
 interface Props {
   hasError?: boolean;

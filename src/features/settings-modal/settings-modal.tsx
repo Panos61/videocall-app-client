@@ -18,11 +18,13 @@ import {
 } from '@/components/ui/dialog';
 import { Separator } from '@/components/ui/separator';
 
-import { AccessWarning } from './AccessWarning';
-import { ChatSettings } from './ChatSettings';
-import { MediaSettings } from './MediaSettings';
-import { InvitationSettings } from './InvitationSettings';
-import { Permissions } from './Permissions';
+import {
+  AccessWarning,
+  ChatSettings,
+  InvitationSettings,
+  MediaSettings,
+  Permissions,
+} from './components';
 
 type Tab = 'media' | 'invitation' | 'chat' | 'permissions';
 

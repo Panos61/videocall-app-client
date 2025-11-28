@@ -21,7 +21,7 @@ import {
   LayoutGridIcon,
   LayoutPanelLeftIcon,
 } from 'lucide-react';
-import { SettingsModal } from '@/components/elements';
+import { SettingsModal } from '@/features';
 import { Separator } from '@/components/ui/separator';
 import {
   Clock,

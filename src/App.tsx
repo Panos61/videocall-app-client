@@ -8,7 +8,7 @@ import {
   MediaControlProvider,
   PreferencesProvider,
 } from './context';
-import ProtectedRoute from './utils/ProtectedRoute';
+import ProtectedRoute from './utils/protected-route';
 
 // import { Toaster } from '@/components/ui/toaster';s
 import { Toaster as SonnerToaster } from 'sonner';

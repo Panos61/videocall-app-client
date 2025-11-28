@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { LocalVideoTrack } from 'livekit-client';
 import { VideoIcon, MicIcon } from 'lucide-react';
-import { Avatar } from '@/components/elements';
+import { Avatar } from '@/components/shared';
 interface Props {
   username: string;
   mediaState: { audio: boolean; video: boolean };

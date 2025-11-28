@@ -7,7 +7,7 @@ import { EllipsisVerticalIcon, HandshakeIcon, InfoIcon } from 'lucide-react';
 import type { Participant } from '@/types';
 import { assignHost, getMe } from '@/api/client';
 
-import { Avatar } from '@/components/elements';
+import { Avatar } from '@/components/shared';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,

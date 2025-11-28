@@ -4,6 +4,7 @@ import { BASE_WS_URL } from '@/utils/constants';
 import type {
   HostLeftPayload,
   HostUpdatedPayload,
+  RoomKilledPayload,
   SystemEventData,
 } from './events';
 import { handleHostLeft, handleHostUpdated } from './hostEventHandlers';
@@ -17,6 +18,7 @@ export interface Props {
   recentSystemEvents: SystemEventData[];
   latestHostLeft: SystemEventData<HostLeftPayload> | null;
   latestHostUpdate: SystemEventData<HostUpdatedPayload> | null;
+  latestRoomKilled: SystemEventData<RoomKilledPayload> | null;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -39,6 +41,8 @@ export const SystemEventsProvider = ({
     useState<SystemEventData<HostLeftPayload> | null>(null);
   const [latestHostUpdate, setLatestHostUpdate] =
     useState<SystemEventData<HostUpdatedPayload> | null>(null);
+  const [latestRoomKilled, setLatestRoomKilled] =
+    useState<SystemEventData<RoomKilledPayload> | null>(null);
 
   const connectSystemEvents = (roomID: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
@@ -73,6 +77,14 @@ export const SystemEventsProvider = ({
           setRecentSystemEvents((prev) => [...prev, systemEvent].slice(-20));
 
           switch (data.type) {
+            case 'room.killed':
+              const roomKilledPayload = data.payload as RoomKilledPayload;
+              setLatestRoomKilled({
+                type: 'room.killed',
+                payload: roomKilledPayload,
+                received_at: Date.now(),
+              });
+              break;
             case 'host.left':
               const hostLeftPayload = data.payload as HostLeftPayload;
               setLatestHostLeft({
@@ -126,6 +138,7 @@ export const SystemEventsProvider = ({
         recentSystemEvents,
         latestHostLeft,
         latestHostUpdate,
+        latestRoomKilled,
       }}
     >
       {children}

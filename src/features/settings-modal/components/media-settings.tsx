@@ -49,59 +49,45 @@ export const MediaSettings = () => {
   const videoPlaceholder =
     selectedVideoDevice?.label || 'Select a video device';
 
-  const renderAudioDevices = () => {
-    return (
-      <Select>
-        <SelectTrigger className='w-[300px]'>
-          <SelectValue
-            defaultValue={audioActiveDeviceId}
-            placeholder={audioPlaceholder}
-          />
-        </SelectTrigger>
-        <SelectContent>
-          {audioDevices.map((device) => (
-            <SelectItem key={device.deviceId} value={device.deviceId}>
-              {device.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    );
-  };
-
-  const renderVideoDevices = () => {
-    return (
-      <Select>
-        <SelectTrigger className='w-[300px]'>
-          <SelectValue
-            defaultValue={videoActiveDeviceId}
-            placeholder={videoPlaceholder}
-          />
-        </SelectTrigger>
-        <SelectContent>
-          {videoDevices.map((device) => (
-            <SelectItem key={device.deviceId} value={device.deviceId}>
-              {device.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    );
-  };
-
-  const cardCls = 'flex flex-col gap-12 border border-slate-200 rounded-8 p-12';
-
   return (
     <div className='flex flex-col gap-12'>
-      <div className={cardCls}>
+      <div className='flex flex-col gap-12 p-12 border border-slate-200 rounded-8'>
         <span className='text-sm font-medium'>Media Device Permissions</span>
         <div className='flex items-center gap-8'>
           <span className='text-sm'>Audio: </span>
-          {renderAudioDevices()}
+          <Select>
+            <SelectTrigger className='w-[300px]'>
+              <SelectValue
+                defaultValue={audioActiveDeviceId}
+                placeholder={audioPlaceholder}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {audioDevices.map((device) => (
+                <SelectItem key={device.deviceId} value={device.deviceId}>
+                  {device.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className='flex items-center gap-8'>
           <span className='text-sm'>Video: </span>
-          {renderVideoDevices()}
+          <Select>
+            <SelectTrigger className='w-[300px]'>
+              <SelectValue
+                defaultValue={videoActiveDeviceId}
+                placeholder={videoPlaceholder}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              {videoDevices.map((device) => (
+                <SelectItem key={device.deviceId} value={device.deviceId}>
+                  {device.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>
