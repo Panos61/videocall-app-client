@@ -36,7 +36,7 @@ import LOGO from '@/assets/catgpt.png';
 const Lobby = () => {
   const { pathname } = useLocation();
 
-  const { connectSystemEvents } = useSystemEventsCtx();
+  const { connectSystemEvents, latestRoomKilled } = useSystemEventsCtx();
   const {
     mediaState,
     setAudioState,
@@ -87,6 +87,7 @@ const Lobby = () => {
 
       exitRoom(roomID);
     },
+    shouldBlock: !latestRoomKilled,
     allowedPaths: ['/call'],
   });
 
