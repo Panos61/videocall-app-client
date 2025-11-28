@@ -1,4 +1,4 @@
-import { Avatar } from './Avatar';
-import { LoadingSpinner } from './LoadingSpinner';
+import { Avatar } from './avatar';
+import { LoadingSpinner } from './loading-spinner';
 
 export { Avatar, LoadingSpinner };
