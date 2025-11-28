@@ -45,12 +45,6 @@ export const SystemEventsProvider = ({
     useState<SystemEventData<RoomKilledPayload> | null>(null);
 
   const connectSystemEvents = (roomID: string) => {
-    // Clear previous room events when connecting to a new one
-    setLatestHostLeft(null);
-    setLatestHostUpdate(null);
-    setLatestRoomKilled(null);
-    setRecentSystemEvents([]);
-
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       if (ws.current) {
         ws.current.close();
