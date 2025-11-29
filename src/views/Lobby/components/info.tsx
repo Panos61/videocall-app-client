@@ -39,7 +39,6 @@ const Info = ({
             : `Room was created ${formatDistanceToNow(
                 new Date(createdAt)
               )} ago.`}
-          ago.
         </span>
       </div>
       {isCallActive && (
