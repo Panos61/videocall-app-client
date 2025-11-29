@@ -403,7 +403,6 @@ const Room = () => {
   useEffect(() => {
     const room: LivekitRoom | null = livekitRoom.current;
     if (!room) return;
-    console.log('lvkToken: ', lvkToken);
 
     const connectToRoom = async () => {
       try {

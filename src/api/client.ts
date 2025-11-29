@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Cookie from 'js-cookie';
 import type {
+  Room,
   CallState,
   CreateRoom,
   JoinRoom,
@@ -194,9 +195,8 @@ export const getMe = async (
   return response.data;
 };
 
-// gets only the createdAt field
-export const getRoomInfo = async (roomID: string): Promise<string> => {
-  const response = await api.get<string>(`/room-info/${roomID}`);
+export const getRoomInfo = async (roomID: string): Promise<Room> => {
+  const response = await api.get<Room>(`/room-info/${roomID}`);
   return response.data;
 };
 

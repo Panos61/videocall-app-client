@@ -22,7 +22,7 @@ import { InviteModal, SettingsModal } from '@/features';
 
 interface Props {
   settings: Settings;
-  isHost: boolean;
+  isHost: boolean | undefined;
   mediaState: { audio: boolean; video: boolean };
   setAudioState: (enabled: boolean) => Promise<void>;
   setVideoState: (enabled: boolean) => Promise<void>;
