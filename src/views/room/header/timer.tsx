@@ -41,6 +41,10 @@ const Timer = () => {
         console.error('Error parsing date:', error);
       }
     }
+    
+    return () => {
+      startTimeRef.current = null;
+    }
   }, [callState]);
 
   useEffect(() => {
