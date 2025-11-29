@@ -32,7 +32,7 @@ const Form = ({
   const {
     register,
     watch,
-    formState: { errors, isValid },
+    formState: { isValid },
     reset,
   } = useForm({
     mode: 'onChange',
