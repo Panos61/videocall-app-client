@@ -7,7 +7,6 @@ import Cookie from 'js-cookie';
 import { setParticipantCallData, setSession, startCall } from '@/api/client';
 import { useSystemEventsCtx } from '@/context';
 
-import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
@@ -84,25 +83,6 @@ const Form = ({
     }
   };
 
-  const renderUsernameWarning = () => {
-    if (errors.username) {
-      return (
-        <div className='flex items-center gap-4 mt-8'>
-          <AlertCircle className='size-16 text-red-500' />
-          <span className='text-xs text-red-500'>
-            {errors.username.message}
-          </span>
-        </div>
-      );
-    } else {
-      return (
-        <p className='text-xs text-muted-foreground'>
-          This will be your display name.
-        </p>
-      );
-    }
-  };
-
   const renderText = () => {
     if (isStartingCall) {
       return 'Starting call...';
@@ -117,10 +97,7 @@ const Form = ({
         <Input
           placeholder='Enter your name'
           {...register('username', {
-            required: 'Username is required.',
-            validate: (value) => {
-              return !!value.trim() || 'Username must not be empty.';
-            },
+            required: true,
             minLength: {
               value: 3,
               message: 'Username must be at least 3 characters long.',
@@ -132,7 +109,10 @@ const Form = ({
           })}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <div className='mt-8 ml-12'>{renderUsernameWarning()}</div>
+        <div className=' mt-8 ml-12 flex items-center gap-4 text-xs text-muted-foreground line-clamp-2'>
+          👉 Username must be between 3 and 16 characters long and will be your
+          display name throughout the call.
+        </div>
       </div>
       <Button
         variant='call'
