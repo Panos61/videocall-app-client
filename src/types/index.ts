@@ -1,3 +1,9 @@
+export interface Room {
+  id: string;
+  host_id: string;
+  created_at: string;
+}
+
 export interface Participant {
   id: string;
   username: string;

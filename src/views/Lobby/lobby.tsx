@@ -117,9 +117,7 @@ const Lobby = () => {
   const callStateWS = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    callStateWS.current = new WebSocket(
-      `${BASE_WS_URL}/ws/call/${roomID}`
-    );
+    callStateWS.current = new WebSocket(`${BASE_WS_URL}/ws/call/${roomID}`);
     if (!callStateWS.current) return;
 
     callStateWS.current.onmessage = async (event: MessageEvent) => {
@@ -157,8 +155,14 @@ const Lobby = () => {
   const participantsInCall: Participant[] =
     participantsData?.participantsInCall || [];
 
-  const roomCreatedAt: string = roomInfoData || new Date().toISOString();
-  const isHost = meData?.isHost ?? false;
+  const hostID = roomInfoData?.host_id;
+  const hostParticipant = participants.find(
+    (participant: Participant) => participant.id === hostID
+  );
+
+  const roomCreatedAt: string =
+    roomInfoData?.created_at || new Date().toISOString();
+  const isHost = meData?.isHost;
 
   const { data: callStateData } = useQuery({
     queryKey: ['callState', roomID],
@@ -250,15 +254,15 @@ const Lobby = () => {
 
   return (
     <>
-      <div className='grid grid-cols-4 gap-48 p-56 h-screen md:bg-gradient-to-br from-white via-white to-orange-300'>
+      <div className='grid grid-cols-4 gap-24 p-32 h-screen md:bg-gradient-to-br from-white via-white to-orange-300'>
         <div className='col-span-4 md:col-span-1 flex items-center justify-center'>
-          <div className='flex flex-col items-center gap-32 size-full'>
+          <div className='flex flex-col items-center gap-20 size-full'>
             <div className='flex flex-col items-center'>
               <h1 className='text-3xl font-mono'>Whispurr</h1>
               <img src={LOGO} alt='logo' width={100} />
             </div>
             <div className='flex flex-col flex-1 justify-center'>
-              <h3 className='mb-20 text-center text-xl font-semibold tracking-tight'>
+              <h3 className='mb-16 text-center text-xl font-semibold tracking-tight'>
                 {isHost ? 'Start Call' : 'Join Call'}
               </h3>
               <Form
@@ -283,7 +287,7 @@ const Lobby = () => {
               />
               <Info
                 isHost={isHost}
-                host='Panos'
+                host={hostParticipant?.username}
                 createdAt={roomCreatedAt}
                 isCallActive={isCallActive}
                 callStartedAt={callStartedAt}
@@ -303,7 +307,7 @@ const Lobby = () => {
             </div>
           </div>
         </div>
-        <div className='col-span-4 md:col-span-3 hidden md:block'>
+        <div className='col-span-4 md:col-span-3 hidden md:block m-20'>
           <Preview
             username={formUsername}
             mediaState={mediaState}
@@ -312,16 +316,19 @@ const Lobby = () => {
           />
         </div>
         <div
-        className='md:relative bottom-32 md:flex hidden items-center gap-8'
-        onClick={() =>
-          window.open('https://github.com/Panos61/videocall-app-client/issues/new', '_blank')
-        }
-      >
-        <span className='text-sm text-gray-600 underline cursor-pointer hover:text-gray-900'>
-          Report an issue
-        </span>
-        <GitBranchIcon className='size-16' />
-      </div>
+          className='md:absolute bottom-20 lg:flex hidden items-center gap-8'
+          onClick={() =>
+            window.open(
+              'https://github.com/Panos61/videocall-app-client/issues/new',
+              '_blank'
+            )
+          }
+        >
+          <span className='text-sm text-gray-600 underline cursor-pointer hover:text-gray-900'>
+            Report an issue
+          </span>
+          <GitBranchIcon className='size-16' />
+        </div>
       </div>
     </>
   );

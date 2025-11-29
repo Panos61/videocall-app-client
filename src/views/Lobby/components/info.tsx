@@ -3,7 +3,7 @@ import { Crown, PhoneCall } from 'lucide-react';
 
 interface Props {
   isHost: boolean | undefined;
-  host: string;
+  host: string | undefined;
   createdAt: string;
   isCallActive: boolean;
   callStartedAt: string;

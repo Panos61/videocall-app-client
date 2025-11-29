@@ -53,17 +53,27 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
       return (
         <>
           {participantsInCall.length > 0 && <Separator />}
-          <div className='flex flex-col gap-4'>
+          <div className='flex flex-col gap-4 '>
             <span className='text-xs font-medium text-gray-600'>
               IN LOBBY ({totalUsersLobby})
             </span>
-            <div className='flex flex-col text-xs text-gray-500'>
-              {participantsInLobby.map((participant) => (
-                <ParticipantItem
-                  key={participant.id}
-                  participant={participant}
-                />
+            <div className='flex items-center gap-4 text-xs text-gray-500 max-w-[328px] overflow-x-auto'>
+              {participantsInLobby.slice(0, 3).map((participant, index) => (
+                <>
+                  <ParticipantItem
+                    key={participant.id}
+                    participant={participant}
+                  />
+                  {index < participantsInLobby.length - 1 && (
+                    <Separator orientation='vertical' />
+                  )}
+                </>
               ))}
+              {participantsInLobby.length > 3 && (
+                <div className='text-xs text-gray-500'>
+                  +{participantsInLobby.length - 3} others
+                </div>
+              )}
             </div>
           </div>
         </>
@@ -72,7 +82,7 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
   };
 
   return (
-    <div className='flex flex-col gap-4 border border-gray-200 rounded-8 p-12 mt-12'>
+    <div className='flex flex-col gap-4 p-12 mt-12 border border-gray-200 rounded-8'>
       <div className='flex items-center justify-between'>
         <span className='font-medium'>Participants</span>
         {totalUsers > 0 && (
