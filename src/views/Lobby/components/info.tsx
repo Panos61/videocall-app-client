@@ -27,6 +27,8 @@ const Info = ({
     );
   }
 
+  if (!host || !isCallActive) return null;
+
   return (
     <div className='flex flex-col items-center justify-center gap-4 mt-24'>
       <div className='flex items-center justify-center gap-4'>
@@ -36,14 +38,12 @@ const Info = ({
           ago.
         </span>
       </div>
-      {isCallActive && (
-        <div className='flex items-center justify-center gap-4'>
-          <PhoneCall size={12} className='text-green-600' />
-          <span className='text-xs text-gray-600'>
-            Call started, {formatDistanceToNow(new Date(callStartedAt))} ago.
-          </span>
-        </div>
-      )}
+      <div className='flex items-center justify-center gap-4'>
+        <PhoneCall size={12} className='text-green-600' />
+        <span className='text-xs text-gray-600'>
+          Call started, {formatDistanceToNow(new Date(callStartedAt))} ago.
+        </span>
+      </div>
     </div>
   );
 };
