@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import type { Participant } from '@/types';
 import { Crown } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -11,7 +12,7 @@ interface Props {
 
 const ParticipantItem = ({ participant }: { participant: Participant }) => {
   return (
-    <div key={participant.id} className='flex items-center gap-4'>
+    <div className='flex items-center gap-4'>
       {participant.isHost && <Crown size={12} className='text-yellow-600' />}
       {participant.username}
     </div>
@@ -59,15 +60,12 @@ const Participants = ({ guests, participants, participantsInCall }: Props) => {
             </span>
             <div className='flex items-center gap-4 text-xs text-gray-500 max-w-[328px] overflow-x-auto'>
               {participantsInLobby.slice(0, 3).map((participant, index) => (
-                <>
-                  <ParticipantItem
-                    key={participant.id}
-                    participant={participant}
-                  />
+                <Fragment key={participant.id}>
+                  <ParticipantItem participant={participant} />
                   {index < participantsInLobby.length - 1 && (
                     <Separator orientation='vertical' />
                   )}
-                </>
+                </Fragment>
               ))}
               {participantsInLobby.length > 3 && (
                 <div className='text-xs text-gray-500'>
