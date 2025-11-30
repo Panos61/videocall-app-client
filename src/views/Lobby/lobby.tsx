@@ -6,7 +6,7 @@ import { useMediaDeviceSelect } from '@livekit/components-react';
 import { GitBranchIcon } from 'lucide-react';
 import Cookie from 'js-cookie';
 
-import type { CallState, Participant } from '@/types';
+import type { Participant } from '@/types';
 import {
   getCallState,
   getMe,
@@ -56,11 +56,6 @@ const Lobby = () => {
   const [guests, setGuests] = useState<Participant[]>([]);
   const [formUsername, setFormUsername] = useState<string>('');
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
-
-  const [wsCallState, setWsCallState] = useState<CallState | null>({
-    is_active: false,
-    started_at: '',
-  });
 
   const jwt = Cookie.get('rsCookie');
   const roomID = pathname.split('/')[2];
@@ -114,25 +109,6 @@ const Lobby = () => {
     };
   }, [roomID]);
 
-  const callStateWS = useRef<WebSocket | null>(null);
-
-  useEffect(() => {
-    callStateWS.current = new WebSocket(`${BASE_WS_URL}/ws/call/${roomID}`);
-    if (!callStateWS.current) return;
-
-    callStateWS.current.onmessage = async (event: MessageEvent) => {
-      const data: CallState = JSON.parse(event.data);
-      setWsCallState(data);
-    };
-
-    return () => {
-      if (callStateWS.current?.readyState === WebSocket.OPEN) {
-        callStateWS.current.close(1000, 'Component unmounting');
-      }
-      callStateWS.current = null;
-    };
-  }, [roomID]);
-
   const { data: roomInfoData } = useQuery({
     queryKey: ['roomInfo', roomID],
     queryFn: () => getRoomInfo(roomID),
@@ -170,12 +146,8 @@ const Lobby = () => {
     enabled: !!meData && !isHost,
   });
 
-  // HTTP query takes precedence for late joiners, WebSocket for real-time updates
-  const isCallActive: boolean =
-    callStateData?.is_active || wsCallState?.is_active || false;
-  const callStartedAt: string = isCallActive
-    ? callStateData?.started_at || wsCallState?.started_at || ''
-    : '';
+  const isCallActive: boolean = callStateData?.is_active || false;
+  const callStartedAt: string = callStateData?.started_at || '';
 
   const {
     devices: audioDevices,
