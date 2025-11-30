@@ -21,10 +21,12 @@ import {
 } from '@/context';
 import { BASE_WS_URL } from '@/utils/constants';
 import { useNavigationBlocker } from '@/utils/useNavigationBlocker';
+
 import {
   Actions,
   Form,
   Info,
+  Nft,
   MediaPermissions,
   Participants,
   Preview,
@@ -223,13 +225,13 @@ const Lobby = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [videoActiveDeviceId, mediaState.video]);
-
+  //  from-white via-white to-orange-300
   return (
     <>
-      <div className='grid grid-cols-4 gap-24 p-32 h-screen md:bg-gradient-to-br from-white via-white to-orange-300'>
+      <div className='grid grid-cols-4 gap-24 p-32 h-screen md:bg-gradient-to-br'>
         <div className='col-span-4 md:col-span-1 flex items-center justify-center'>
           <div className='flex flex-col items-center size-full'>
-            <div className='flex flex-col items-center'>
+            <div className='flex flex-col items-center mb-12'>
               <h1 className='text-3xl font-mono'>Whispurr</h1>
               <img src={LOGO} alt='logo' width={100} />
             </div>
@@ -264,6 +266,7 @@ const Lobby = () => {
                 isCallActive={isCallActive}
                 callStartedAt={callStartedAt}
               />
+              <Nft />
               <StrictMode roomID={roomID} isHost={isHost} />
               {isCallActive && (
                 <Participants
