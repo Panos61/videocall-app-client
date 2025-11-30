@@ -146,8 +146,8 @@ const Lobby = () => {
     enabled: !!meData && !isHost,
   });
 
-  const isCallActive: boolean = callStateData?.is_active || false;
-  const callStartedAt: string = callStateData?.started_at || '';
+  const isCallActive = callStateData?.is_active || false;
+  const callStartedAt = callStateData?.started_at || '';
 
   const {
     devices: audioDevices,
