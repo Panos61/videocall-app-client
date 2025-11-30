@@ -18,7 +18,7 @@ const Nft = () => {
     </div>
     <div className='mt-4 flex items-center justify-between'>
       <p className='text-[11px] text-purple-700 max-w-[70%] leading-snug'>
-        Only users holding the required NFT will have access to this room.
+        Only users holding the required NFT will aquire access to this room.
       </p>
       <button className='shrink-0 inline-flex items-center rounded-full bg-purple-600 text-white px-3 py-1.5 text-[10px] font-medium shadow hover:bg-purple-700 active:bg-purple-800 transition'>
         Enable
