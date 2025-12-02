@@ -1,9 +1,9 @@
 import { LockIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
-const NftForm = () => {
+export const NftSettings = () => {
   return (
-    <section className='rounded-2xl border border-purple-200 p-12 max-w-[320px] bg-gradient-to-br from-purple-50 to-purple-100 shadow-sm mb-4'>
+    <section className='rounded-2xl border border-purple-200 p-12 bg-gradient-to-br from-purple-50 to-purple-100 shadow-sm mb-4'>
       <div className='flex items-center gap-8 mb-8'>
         <div className='size-36 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-md'>
           <LockIcon size={16} />
@@ -46,5 +46,3 @@ const NftForm = () => {
     </section>
   );
 };
-
-export default NftForm;

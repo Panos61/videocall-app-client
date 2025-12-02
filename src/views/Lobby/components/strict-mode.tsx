@@ -86,7 +86,7 @@ const StrictMode = ({ roomID, isHost }: Props) => {
   };
 
   const cardCls = classNames(
-    'flex flex-col justify-between gap-8 w-full p-12 mt-20 border rounded-8',
+    'flex flex-col justify-between gap-8 w-full p-12 mt-12 border rounded-8',
     {
       'border-orange-200': isHost,
       'border-yellow-400': !isHost && settings?.strict_mode,

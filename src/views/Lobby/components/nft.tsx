@@ -2,7 +2,7 @@ import { Wallet2Icon } from 'lucide-react';
 
 const Nft = () => {
   return (
-    <section className='rounded-2xl border border-purple-200 p-12 mt-20 bg-gradient-to-br from-purple-50 to-purple-100 shadow-sm'>
+    <section className='rounded-8 border border-purple-200 p-12 mt-20 bg-gradient-to-br from-purple-50 to-purple-100 shadow-sm'>
     <div className='flex items-center gap-8 mb-8'>
       <div className='size-36 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-md'>
         <Wallet2Icon size={16} />

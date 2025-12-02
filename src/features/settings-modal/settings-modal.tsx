@@ -23,10 +23,11 @@ import {
   ChatSettings,
   InvitationSettings,
   MediaSettings,
+  NftSettings,
   Permissions,
 } from './components';
 
-type Tab = 'media' | 'invitation' | 'chat' | 'permissions';
+type Tab = 'media' | 'invitation' | 'chat' | 'nft' | 'permissions';
 
 export const SettingsModal = () => {
   const { settings } = useSettingsCtx();
@@ -64,6 +65,8 @@ export const SettingsModal = () => {
             />
           )
         );
+      case 'nft':
+        return <NftSettings />;
       case 'chat':
         return <ChatSettings />;
       case 'permissions':
@@ -83,6 +86,8 @@ export const SettingsModal = () => {
           : 'View current invitation settings set by the host';
       case 'chat':
         return 'Configure conversation settings';
+      case 'nft':
+        return 'Configure NFT login access';
       case 'permissions':
         return isHost
           ? 'Manage various permissions for room members'
@@ -151,6 +156,12 @@ export const SettingsModal = () => {
               onClick={() => setActiveTab('chat')}
             >
               <span className='text-sm'>Conversation</span>
+            </div>
+            <div
+              className={menuBtnCls(activeTab === 'nft')}
+              onClick={() => setActiveTab('nft')}
+            >
+              <span className='text-sm'>NFT Access</span>
             </div>
             <div
               className={menuBtnCls(activeTab === 'permissions')}
