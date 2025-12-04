@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
 import { UserPlus } from 'lucide-react';
-import { useCopyToClipboard } from 'usehooks-ts';
 
 import { getInvitationCode } from '@/api/client';
 import { connectSSE } from '@/api/sse';
@@ -21,13 +20,12 @@ import { Input } from '@/components/ui/input';
 
 export const InviteModal = () => {
   const { pathname } = useLocation();
-  const [copiedText, copy] = useCopyToClipboard();
+  const [copied, setCopied] = useState(false);
 
   const sseRef = useRef<EventSource | null>(null);
 
   const [formattedInvitation, setFormattedInvitation] = useState('');
   const [invitationURL, setInvitationURL] = useState('');
-  const [disabled, setDisabled] = useState<boolean>(false);
 
   const roomID = pathname.split('/')[2];
 
@@ -78,6 +76,34 @@ export const InviteModal = () => {
     };
   }, [roomID]);
 
+  const handleCopy = useCallback((text: string) => async () => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        // Fallback for HTTP
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+      setCopied(true);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (copied) {
+      const timer = setTimeout(() => setCopied(false), 2500);
+      return () => clearTimeout(timer);
+    }
+  }, [copied]);
+
   const renderTrigger = () => {
     const isCallPage = pathname.includes('/call');
     if (isCallPage) {
@@ -96,13 +122,6 @@ export const InviteModal = () => {
     );
   };
 
-  const handleCopy = (text: string) => () => {
-    copy(text).then(() => {
-      setDisabled(true);
-      setTimeout(() => setDisabled(false), 2500);
-    });
-  };
-
   return (
     <Dialog>
       <DialogTrigger>{renderTrigger()}</DialogTrigger>
@@ -119,10 +138,10 @@ export const InviteModal = () => {
           <Button
             type='submit'
             variant='ghost'
-            disabled={disabled}
+            disabled={copied}
             onClick={handleCopy(invitationURL)}
           >
-            {copiedText && disabled ? 'Copied' : 'Copy'}
+            {copied ? 'Copied' : 'Copy'}
           </Button>
         </div>
       </DialogContent>
