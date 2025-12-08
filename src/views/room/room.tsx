@@ -427,8 +427,8 @@ const Room = () => {
         await room.connect(livekitUrl, lvkToken);
 
         // Always enable camera/mic to ensure tracks are published, then mute if needed
-        // await room.localParticipant.setCameraEnabled(true);
-        // await room.localParticipant.setMicrophoneEnabled(true);
+        await room.localParticipant.setCameraEnabled(true);
+        await room.localParticipant.setMicrophoneEnabled(true);
 
         // If media was disabled in lobby, mute the tracks after publishing
         if (!mediaState.video) {
