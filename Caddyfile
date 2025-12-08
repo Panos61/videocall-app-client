@@ -1,0 +1,8 @@
+app.panos-dev.com {
+    root * /usr/share/caddy
+    encode gzip
+    file_server
+    
+    # This is the key line - serves index.html for SPA routes
+    try_files {path} /index.html
+}

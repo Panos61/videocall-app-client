@@ -105,6 +105,8 @@ export const hasRoomAccess = async (roomID: string) => {
 export const createRoom = async () => {
   const response = await axios.get<CreateRoom>(`${BASE_API_URL}/create-room`, {
     headers: { 'Content-Type': 'application/json' },
+    // we send jwt token with the request to the server
+    withCredentials: true,
   });
 
   return response.data;
