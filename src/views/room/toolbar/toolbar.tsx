@@ -32,8 +32,8 @@ import {
 } from './components';
 
 interface Props {
-  sessionID: string;
   room: Room | null;
+  sessionID: string;
   mediaState: { audio: boolean; video: boolean };
   setAudioState: (enabled: boolean, sessionID: string) => Promise<void>;
   setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
@@ -43,8 +43,8 @@ interface Props {
 }
 
 const Toolbar = ({
-  sessionID,
   room,
+  sessionID,
   mediaState,
   setAudioState,
   setVideoState,
