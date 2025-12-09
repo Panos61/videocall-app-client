@@ -1,8 +1,8 @@
 import { createContext, useState, useRef, useMemo } from 'react';
 import { BASE_WS_URL } from '@/utils/constants';
+import type { Reaction, RaisedHand, ShareScreen } from './events';
 import type { MediaControlState, RemoteMediaControlState } from '@/types';
 
-// todo: refactor user-events
 interface BaseEvent {
   type: string;
   session_id?: string;
@@ -16,23 +16,6 @@ interface BaseEvent {
         active: boolean;
       }
     | any;
-}
-
-export interface Reaction {
-  id: string;
-  reaction_type: string;
-  username: string;
-}
-
-interface RaisedHand {
-  raised_hand: boolean;
-  username: string;
-}
-
-interface ShareScreen {
-  trackSid: string;
-  username: string;
-  active: boolean;
 }
 
 export interface Props {
@@ -89,7 +72,6 @@ export const UserEventsProvider = ({
       ws.current.onmessage = (event: MessageEvent) => {
         try {
           const data: BaseEvent = JSON.parse(event.data);
-          // Process received events and update state
           switch (data.type) {
             case 'reaction.sent':
               setReaction((prev) => [
@@ -103,12 +85,14 @@ export const UserEventsProvider = ({
                 setReaction((prev) => prev.slice(1));
               }, 5000);
               break;
+              
             case 'raised_hand.sent':
               setRaisedHand((prev) => [...prev, data.payload as RaisedHand]);
               setTimeout(() => {
                 setRaisedHand((prev) => prev.slice(1)); // Remove oldest raised hand
               }, 10000);
               break;
+              
             case 'share_screen.started':
               setShareScreen((prev) => [...prev, data.payload as ShareScreen]);
               break;
@@ -120,6 +104,7 @@ export const UserEventsProvider = ({
                 )
               );
               break;
+              
             case 'media.control.updated':
               if (data.session_id !== sessionID) {
                 setRemoteMediaStates((prev) => {
@@ -132,7 +117,7 @@ export const UserEventsProvider = ({
                 });
               }
               break;
-            // todo: refactor this
+              
             case 'sync.media':
               if (data.session_id !== sessionID) {
                 const receivedState = data.payload as RemoteMediaControlState;
@@ -158,6 +143,7 @@ export const UserEventsProvider = ({
 
   const sendUserEvent = (event: BaseEvent) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      // console.log('sending event:', JSON.stringify(event));
       ws.current.send(JSON.stringify(event));
     } else {
       console.warn('WebSocket not ready, message not sent:', event);
@@ -174,27 +160,19 @@ export const UserEventsProvider = ({
     [reaction, raisedHand, shareScreen, remoteMediaStates]
   );
 
-  const contextValue = useMemo(
-    () => ({
-      ws: ws.current,
-      isConnected,
-      events,
-      connectUserEvents,
-      sendUserEvent,
-      disconnectUserEvents,
-    }),
-    [
-      ws.current,
-      isConnected,
-      events,
-      connectUserEvents,
-      sendUserEvent,
-      disconnectUserEvents,
-    ]
-  );
+  console.log('events', events);
 
   return (
-    <UserEventsContext.Provider value={contextValue}>
+    <UserEventsContext.Provider
+      value={{
+        ws: ws.current,
+        isConnected,
+        events,
+        connectUserEvents,
+        sendUserEvent,
+        disconnectUserEvents,
+      }}
+    >
       {children}
     </UserEventsContext.Provider>
   );
