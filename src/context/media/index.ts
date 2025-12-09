@@ -1,4 +1,4 @@
-import { useMediaControlCtx } from './useMediaControlCtx';
-import { MediaControlProvider } from './MediaControlProvider';
+import { useMediaStateCtx } from './useMediaStateCtx';
+import { MediaStateProvider } from './MediaStateProvider';
 
-export { useMediaControlCtx, MediaControlProvider };
+export { useMediaStateCtx, MediaStateProvider };

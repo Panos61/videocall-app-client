@@ -5,12 +5,12 @@ import {
   SystemEventsProvider,
   UserEventsProvider,
   SettingsProvider,
-  MediaControlProvider,
+  MediaStateProvider,
   PreferencesProvider,
 } from './context';
 import ProtectedRoute from './utils/protected-route';
 
-// import { Toaster } from '@/components/ui/toaster';s
+import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -74,15 +74,15 @@ const App = () => {
       <SystemEventsProvider>
         <SettingsProvider>
           <UserEventsProvider>
-            <MediaControlProvider>
+            <MediaStateProvider>
               <PreferencesProvider>
                 <TooltipProvider>
                   <RouterProvider router={router} />
                 </TooltipProvider>
-                {/* <Toaster /> */}
+                <Toaster />
                 <SonnerToaster richColors position='top-center' />
               </PreferencesProvider>
-            </MediaControlProvider>
+            </MediaStateProvider>
           </UserEventsProvider>
         </SettingsProvider>
       </SystemEventsProvider>

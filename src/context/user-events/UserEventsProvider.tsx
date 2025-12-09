@@ -86,17 +86,17 @@ export const UserEventsProvider = ({
               }, 5000);
               break;
               
-            case 'raised_hand.sent':
+            case 'raisedhand.sent':
               setRaisedHand((prev) => [...prev, data.payload as RaisedHand]);
               setTimeout(() => {
                 setRaisedHand((prev) => prev.slice(1)); // Remove oldest raised hand
               }, 10000);
               break;
               
-            case 'share_screen.started':
+            case 'sharescreen.started':
               setShareScreen((prev) => [...prev, data.payload as ShareScreen]);
               break;
-            case 'share_screen.ended':
+            case 'sharescreen.ended':
               setShareScreen((prev) =>
                 prev.filter(
                   (event) =>
@@ -105,7 +105,7 @@ export const UserEventsProvider = ({
               );
               break;
               
-            case 'media.control.updated':
+            case 'media.state.updated':
               if (data.session_id !== sessionID) {
                 setRemoteMediaStates((prev) => {
                   const newState = {
@@ -118,7 +118,7 @@ export const UserEventsProvider = ({
               }
               break;
               
-            case 'sync.media':
+            case 'media.synced':
               if (data.session_id !== sessionID) {
                 const receivedState = data.payload as RemoteMediaControlState;
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars

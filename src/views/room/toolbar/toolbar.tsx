@@ -6,7 +6,7 @@ import classNames from 'classnames';
 import { leaveCall } from '@/api/client';
 import {
   useSystemEventsCtx,
-  useMediaControlCtx,
+  useMediaStateCtx,
   usePreferencesCtx,
 } from '@/context';
 
@@ -53,7 +53,7 @@ const Toolbar = ({
   onScreenShareChange,
 }: Props) => {
   const { sendSystemEvent } = useSystemEventsCtx();
-  const { videoTrack, setVideoTrack } = useMediaControlCtx();
+  const { videoTrack, setVideoTrack } = useMediaStateCtx();
   const { setIsChatExpanded, setIsFocusView, isFocusView } =
     usePreferencesCtx();
 

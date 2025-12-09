@@ -35,11 +35,11 @@ export interface CtxProps {
   videoTrack: LocalVideoTrack | null;
 }
 
-export const MediaControlContext = createContext<CtxProps | undefined>(
+export const MediaStateContext = createContext<CtxProps | undefined>(
   undefined
 );
 
-export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
+export const MediaStateProvider = ({ children }: { children: ReactNode }) => {
   const {
     connectUserEvents,
     disconnectUserEvents,
@@ -86,7 +86,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const msg: BaseEvent = {
-      type: 'media.control.updated',
+      type: 'media.state.updated',
       session_id: sessionID,
       payload: {
         audio: updatedState.audio,
@@ -107,7 +107,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
 
     if (isConnected && sessionID) {
       const msg: BaseEvent = {
-        type: 'media.control.updated',
+        type: 'media.state.updated',
         session_id: sessionID,
         payload: {
           audio: updatedState.audio,
@@ -124,7 +124,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
 
     if (isConnected && sessionID) {
       const msg: BaseEvent = {
-        type: 'media.control.updated',
+        type: 'media.state.updated',
         session_id: sessionID,
         payload: {
           audio: updatedState.audio,
@@ -168,7 +168,7 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <MediaControlContext.Provider
+    <MediaStateContext.Provider
       value={{
         connectMedia,
         sendMediaEvent,
@@ -188,6 +188,6 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
       }}
     >
       {children}
-    </MediaControlContext.Provider>
+    </MediaStateContext.Provider>
   );
 };

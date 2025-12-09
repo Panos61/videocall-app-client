@@ -23,7 +23,7 @@ import { useResizeObserver } from 'usehooks-ts';
 import type { RemoteMediaControlState, Participant } from '@/types';
 import {
   useUserEventsCtx,
-  useMediaControlCtx,
+  useMediaStateCtx,
   useSettingsCtx,
   usePreferencesCtx,
   useSystemEventsCtx,
@@ -85,7 +85,7 @@ const Room = () => {
     audioTrack,
     setAudioTrack,
     videoTrack,
-  } = useMediaControlCtx();
+  } = useMediaStateCtx();
   const { isChatExpanded, shareScreenView, setShareScreenView, isFocusView } =
     usePreferencesCtx();
 
@@ -300,7 +300,7 @@ const Room = () => {
       };
 
       sendUserEvent({
-        type: 'sync.media',
+        type: 'media.synced',
         session_id: sessionID,
         payload: fullRoomState,
       });
@@ -315,7 +315,7 @@ const Room = () => {
 
     const handleConnected = () => {
       sendUserEvent({
-        type: 'media.control.updated',
+        type: 'media.state.updated',
         session_id: sessionID,
         payload: {
           audio: mediaStateRef.current.audio,
@@ -324,7 +324,7 @@ const Room = () => {
       });
 
       sendUserEvent({
-        type: 'sync.media',
+        type: 'media.synced',
         session_id: sessionID,
         payload: {},
       });
@@ -540,7 +540,7 @@ const Room = () => {
       if (!screenSharePublication) {
         // Screen share was stopped via browser native controls
         sendUserEvent({
-          type: 'share_screen.ended',
+          type: 'sharescreen.ended',
           senderID: sessionID,
           payload: {
             active: false,
