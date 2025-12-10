@@ -60,10 +60,10 @@ export const MediaStateProvider = ({ children }: { children: ReactNode }) => {
     null
   );
 
-  const connectMedia = (roomID: string, sessionID: string) => {
+  const connectMedia = (roomID: string, participantID: string) => {
     // Clean up any existing connection
     disconnectMedia();
-    connectUserEvents(roomID, sessionID);
+    connectUserEvents(roomID, participantID);
   };
 
   const disconnectMedia = () => {
@@ -78,7 +78,7 @@ export const MediaStateProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const sendMediaEvent = (
-    sessionID: string,
+    participantID: string,
     updatedState: MediaControlState
   ) => {
     if (!isConnected) {
@@ -87,7 +87,7 @@ export const MediaStateProvider = ({ children }: { children: ReactNode }) => {
 
     const msg: BaseEvent = {
       type: 'media.state.updated',
-      session_id: sessionID,
+      session_id: participantID,
       payload: {
         audio: updatedState.audio,
         video: updatedState.video,
@@ -101,14 +101,14 @@ export const MediaStateProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const setAudioState = async (enabled: boolean, sessionID = '') => {
+  const setAudioState = async (enabled: boolean, participantID = '') => {
     const updatedState = { ...mediaState, audio: enabled };
     setMediaState(updatedState);
 
-    if (isConnected && sessionID) {
+    if (isConnected && participantID) {
       const msg: BaseEvent = {
         type: 'media.state.updated',
-        session_id: sessionID,
+        session_id: participantID,
         payload: {
           audio: updatedState.audio,
           video: updatedState.video,
@@ -118,14 +118,14 @@ export const MediaStateProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const setVideoState = async (enabled: boolean, sessionID = '') => {
+  const setVideoState = async (enabled: boolean, participantID = '') => {
     const updatedState = { ...mediaState, video: enabled };
     setMediaState(updatedState);
 
-    if (isConnected && sessionID) {
+    if (isConnected && participantID) {
       const msg: BaseEvent = {
         type: 'media.state.updated',
-        session_id: sessionID,
+        session_id: participantID,
         payload: {
           audio: updatedState.audio,
           video: updatedState.video,

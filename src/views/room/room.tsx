@@ -21,6 +21,7 @@ import classNames from 'classnames';
 import { useResizeObserver } from 'usehooks-ts';
 
 import type { RemoteMediaControlState, Participant } from '@/types';
+import { getMe } from '@/api/client';
 import {
   useUserEventsCtx,
   useMediaStateCtx,
@@ -143,6 +144,14 @@ const Room = () => {
     shouldBlock: !latestRoomKilled,
     allowedPaths: ['/post-call'],
   });
+  
+  const {data: meData} = useQuery({
+    queryKey: ['me', roomID],
+    queryFn: () => getMe(roomID as string, sessionID),
+    enabled: !!roomID && !!sessionID,
+  });
+  
+   const participantID = meData?.id;
 
   const {
     data: lvkTokenData,
@@ -179,14 +188,14 @@ const Room = () => {
   useEffect(() => {
     const connectMediaControlEvents = async () => {
       try {
-        if (roomID && sessionID) connectMedia(roomID, sessionID);
+        if (roomID && participantID) connectMedia(roomID, participantID);
       } catch (error) {
         console.error('Failed to establish WebSocket connection:', error);
       }
     };
 
     connectMediaControlEvents();
-  }, [roomID, sessionID]);
+  }, [roomID, participantID]);
 
   useEffect(() => {
     if (roomID && sessionID) connectSettings(roomID);
