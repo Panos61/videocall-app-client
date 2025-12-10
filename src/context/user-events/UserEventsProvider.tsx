@@ -1,11 +1,12 @@
-import { createContext, useState, useRef, useMemo } from 'react';
+import { createContext, useState, useRef } from 'react';
 import { BASE_WS_URL } from '@/utils/constants';
+import type { MediaState, RemoteMediaState } from '@/types';
 import type { Reaction, RaisedHand, ShareScreen } from './events';
-import type { MediaControlState, RemoteMediaControlState } from '@/types';
 
 interface BaseEvent {
   type: string;
   session_id?: string;
+  participant_id?: string;
   senderID?: string;
   payload:
     | {
@@ -20,7 +21,7 @@ interface BaseEvent {
 
 export interface Props {
   ws: WebSocket | null;
-  connectUserEvents: (roomID: string, sessionID: string) => void;
+  connectUserEvents: (roomID: string, participantID: string, sessionID: string) => void;
   sendUserEvent: (event: BaseEvent) => void;
   disconnectUserEvents: () => void;
   isConnected: boolean;
@@ -28,7 +29,7 @@ export interface Props {
     reactionEvents: Reaction[];
     raisedHandEvents: RaisedHand[];
     shareScreenEvents: ShareScreen[];
-    remoteMediaStates: RemoteMediaControlState;
+    remoteMediaStates: RemoteMediaState;
   };
 }
 
@@ -46,10 +47,11 @@ export const UserEventsProvider = ({
   const [reaction, setReaction] = useState<Reaction[]>([]);
   const [raisedHand, setRaisedHand] = useState<RaisedHand[]>([]);
   const [shareScreen, setShareScreen] = useState<ShareScreen[]>([]);
-  const [remoteMediaStates, setRemoteMediaStates] =
-    useState<RemoteMediaControlState>({});
+  const [remoteMediaStates, setRemoteMediaStates] = useState<RemoteMediaState>(
+    {}
+  );
 
-  const connectUserEvents = (roomID: string, sessionID: string) => {
+  const connectUserEvents = (roomID: string, participantID: string) => {
     if (!ws.current || ws.current.readyState !== WebSocket.OPEN) {
       if (ws.current) {
         ws.current.close();
@@ -72,6 +74,7 @@ export const UserEventsProvider = ({
       ws.current.onmessage = (event: MessageEvent) => {
         try {
           const data: BaseEvent = JSON.parse(event.data);
+          console.log('data', data);
           switch (data.type) {
             case 'reaction.sent':
               setReaction((prev) => [
@@ -85,14 +88,14 @@ export const UserEventsProvider = ({
                 setReaction((prev) => prev.slice(1));
               }, 5000);
               break;
-              
+
             case 'raisedhand.sent':
               setRaisedHand((prev) => [...prev, data.payload as RaisedHand]);
               setTimeout(() => {
                 setRaisedHand((prev) => prev.slice(1)); // Remove oldest raised hand
               }, 10000);
               break;
-              
+
             case 'sharescreen.started':
               setShareScreen((prev) => [...prev, data.payload as ShareScreen]);
               break;
@@ -104,26 +107,26 @@ export const UserEventsProvider = ({
                 )
               );
               break;
-              
+
             case 'media.state.updated':
-              if (data.session_id !== sessionID) {
+              if (data.participant_id !== participantID) {
                 setRemoteMediaStates((prev) => {
                   const newState = {
                     ...prev,
-                    [data.session_id as string]:
-                      data.payload as MediaControlState,
+                    [data.participant_id as string]: data.payload as MediaState,
                   };
                   return newState;
                 });
               }
               break;
-              
+
             case 'media.synced':
-              if (data.session_id !== sessionID) {
-                const receivedState = data.payload as RemoteMediaControlState;
+              if (data.participant_id !== participantID) {
+                const receivedState = data.payload as RemoteMediaState;
                 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { [sessionID]: myState, ...otherUsersState } =
+                const { [participantID]: myState, ...otherUsersState } =
                   receivedState;
+                console.log('otherUsersState', otherUsersState);
                 setRemoteMediaStates(otherUsersState);
               }
               break;
@@ -150,17 +153,12 @@ export const UserEventsProvider = ({
     }
   };
 
-  const events = useMemo(
-    () => ({
-      reactionEvents: reaction,
-      raisedHandEvents: raisedHand,
-      shareScreenEvents: shareScreen,
-      remoteMediaStates,
-    }),
-    [reaction, raisedHand, shareScreen, remoteMediaStates]
-  );
-
-  console.log('events', events);
+  const events = {
+    reactionEvents: reaction,
+    raisedHandEvents: raisedHand,
+    shareScreenEvents: shareScreen,
+    remoteMediaStates,
+  };
 
   return (
     <UserEventsContext.Provider

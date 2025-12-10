@@ -20,7 +20,7 @@ import {
 import classNames from 'classnames';
 import { useResizeObserver } from 'usehooks-ts';
 
-import type { RemoteMediaControlState, Participant } from '@/types';
+import type { RemoteMediaState, Participant } from '@/types';
 import { getMe } from '@/api/client';
 import {
   useUserEventsCtx,
@@ -151,7 +151,7 @@ const Room = () => {
     enabled: !!roomID && !!sessionID,
   });
   
-   const participantID = meData?.id;
+   const participantID = meData?.id as string;
 
   const {
     data: lvkTokenData,
@@ -181,9 +181,9 @@ const Room = () => {
   }, [lvkTokenData, isLvkTokenError]);
 
   useEffect(() => {
-    if (roomID && sessionID) connectUserEvents(roomID, sessionID);
+    if (roomID && participantID && sessionID) connectUserEvents(roomID, participantID, sessionID);
     if (!eventsWS) return;
-  }, [roomID, sessionID]);
+  }, [roomID, participantID, sessionID]);
 
   useEffect(() => {
     const connectMediaControlEvents = async () => {
@@ -303,29 +303,30 @@ const Room = () => {
 
     const handleParticipantConnected = (participant: RemoteParticipant) => {
       // Everyone tries to send, but server only allows leader
-      const fullRoomState: RemoteMediaControlState = {
+      const fullRoomState: RemoteMediaState = {
         ...remoteMediaStatesRef.current,
-        [sessionID]: mediaStateRef.current,
+        [participantID as string]: mediaStateRef.current,
       };
 
       sendUserEvent({
         type: 'media.synced',
-        session_id: sessionID,
+        participant_id: participantID,
         payload: fullRoomState,
       });
-
+      console.log('participantIdentity', participant);
       setRemoteParticipants((prev) => {
         const newMap = new Map(prev);
         newMap.set(participant.identity, participant);
         return newMap;
       });
+      console.log('remoteParticipants', remoteParticipants);
       refetchParticipants();
     };
 
     const handleConnected = () => {
       sendUserEvent({
         type: 'media.state.updated',
-        session_id: sessionID,
+        participant_id: participantID,
         payload: {
           audio: mediaStateRef.current.audio,
           video: mediaStateRef.current.video,
@@ -334,7 +335,7 @@ const Room = () => {
 
       sendUserEvent({
         type: 'media.synced',
-        session_id: sessionID,
+        participant_id: participantID,
         payload: {},
       });
     };
@@ -483,7 +484,7 @@ const Room = () => {
     };
 
     connectToRoom();
-  }, [roomID, sessionID, lvkToken]);
+  }, [roomID, participantID, lvkToken]);
 
   const { data: participantsData, refetch: refetchParticipants } = useQuery({
     queryKey: ['call-participants', roomID],
@@ -494,7 +495,7 @@ const Room = () => {
     if (participantsData) {
       setParticipants(participantsData.participantsInCall);
     }
-  }, [participantsData, sessionID, remoteParticipants]);
+  }, [participantsData, participantID, remoteParticipants]);
 
   const hasInvitePermission = settings?.invite_permission || false;
   const localParticipant: Participant | undefined = participants.find(
@@ -725,9 +726,9 @@ const Room = () => {
         <ParticipantsList
           open={activePanel === 'participants'}
           participants={participants}
+          participantID={participantID}
           invitePermission={hasInvitePermission}
           isHost={isHost}
-          sessionID={sessionID}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}
           isActiveSpeaker={activeSpeakers.includes(sessionID)}
@@ -740,8 +741,9 @@ const Room = () => {
       </div>
       <div className='flex items-center border-t border-zinc-800 bg-zinc-950'>
         <Toolbar
-          sessionID={sessionID}
           room={livekitRoom.current}
+          sessionID={sessionID}
+          participantID={participantID}
           mediaState={mediaState}
           setAudioState={setAudioState}
           setVideoState={setVideoState}

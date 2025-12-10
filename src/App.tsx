@@ -10,7 +10,7 @@ import {
 } from './context';
 import ProtectedRoute from './utils/protected-route';
 
-import { Toaster } from '@/components/ui/toaster';
+// import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
@@ -79,7 +79,7 @@ const App = () => {
                 <TooltipProvider>
                   <RouterProvider router={router} />
                 </TooltipProvider>
-                <Toaster />
+                {/* <Toaster /> */}
                 <SonnerToaster richColors position='top-center' />
               </PreferencesProvider>
             </MediaStateProvider>
