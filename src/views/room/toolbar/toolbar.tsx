@@ -34,9 +34,10 @@ import {
 interface Props {
   room: Room | null;
   sessionID: string;
+  participantID: string;
   mediaState: { audio: boolean; video: boolean };
-  setAudioState: (enabled: boolean, sessionID: string) => Promise<void>;
-  setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
+  setAudioState: (enabled: boolean, participantID: string) => Promise<void>;
+  setVideoState: (enabled: boolean, participantID: string) => Promise<void>;
   activePanel: 'participants' | 'chat' | null;
   setActivePanel: (panel: 'participants' | 'chat' | null) => void;
   onScreenShareChange?: (isSharing: boolean, track?: any) => void;
@@ -45,6 +46,7 @@ interface Props {
 const Toolbar = ({
   room,
   sessionID,
+  participantID,
   mediaState,
   setAudioState,
   setVideoState,
@@ -65,14 +67,14 @@ const Toolbar = ({
   const jwt: string | undefined = Cookie.get('rsCookie');
 
   const handleAudioState = async () => {
-    setAudioState(!mediaState.audio, sessionID);
+    setAudioState(!mediaState.audio, participantID);
     if (room?.localParticipant) {
       await room.localParticipant.setMicrophoneEnabled(!mediaState.audio);
     }
   };
 
   const handleVideoState = async () => {
-    setVideoState(!mediaState.video, sessionID);
+    setVideoState(!mediaState.video, participantID);
 
     if (room?.localParticipant) {
       await room.localParticipant.setCameraEnabled(!mediaState.video);
@@ -101,8 +103,8 @@ const Toolbar = ({
       }
 
       // Reset media state in context
-      setAudioState(false, sessionID);
-      setVideoState(false, sessionID);
+      setAudioState(false, participantID);
+      setVideoState(false, participantID);
       await leaveCall(roomID, jwt);
 
       navigate(`/room/${roomID}/post-call`, {
