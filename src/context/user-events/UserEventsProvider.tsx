@@ -21,7 +21,11 @@ interface BaseEvent {
 
 export interface Props {
   ws: WebSocket | null;
-  connectUserEvents: (roomID: string, participantID: string, sessionID: string) => void;
+  connectUserEvents: (
+    roomID: string,
+    participantID: string,
+    sessionID: string
+  ) => void;
   sendUserEvent: (event: BaseEvent) => void;
   disconnectUserEvents: () => void;
   isConnected: boolean;
@@ -74,8 +78,29 @@ export const UserEventsProvider = ({
       ws.current.onmessage = (event: MessageEvent) => {
         try {
           const data: BaseEvent = JSON.parse(event.data);
-          console.log('data', data);
           switch (data.type) {
+            case 'media.state.updated':
+              if (data.participant_id !== participantID) {
+                setRemoteMediaStates((prev) => {
+                  const newState = {
+                    ...prev,
+                    [data.participant_id as string]: data.payload as MediaState,
+                  };
+                  return newState;
+                });
+              }
+              break;
+
+            case 'media.synced':
+              if (data.participant_id !== participantID) {
+                const receivedState = data.payload as RemoteMediaState;
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                const { [participantID]: myState, ...otherUsersState } =
+                  receivedState;
+                setRemoteMediaStates(otherUsersState);
+              }
+              break;
+
             case 'reaction.sent':
               setReaction((prev) => [
                 ...prev,
@@ -107,29 +132,6 @@ export const UserEventsProvider = ({
                 )
               );
               break;
-
-            case 'media.state.updated':
-              if (data.participant_id !== participantID) {
-                setRemoteMediaStates((prev) => {
-                  const newState = {
-                    ...prev,
-                    [data.participant_id as string]: data.payload as MediaState,
-                  };
-                  return newState;
-                });
-              }
-              break;
-
-            case 'media.synced':
-              if (data.participant_id !== participantID) {
-                const receivedState = data.payload as RemoteMediaState;
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                const { [participantID]: myState, ...otherUsersState } =
-                  receivedState;
-                console.log('otherUsersState', otherUsersState);
-                setRemoteMediaStates(otherUsersState);
-              }
-              break;
           }
         } catch (error) {
           console.error('Failed to parse incoming event:', error);
@@ -146,7 +148,6 @@ export const UserEventsProvider = ({
 
   const sendUserEvent = (event: BaseEvent) => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      // console.log('sending event:', JSON.stringify(event));
       ws.current.send(JSON.stringify(event));
     } else {
       console.warn('WebSocket not ready, message not sent:', event);

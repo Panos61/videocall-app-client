@@ -87,7 +87,6 @@ export const MediaStateProvider = ({ children }: { children: ReactNode }) => {
           video: updatedState.video,
         },
       };
-      console.log('msg', msg);
       sendUserEvent(msg);
     }
   };
