@@ -38,14 +38,19 @@ const Authorization = () => {
     mutationFn: () => joinRoom(roomID),
     onSuccess: (data) => {
       setIsSuccess(true);
+      // Cookie.set('rsCookie', data.participant.jwt, {
+      //   secure: window.location.protocol === 'https:',
+      //   sameSite: 'lax',
+      //   path: '/',
+      //   domain: '.panos-dev.com'
+      // });
       Cookie.set('rsCookie', data.participant.jwt);
 
-      if (!isExternal) {
-        navigate(`/room/${roomID}`, {
-          state: { roomID: roomID },
-          replace: true,
-        });
-      }
+      // Navigate after cookie is set (for ALL users)
+      navigate(`/room/${roomID}`, {
+        state: { roomID: roomID },
+        replace: true,
+      });
 
       toast({
         description: 'Successfully joined in! 🎉',
@@ -126,19 +131,11 @@ const Authorization = () => {
     }
   };
 
-  const handleJoin = async () => {
-    joinRoomMutation();
-    navigate(`/room/${roomID}`, { replace: true });
-  };
-
   return (
     <div className='flex justify-center items-center mt-[160px]'>
       <Card className='w-[500px]'>
-        <CardHeader className='flex flex-col items-center'>
-          <div className='flex items-center gap-8'>
-            <span className='text-2xl font-mono font-medium'>Toku</span>
-            <span className='text-xl'>Authorization</span>
-          </div>
+        <CardHeader>
+          <span className='text-xl self-center'>Authorization</span>
         </CardHeader>
         <CardContent className='flex flex-col items-center gap-12'>
           <p className='text-sm'>Your invitation code: {invitationCode}</p>
@@ -148,7 +145,7 @@ const Authorization = () => {
               <Button
                 variant='call'
                 className='mt-12'
-                onClick={() => handleJoin()}
+                onClick={() => joinRoomMutation()}
               >
                 <LogIn className='size-20 mr-8 text-white' />
                 {isJoiningRoom ? 'Joining...' : 'Join Room'}
