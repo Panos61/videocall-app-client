@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react';
-import { useOnClickOutside } from 'usehooks-ts';
+import { useRef } from 'react';
+import { useHover } from 'usehooks-ts';
 import { SmilePlusIcon } from 'lucide-react';
 import { useUserEventsCtx } from '@/context';
 
@@ -36,10 +36,9 @@ const REACTIONS = [
 
 const Reactions = ({ sessionID }: { sessionID: string }) => {
   const { sendUserEvent } = useUserEventsCtx();
-  const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
 
-  useOnClickOutside(ref, () => setIsOpen(false));
+  const hoverRef = useRef<HTMLDivElement>(null);
+  const isHovering = useHover(hoverRef);
 
   const handleSendReaction = (emoji: string) => {
     sendUserEvent({
@@ -67,12 +66,11 @@ const Reactions = ({ sessionID }: { sessionID: string }) => {
 
   return (
     <div
-      ref={ref}
+      ref={hoverRef}
       className='flex items-center p-12 rounded-full bg-white hover:bg-slate-200 duration-300 ease-in-out cursor-pointer z-50 relative'
-      onClick={() => setIsOpen(!isOpen)}
     >
       <SmilePlusIcon size={16} />
-      {isOpen && menu}
+      {isHovering && menu}
     </div>
   );
 };

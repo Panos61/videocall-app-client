@@ -6,7 +6,7 @@ import classNames from 'classnames';
 import { leaveCall } from '@/api/client';
 import {
   useSystemEventsCtx,
-  useMediaStateCtx,
+  useMediaControlCtx,
   usePreferencesCtx,
 } from '@/context';
 
@@ -32,21 +32,19 @@ import {
 } from './components';
 
 interface Props {
-  room: Room | null;
   sessionID: string;
-  participantID: string;
+  room: Room | null;
   mediaState: { audio: boolean; video: boolean };
-  setAudioState: (enabled: boolean, participantID: string) => Promise<void>;
-  setVideoState: (enabled: boolean, participantID: string) => Promise<void>;
+  setAudioState: (enabled: boolean, sessionID: string) => Promise<void>;
+  setVideoState: (enabled: boolean, sessionID: string) => Promise<void>;
   activePanel: 'participants' | 'chat' | null;
   setActivePanel: (panel: 'participants' | 'chat' | null) => void;
   onScreenShareChange?: (isSharing: boolean, track?: any) => void;
 }
 
 const Toolbar = ({
-  room,
   sessionID,
-  participantID,
+  room,
   mediaState,
   setAudioState,
   setVideoState,
@@ -55,7 +53,7 @@ const Toolbar = ({
   onScreenShareChange,
 }: Props) => {
   const { sendSystemEvent } = useSystemEventsCtx();
-  const { videoTrack, setVideoTrack } = useMediaStateCtx();
+  const { videoTrack, setVideoTrack } = useMediaControlCtx();
   const { setIsChatExpanded, setIsFocusView, isFocusView } =
     usePreferencesCtx();
 
@@ -67,14 +65,14 @@ const Toolbar = ({
   const jwt: string | undefined = Cookie.get('rsCookie');
 
   const handleAudioState = async () => {
-    setAudioState(!mediaState.audio, participantID);
+    setAudioState(!mediaState.audio, sessionID);
     if (room?.localParticipant) {
       await room.localParticipant.setMicrophoneEnabled(!mediaState.audio);
     }
   };
 
   const handleVideoState = async () => {
-    setVideoState(!mediaState.video, participantID);
+    setVideoState(!mediaState.video, sessionID);
 
     if (room?.localParticipant) {
       await room.localParticipant.setCameraEnabled(!mediaState.video);
@@ -103,8 +101,8 @@ const Toolbar = ({
       }
 
       // Reset media state in context
-      setAudioState(false, participantID);
-      setVideoState(false, participantID);
+      setAudioState(false, sessionID);
+      setVideoState(false, sessionID);
       await leaveCall(roomID, jwt);
 
       navigate(`/room/${roomID}/post-call`, {

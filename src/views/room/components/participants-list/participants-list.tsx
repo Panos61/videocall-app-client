@@ -7,22 +7,24 @@ import {
   VideoOffIcon,
   Crown,
 } from 'lucide-react';
+
 import type { Participant } from '@/types';
 import { InviteModal } from '@/features';
 import { Avatar } from '@/components/shared';
 import { Separator } from '@/components/ui/separator';
+
 import AssignHostModal from './assign-host-modal';
 import Sidebar from '../../sidebar';
 
 interface Props {
   open: boolean;
   participants: Participant[];
-  participantID: string;
   invitePermission: boolean;
   isHost: boolean;
+  sessionID: string;
   mediaState: { audio: boolean; video: boolean };
   remoteMediaStates: {
-    [participantID: string]: { audio: boolean; video: boolean };
+    [sessionID: string]: { audio: boolean; video: boolean };
   };
   isActiveSpeaker: boolean;
   onClose: () => void;
@@ -31,24 +33,25 @@ interface Props {
 const ParticipantsList = ({
   open,
   participants,
-  participantID,
   invitePermission,
   isHost,
   mediaState,
   remoteMediaStates,
+  sessionID,
   isActiveSpeaker,
   onClose,
 }: Props) => {
-  const getMediaState = (remoteParticipantID: string, participant: Participant) => {
-    const isLocal = participantID === remoteParticipantID;
+  const getMediaState = (remoteSession: string, participant: Participant) => {
+    const isLocal = sessionID === remoteSession;
     if (isLocal) {
       return mediaState;
     }
 
-    if (!remoteParticipantID || !participant) return { audio: false, video: false };
+    if (!remoteSession || !participant) return { audio: false, video: false };
+
     return {
-      audio: remoteMediaStates[remoteParticipantID]?.audio ?? false,
-      video: remoteMediaStates[remoteParticipantID]?.video ?? false,
+      audio: remoteMediaStates[remoteSession]?.audio ?? false,
+      video: remoteMediaStates[remoteSession]?.video ?? false,
     };
   };
 
@@ -99,17 +102,17 @@ const ParticipantsList = ({
                 )}
               </div>
               <div className='flex items-center gap-8 ml-auto'>
-                {getMediaState(participant.id, participant).audio ? (
+                {getMediaState(participant.session_id, participant).audio ? (
                   <MicIcon color='#000000' className='size-12' />
                 ) : (
                   <MicOffIcon color='#dc2626' className='size-12' />
                 )}
-                {getMediaState(participant.id, participant).video ? (
+                {getMediaState(participant.session_id, participant).video ? (
                   <VideoIcon color='#000000' className='size-12' />
                 ) : (
                   <VideoOffIcon color='#dc2626' className='size-12' />
                 )}
-                {isHost && participantID !== participant.id && (
+                {isHost && sessionID !== participant.session_id && (
                   <AssignHostModal selectedParticipant={participant} />
                 )}
               </div>

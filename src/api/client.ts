@@ -170,10 +170,10 @@ export const assignHost = async (
 
 export const getLvkToken = async (
   roomID: string,
-  participantID: string
+  sessionID: string
 ): Promise<string> => {
   const response = await api.post<string>(`/lvk-token/${roomID}`, {
-    participant_id: participantID,
+    session_id: sessionID,
   });
 
   return response.data;

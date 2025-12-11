@@ -20,11 +20,10 @@ import {
 import classNames from 'classnames';
 import { useResizeObserver } from 'usehooks-ts';
 
-import type { RemoteMediaState, Participant } from '@/types';
-import { getMe } from '@/api/client';
+import type { RemoteMediaControlState, Participant } from '@/types';
 import {
   useUserEventsCtx,
-  useMediaStateCtx,
+  useMediaControlCtx,
   useSettingsCtx,
   usePreferencesCtx,
   useSystemEventsCtx,
@@ -86,7 +85,7 @@ const Room = () => {
     audioTrack,
     setAudioTrack,
     videoTrack,
-  } = useMediaStateCtx();
+  } = useMediaControlCtx();
   const { isChatExpanded, shareScreenView, setShareScreenView, isFocusView } =
     usePreferencesCtx();
 
@@ -144,14 +143,6 @@ const Room = () => {
     shouldBlock: !latestRoomKilled,
     allowedPaths: ['/post-call'],
   });
-  
-  const {data: meData} = useQuery({
-    queryKey: ['me', roomID],
-    queryFn: () => getMe(roomID as string, sessionID),
-    enabled: !!roomID && !!sessionID,
-  });
-  
-   const participantID = meData?.id as string;
 
   const {
     data: lvkTokenData,
@@ -181,21 +172,21 @@ const Room = () => {
   }, [lvkTokenData, isLvkTokenError]);
 
   useEffect(() => {
-    if (roomID && participantID && sessionID) connectUserEvents(roomID, participantID, sessionID);
+    if (roomID && sessionID) connectUserEvents(roomID, sessionID);
     if (!eventsWS) return;
-  }, [roomID, participantID, sessionID]);
+  }, [roomID, sessionID]);
 
   useEffect(() => {
     const connectMediaControlEvents = async () => {
       try {
-        if (roomID && participantID) connectMedia(roomID, participantID);
+        if (roomID && sessionID) connectMedia(roomID, sessionID);
       } catch (error) {
         console.error('Failed to establish WebSocket connection:', error);
       }
     };
 
     connectMediaControlEvents();
-  }, [roomID, participantID]);
+  }, [roomID, sessionID]);
 
   useEffect(() => {
     if (roomID && sessionID) connectSettings(roomID);
@@ -303,30 +294,29 @@ const Room = () => {
 
     const handleParticipantConnected = (participant: RemoteParticipant) => {
       // Everyone tries to send, but server only allows leader
-      const fullRoomState: RemoteMediaState = {
+      const fullRoomState: RemoteMediaControlState = {
         ...remoteMediaStatesRef.current,
-        [participantID as string]: mediaStateRef.current,
+        [sessionID]: mediaStateRef.current,
       };
 
       sendUserEvent({
-        type: 'media.synced',
-        participant_id: participantID,
+        type: 'sync.media',
+        session_id: sessionID,
         payload: fullRoomState,
       });
-      console.log('participantIdentity', participant);
+
       setRemoteParticipants((prev) => {
         const newMap = new Map(prev);
         newMap.set(participant.identity, participant);
         return newMap;
       });
-      console.log('remoteParticipants', remoteParticipants);
       refetchParticipants();
     };
 
     const handleConnected = () => {
       sendUserEvent({
-        type: 'media.state.updated',
-        participant_id: participantID,
+        type: 'media.control.updated',
+        session_id: sessionID,
         payload: {
           audio: mediaStateRef.current.audio,
           video: mediaStateRef.current.video,
@@ -334,8 +324,8 @@ const Room = () => {
       });
 
       sendUserEvent({
-        type: 'media.synced',
-        participant_id: participantID,
+        type: 'sync.media',
+        session_id: sessionID,
         payload: {},
       });
     };
@@ -484,7 +474,7 @@ const Room = () => {
     };
 
     connectToRoom();
-  }, [roomID, participantID, lvkToken]);
+  }, [roomID, sessionID, lvkToken]);
 
   const { data: participantsData, refetch: refetchParticipants } = useQuery({
     queryKey: ['call-participants', roomID],
@@ -495,7 +485,7 @@ const Room = () => {
     if (participantsData) {
       setParticipants(participantsData.participantsInCall);
     }
-  }, [participantsData, participantID, remoteParticipants]);
+  }, [participantsData, sessionID, remoteParticipants]);
 
   const hasInvitePermission = settings?.invite_permission || false;
   const localParticipant: Participant | undefined = participants.find(
@@ -550,7 +540,7 @@ const Room = () => {
       if (!screenSharePublication) {
         // Screen share was stopped via browser native controls
         sendUserEvent({
-          type: 'sharescreen.ended',
+          type: 'share_screen.ended',
           senderID: sessionID,
           payload: {
             active: false,
@@ -726,9 +716,9 @@ const Room = () => {
         <ParticipantsList
           open={activePanel === 'participants'}
           participants={participants}
-          participantID={participantID}
           invitePermission={hasInvitePermission}
           isHost={isHost}
+          sessionID={sessionID}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}
           isActiveSpeaker={activeSpeakers.includes(sessionID)}
@@ -741,9 +731,8 @@ const Room = () => {
       </div>
       <div className='flex items-center border-t border-zinc-800 bg-zinc-950'>
         <Toolbar
-          room={livekitRoom.current}
           sessionID={sessionID}
-          participantID={participantID}
+          room={livekitRoom.current}
           mediaState={mediaState}
           setAudioState={setAudioState}
           setVideoState={setVideoState}
