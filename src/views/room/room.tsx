@@ -17,6 +17,7 @@ import {
   RemoteAudioTrack,
   ConnectionState,
 } from 'livekit-client';
+import Cookie from 'js-cookie';
 import classNames from 'classnames';
 import { useResizeObserver } from 'usehooks-ts';
 
@@ -122,6 +123,7 @@ const Room = () => {
   const location = useLocation();
   const { id: roomID } = useParams<{ id: string }>();
   const { sessionID } = location.state || {};
+  const jwt = Cookie.get('rsCookie');
   // const [searchParams, setSearchParams] = useSearchParams();
 
   useNavigationBlocker({
@@ -144,14 +146,14 @@ const Room = () => {
     shouldBlock: !latestRoomKilled,
     allowedPaths: ['/post-call'],
   });
-  
-  const {data: meData} = useQuery({
+
+  const { data: meData } = useQuery({
     queryKey: ['me', roomID],
-    queryFn: () => getMe(roomID as string, sessionID),
-    enabled: !!roomID && !!sessionID,
+    queryFn: () => getMe(roomID as string, jwt!),
+    enabled: !!roomID && !!jwt,
   });
-  
-   const participantID = meData?.id as string;
+
+  const participantID = meData?.id as string;
 
   const {
     data: lvkTokenData,
@@ -160,8 +162,8 @@ const Room = () => {
     // refetch: refetchLvkToken,
   } = useQuery({
     queryKey: ['lvkToken', roomID],
-    queryFn: () => getLvkToken(roomID as string, sessionID),
-    enabled: !!roomID && !!sessionID,
+    queryFn: () => getLvkToken(roomID as string, participantID),
+    enabled: !!roomID && !!participantID,
   });
 
   // useEffect(() => {
@@ -181,12 +183,13 @@ const Room = () => {
   }, [lvkTokenData, isLvkTokenError]);
 
   useEffect(() => {
-    if (roomID && participantID && sessionID) connectUserEvents(roomID, participantID, sessionID);
+    if (roomID && participantID && sessionID)
+      connectUserEvents(roomID, participantID, sessionID);
     if (!eventsWS) return;
   }, [roomID, participantID, sessionID]);
 
   useEffect(() => {
-    const connectMediaControlEvents = async () => {
+    const connectMediaStateEvents = async () => {
       try {
         if (roomID && participantID) connectMedia(roomID, participantID);
       } catch (error) {
@@ -194,7 +197,7 @@ const Room = () => {
       }
     };
 
-    connectMediaControlEvents();
+    connectMediaStateEvents();
   }, [roomID, participantID]);
 
   useEffect(() => {
@@ -313,13 +316,11 @@ const Room = () => {
         participant_id: participantID,
         payload: fullRoomState,
       });
-      console.log('participantIdentity', participant);
       setRemoteParticipants((prev) => {
         const newMap = new Map(prev);
         newMap.set(participant.identity, participant);
         return newMap;
       });
-      console.log('remoteParticipants', remoteParticipants);
       refetchParticipants();
     };
 
@@ -499,20 +500,19 @@ const Room = () => {
 
   const hasInvitePermission = settings?.invite_permission || false;
   const localParticipant: Participant | undefined = participants.find(
-    (p) => p.session_id == sessionID
+    (p) => p.id == participantID
   );
   const isHost = localParticipant?.isHost || false;
-
   const remoteUserSessions: string[] = Array.from(
     remoteParticipants.keys()
-  ).filter((session) => session !== sessionID);
+  ).filter((id) => id !== participantID);
 
-  const remoteParticipant = (remoteSessionID: string) => {
+  const remoteParticipant = (remoteParticipantID: string) => {
     const remoteSession = remoteUserSessions.find(
-      (session) => session === remoteSessionID
+      (id) => id === remoteParticipantID
     );
 
-    return participants.find((p) => p.session_id === remoteSession);
+    return participants.find((p) => p.id === remoteSession);
   };
 
   const handleScreenShareChange = useCallback(
