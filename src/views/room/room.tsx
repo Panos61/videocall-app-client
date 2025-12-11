@@ -659,7 +659,7 @@ const Room = () => {
                 isLocal={true}
                 mediaState={mediaState}
                 audioTracks={remoteAudioTracks}
-                isActiveSpeaker={activeSpeakers.includes(sessionID)}
+                isActiveSpeaker={activeSpeakers.includes(participantID)}
                 remoteMediaStates={remoteMediaStates}
               />
             </TilePanel>
@@ -713,7 +713,7 @@ const Room = () => {
                         isLocal={true}
                         mediaState={mediaState}
                         audioTracks={remoteAudioTracks}
-                        isActiveSpeaker={activeSpeakers.includes(sessionID)}
+                        isActiveSpeaker={activeSpeakers.includes(participantID)}
                         remoteMediaStates={remoteMediaStates}
                       />
                     )}
@@ -731,7 +731,7 @@ const Room = () => {
           isHost={isHost}
           mediaState={mediaState}
           remoteMediaStates={remoteMediaStates}
-          isActiveSpeaker={activeSpeakers.includes(sessionID)}
+          isActiveSpeaker={activeSpeakers.includes(participantID)}
           onClose={() => setActivePanel(null)}
         />
         <Chat
