@@ -15,7 +15,7 @@ import {
   exitRoom,
 } from '@/api/client';
 import {
-  useMediaControlCtx,
+  useMediaStateCtx,
   useSettingsCtx,
   useSystemEventsCtx,
 } from '@/context';
@@ -46,7 +46,7 @@ const Lobby = () => {
     // setAudioTrack,
     setVideoTrack,
     videoTrack,
-  } = useMediaControlCtx();
+  } = useMediaStateCtx();
   const { connectSettings, settings } = useSettingsCtx();
 
   const settingsData = settings || {

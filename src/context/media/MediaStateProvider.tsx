@@ -1,11 +1,11 @@
 import { createContext, ReactNode, useState, useEffect } from 'react';
 import { LocalAudioTrack, LocalVideoTrack } from 'livekit-client';
-import type { MediaControlState, RemoteMediaControlState } from '@/types';
+import type { MediaState, RemoteMediaState } from '@/types';
 import { useUserEventsCtx } from '../user-events/useUserEventsCtx';
 
 interface BaseEvent {
   type: string;
-  session_id: string;
+  participant_id: string;
   payload: {
     audio: boolean;
     video: boolean;
@@ -18,13 +18,12 @@ export interface DevicePreferences {
 }
 
 export interface CtxProps {
-  connectMedia: (roomID: string, sessionID: string) => void;
-  sendMediaEvent: (sessionID: string, updatedState: MediaControlState) => void;
+  connectMedia: (roomID: string, participantID: string) => void;
   disconnectMedia: () => void;
-  mediaState: MediaControlState;
-  remoteMediaStates: RemoteMediaControlState;
-  setAudioState: (enabled: boolean, sessionID?: string) => Promise<void>;
-  setVideoState: (enabled: boolean, sessionID?: string) => Promise<void>;
+  mediaState: MediaState;
+  remoteMediaStates: RemoteMediaState;
+  setAudioState: (enabled: boolean, participantID?: string) => Promise<void>;
+  setVideoState: (enabled: boolean, participantID?: string) => Promise<void>;
   audioDevice: DevicePreferences | null;
   videoDevice: DevicePreferences | null;
   setAudioDevice: (device: DevicePreferences) => void;
@@ -35,11 +34,9 @@ export interface CtxProps {
   videoTrack: LocalVideoTrack | null;
 }
 
-export const MediaControlContext = createContext<CtxProps | undefined>(
-  undefined
-);
+export const MediaStateContext = createContext<CtxProps | undefined>(undefined);
 
-export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
+export const MediaStateProvider = ({ children }: { children: ReactNode }) => {
   const {
     connectUserEvents,
     disconnectUserEvents,
@@ -60,10 +57,10 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     null
   );
 
-  const connectMedia = (roomID: string, sessionID: string) => {
+  const connectMedia = (roomID: string, participantID: string) => {
     // Clean up any existing connection
     disconnectMedia();
-    connectUserEvents(roomID, sessionID);
+    connectUserEvents(roomID, participantID, '');
   };
 
   const disconnectMedia = () => {
@@ -77,38 +74,14 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const sendMediaEvent = (
-    sessionID: string,
-    updatedState: MediaControlState
-  ) => {
-    if (!isConnected) {
-      return;
-    }
-
-    const msg: BaseEvent = {
-      type: 'media.control.updated',
-      session_id: sessionID,
-      payload: {
-        audio: updatedState.audio,
-        video: updatedState.video,
-      },
-    };
-
-    try {
-      sendUserEvent(msg);
-    } catch (error) {
-      console.error('Failed to send media update:', error);
-    }
-  };
-
-  const setAudioState = async (enabled: boolean, sessionID = '') => {
+  const setAudioState = async (enabled: boolean, participantID = '') => {
     const updatedState = { ...mediaState, audio: enabled };
     setMediaState(updatedState);
 
-    if (isConnected && sessionID) {
+    if (isConnected && participantID) {
       const msg: BaseEvent = {
-        type: 'media.control.updated',
-        session_id: sessionID,
+        type: 'media.state.updated',
+        participant_id: participantID,
         payload: {
           audio: updatedState.audio,
           video: updatedState.video,
@@ -118,14 +91,14 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const setVideoState = async (enabled: boolean, sessionID = '') => {
+  const setVideoState = async (enabled: boolean, participantID = '') => {
     const updatedState = { ...mediaState, video: enabled };
     setMediaState(updatedState);
 
-    if (isConnected && sessionID) {
+    if (isConnected && participantID) {
       const msg: BaseEvent = {
-        type: 'media.control.updated',
-        session_id: sessionID,
+        type: 'media.state.updated',
+        participant_id: participantID,
         payload: {
           audio: updatedState.audio,
           video: updatedState.video,
@@ -168,26 +141,25 @@ export const MediaControlProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <MediaControlContext.Provider
+    <MediaStateContext.Provider
       value={{
         connectMedia,
-        sendMediaEvent,
-        remoteMediaStates,
         disconnectMedia,
         mediaState,
+        remoteMediaStates,
         setAudioState,
         setVideoState,
         setAudioDevice,
         setVideoDevice,
         audioDevice,
         videoDevice,
-        setAudioTrack,
         audioTrack,
-        setVideoTrack,
         videoTrack,
+        setAudioTrack,
+        setVideoTrack,
       }}
     >
       {children}
-    </MediaControlContext.Provider>
+    </MediaStateContext.Provider>
   );
 };

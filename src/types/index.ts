@@ -54,19 +54,11 @@ export interface Authorization {
   hasExpired: boolean;
 }
 
-export interface UserEvent {
-  type: string;
-  payload: {
-    participant_id: string;
-    participant_name: string;
-  };
-}
-
-export interface MediaControlState {
+export interface MediaState {
   audio: boolean;
   video: boolean;
 }
 
-export interface RemoteMediaControlState {
-  [sessionID: string]: MediaControlState;
+export interface RemoteMediaState {
+  [participantID: string]: MediaState;
 }

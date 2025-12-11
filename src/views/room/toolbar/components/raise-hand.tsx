@@ -6,7 +6,7 @@ const RaiseHand = ({ sessionID }: { sessionID: string }) => {
 
   const handleRaiseHand = () => {
     sendUserEvent({
-      type: 'raised_hand.sent',
+      type: 'raisedhand.sent',
       senderID: sessionID,
       payload: {
         raised_hand: true,
