@@ -3,8 +3,6 @@ import { RaisedHand } from '../components/gestures';
 import ShareScreenTab from './sharescreen-tab';
 import Timer from './timer';
 
-import LOGO from '@/assets/catgpt.png';
-
 interface Props {
   isSharingScreen: boolean;
   participantsCount: number;
