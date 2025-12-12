@@ -21,13 +21,10 @@ const Header = ({ isSharingScreen, participantsCount }: Props) => {
 
   return (
     <header className='flex items-center justify-between h-52 px-48 border-b border-zinc-800'>
-      <div className='flex items-center gap-72'>
-        <img src={LOGO} alt='logo' width={80} className='mb-12' />
-        <div className='flex items-center gap-8'>
-          {uniqueRaisedHandEvents.map((event) => (
-            <RaisedHand key={event} username={event} />
-          ))}
-        </div>
+      <div className='flex items-center gap-8 ml-72'>
+        {uniqueRaisedHandEvents.map((event) => (
+          <RaisedHand key={event} username={event} />
+        ))}
       </div>
       {isSharingScreen && (
         <ShareScreenTab participantsCount={participantsCount} />
