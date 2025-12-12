@@ -91,7 +91,6 @@ const Home = () => {
   return (
     <div className='flex flex-col gap-32 relative min-h-screen bg-gradient-to-br text-gray-900 px-4 py-12 items-center justify-center'>
       <header className='absolute top-40 left-[104px] flex flex-col items-center text-gray-800'>
-        <p className='text-4xl font-bold font-mono'>Video Calls & Chat</p>
         <img src={LOGO} alt='logo' width={isLarge ? 124 : 300} />
       </header>
       <motion.div

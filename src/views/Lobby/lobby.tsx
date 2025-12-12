@@ -231,10 +231,7 @@ const Lobby = () => {
       <div className='grid grid-cols-4 gap-24 p-32 h-screen md:bg-gradient-to-br from-white via-white to-orange-300'>
         <div className='col-span-4 md:col-span-1 flex items-center justify-center'>
           <div className='flex flex-col items-center size-full'>
-            <div className='flex flex-col items-center mb-12'>
-              <h1 className='text-3xl font-mono'>Whispurr</h1>
-              <img src={LOGO} alt='logo' width={100} />
-            </div>
+            <img src={LOGO} alt='logo' width={100} className='mb-12' />
             <div className='flex flex-col flex-1 justify-center'>
               <h3 className='mb-12 text-center text-2xl font-semibold tracking-tight'>
                 {isHost ? 'Start Call' : 'Join Call'}
